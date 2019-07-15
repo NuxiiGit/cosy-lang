@@ -1,36 +1,39 @@
+extern crate regex;
+use regex::Regex;
+
 /// A struct which provides functions for defining, lexing, and building the AST of a grammar.
-struct Parser {
+pub struct Parser {
     
 }
 impl Parser {
     /// Adds a non-valuable token type.
-    fn ignore(pattern : &str) {
+    pub fn ignore(pattern : &str) {
 
     }
 
     /// Adds a token to the parser grammar.
-    fn add(ident : &str, pattern : &str) {
+    pub fn add(ident : &str, pattern : &str) {
         
     }
     
     /// Tokenises the input expression using this grammar.
-    fn lex(expression : &str) -> Vec<Token> {
-
+    pub fn lex(expression : &str) -> Vec<Token> {
+        Vec::new()
     }
 
     /// Parses this `Vec<Token>` of tokens into an abstract syntax tree.
-    fn parse(tokens : Vec<Token>) -> SExpression<Token> {
-
+    pub fn parse(tokens : Vec<Token>) -> SExpression<Token> {
+        SExpression::Nil
     }
 }
 
 /// A struct which stores information about a token.
-struct Token {
+pub struct Token {
     
 }
 
 /// A recursive enum used to express an abstract syntax tree.
-enum SExpression<T> {
-    Nil;
-    List(T, Vec<SExpression<T>>);
+pub enum SExpression<T> {
+    Nil,
+    List(T, Vec<SExpression<T>>)
 }
