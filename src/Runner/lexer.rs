@@ -75,31 +75,55 @@ impl Lexer {
     pub fn lex<'a>(&mut self, expression : &str) -> Result<Vec<Token>, &'a str> {
         let mut tokens : Vec<Token> = Vec::new();
         let size : usize = expression.chars().count();
-        let mut i : usize = 0;
-        while i < size {
-            match self.find_best_fit(expression, i) {
-                Some((ident, left, right)) => {
+        let mut start : usize = 0;
+        while start < size {
+            // eliminate ignored phrases
+            if let Some(regexp) = &self.ignore {
+                if let Some(pos) = regexp.find_at(expression, start) {
+                    if pos.start() == start {
+                        // the phrase you want to ignore is at the left-most position, so just update the existing starting position
+                        start = pos.end();
+                    }
+                }
+            }
+            // search for tokens
+            let mut name : String = String::new();
+            let mut end : usize = start;
+            let mut attempted : bool = false;
+            for pattern in &self.patterns {
+                let ident : &str = self.identifiers.get(pattern).unwrap();
+                let regexp : &Regex = self.regexps.get(pattern).unwrap();
+                if let Some(pos) = regexp.find_at(expression, start) {
+                    if pos.start() == start {
+                        if pos.end() > end {
+                            // update record
+                            name = ident.to_owned();
+                            end = pos.end();
+                        }
+                    }
+                    attempted = true;
+                }
+            }
+            if attempted {
+                if start < end {
                     let value : String = expression
                             .chars()
-                            .skip(left)
-                            .take(right - left)
+                            .skip(start)
+                            .take(end - start)
                             .collect();
-                    i = right;
-                    println!("{}", value);
                     tokens.push(Token {
-                        ident : ident,
+                        ident : name,
                         value : value,
                         line : 1,
                         column : 1
                     });
-                },
-                None => {
-                    println!("Oh no! {}", size);
+                } else {
                     return Err("Unable to find a valid token.");
                 }
             }
+            start = end;
         }
-        Err("Not implemented")
+        Ok(tokens)
     }
 
     /// Finds the "best-fit", left-most token in this expression, then returns the start and end positions of this substring.

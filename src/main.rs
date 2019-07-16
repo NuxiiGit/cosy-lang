@@ -11,8 +11,13 @@ fn main() {
     lexer.add("IF", "if");
     lexer.add("MINUS", "-");
     lexer.add("ARROW", "->");
-    lexer.add("COMMENT", "''.*(\n|$)");
-    if let Ok(tokens) = lexer.lex("if(->)'' test comment ()-> ()\n if ") {
-        
+    lexer.add("COMMENT", r"(?:''.*(?:\n|$))|(?:'\{.*\}')");
+    match lexer.lex("if(->)'{ test '' comment ()}'-> ()\n if ") {
+        Ok(tokens) => {
+            for token in &tokens {
+                println!("({}, {})", token.ident, token.value);
+            }
+        },
+        Err(msg) => println!("{}", msg)
     }
 }
