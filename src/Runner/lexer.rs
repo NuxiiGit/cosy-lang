@@ -49,9 +49,11 @@ impl Lexer {
                 ident.to_owned());
     }
     
-    /// Tokenises the input expression using this grammar.
+    /// Tokenises the input expression using this lexer, and returns a `Vec` of tokens `token::Token`.
+    /// # Errors
+    /// Returns `Err(e)` when the lexer was unable to tokenise this expression.
     #[allow(dead_code)]
-    pub fn lex(&mut self, expression : &str) -> Vec<Token> {
-        Vec::new()
+    pub fn lex<'a>(&mut self, expression : &str) -> Result<Vec<Token>, &'a str> {
+        Err("Not implemented")
     }
 }
