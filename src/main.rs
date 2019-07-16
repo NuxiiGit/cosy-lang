@@ -18,14 +18,14 @@ fn main() {
     lexer.add("LABEL", r"'[a-zA-Z]+[a-zA-Z0-9]*");
     // conditions
     lexer.add("IF", "if");
+    // variable
+    lexer.add("VARNAME", r"[a-zA-Z]+[a-zA-Z0-9]*");
     // lex and parse
     let source_code : &str = "
-            'label3
-            if () {
-                '' this is a comment
-                '{
-                    test
-                }'
+            if (x) {
+                if (y) {
+                
+                }
             }";
     match lexer.lex(source_code) {
         Ok(tokens) => {
