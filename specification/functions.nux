@@ -1,0 +1,16 @@
+'' block functions
+function add(a : Integer, b : Integer) : Integer {
+    return a + b;
+}
+
+'' lambda functions
+(a : Integer, b : Integer) => a + b
+
+'' function types are given by arrow notation
+var add : Integer -> Integer -> Integer = ...
+
+'' functions can have partial arguments passed by using the `?` symbol
+var add_one : Integer -> Integer = add?(1);
+if add_one(2) == 3 {
+    show_message("Success!");
+}

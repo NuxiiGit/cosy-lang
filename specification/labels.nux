@@ -1,0 +1,7 @@
+'' labels are given by a single `'` followed by a name
+'label
+loop {
+    loop {
+        break 'label;
+    }
+}

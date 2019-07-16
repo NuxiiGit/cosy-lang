@@ -1,0 +1,5 @@
+'' basic variable definition
+var my_int : Integer = 12;
+
+'' variables and their contents will be disposed of at the end of each block unless you transfer ownership
+'' return can be used to transfer ownership to the calling block
