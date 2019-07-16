@@ -16,7 +16,10 @@ pub struct Lexer {
 
     /// Stores the maps from each pattern to its token identifier.
     /// This constrains each token type to a single pattern.
-    identifiers : HashMap<String, String>
+    identifiers : HashMap<String, String>,
+
+    /// Stores the regexp of phrases to ignore.
+    ignore : Option<Regex>
 }
 impl Lexer {
     /// Constructs an instance of `Lexer`.
@@ -25,7 +28,8 @@ impl Lexer {
         Lexer {
             patterns : Vec::new(),
             regexps : HashMap::new(),
-            identifiers : HashMap::new()
+            identifiers : HashMap::new(),
+            ignore : None
         }
     }
 
@@ -51,7 +55,17 @@ impl Lexer {
                 pattern.to_owned(),
                 ident.to_owned());
     }
-    
+
+    /// Sets the phrase to ignore.
+    #[allow(dead_code)]
+    pub fn ignore(&mut self, pattern : &str) {
+        self.ignore = if let Ok(regexp) = Regex::new(pattern) {
+            Some(regexp)
+        } else {
+            None
+        }
+    }
+
     /// Tokenises the input expression using this lexer, and returns a `Vec` of tokens `token::Token`.
     /// # Errors
     /// Returns `Err(e)` when the lexer was unable to tokenise this expression.
@@ -70,6 +84,16 @@ impl Lexer {
         let mut name : String = String::new();
         let mut left : usize = start;
         let mut right : usize = left;
+        // eliminate ignored phrases
+        if let Some(regexp) = &self.ignore {
+            if let Some(pos) = regexp.find_at(expression, start) {
+                if pos.start() == left {
+                    // the phrase you want to ignore is at the left-most position, so just update the existing starting position
+                    left = pos.end();
+                }
+            }
+        }
+        // search for tokens
         for pattern in &self.patterns {
             let ident : &str = self.identifiers.get(pattern).unwrap();
             let regexp : &Regex = self.regexps.get(pattern).unwrap();
