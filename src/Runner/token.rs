@@ -1,7 +1,7 @@
 /// A struct which stores information about a token.
 pub struct Token {
-    ident : String,
-    value : String,
-    line : usize,
-    column : usize
+    pub ident : String,
+    pub value : String,
+    pub line : usize,
+    pub column : usize
 }

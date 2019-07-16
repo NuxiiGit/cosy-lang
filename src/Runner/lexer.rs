@@ -73,7 +73,32 @@ impl Lexer {
     /// The idea behind tokenising is to find the "best-fit", left-most token which 
     #[allow(dead_code)]
     pub fn lex<'a>(&mut self, expression : &str) -> Result<Vec<Token>, &'a str> {
-        
+        let mut tokens : Vec<Token> = Vec::new();
+        let size : usize = expression.chars().count();
+        let mut i : usize = 0;
+        while i < size {
+            match self.find_best_fit(expression, i) {
+                Some((ident, left, right)) => {
+                    let value : String = expression
+                            .chars()
+                            .skip(left)
+                            .take(right - left)
+                            .collect();
+                    i = right;
+                    println!("{}", value);
+                    tokens.push(Token {
+                        ident : ident,
+                        value : value,
+                        line : 1,
+                        column : 1
+                    });
+                },
+                None => {
+                    println!("Oh no! {}", size);
+                    return Err("Unable to find a valid token.");
+                }
+            }
+        }
         Err("Not implemented")
     }
 

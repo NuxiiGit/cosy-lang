@@ -1,6 +1,7 @@
 mod runner;
 
 use runner::lexer::Lexer;
+use runner::token::Token;
 
 fn main() {
     let mut lexer : Lexer = Lexer::new();
@@ -10,9 +11,8 @@ fn main() {
     lexer.add("IF", "if");
     lexer.add("MINUS", "-");
     lexer.add("ARROW", "->");
-    lexer.add("COMMENT", "''.*\n");
-    match lexer.find_best_fit("      if    \n -> ", 6) {
-        Some((name, l, r)) => println!("({}, {}, {})", name, l, r),
-        None => println!("Unable to find a valid token.")
+    lexer.add("COMMENT", "''.*(\n|$)");
+    if let Ok(tokens) = lexer.lex("if(->)'' test comment ()-> ()\n if ") {
+        
     }
 }
