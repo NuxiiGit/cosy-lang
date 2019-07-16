@@ -1,5 +1,6 @@
 extern crate regex;
 
+use std::fmt;
 use std::collections::hash_map::HashMap;
 use regex::Regex;
 use super::token::Token;
@@ -11,7 +12,7 @@ const IGNORE : &str = "WHITESPACE";
 /// A struct which which provides methods for defining and lexing token data.
 #[allow(dead_code)]
 pub struct Lexer {
-    /// Stores the available patterns in order of preceedence.
+    /// Stores the available patterns in no required order.
     patterns : Vec<String>,
 
     /// Stores the maps from each pattern to its token identifier.
@@ -48,8 +49,8 @@ impl Lexer {
             if let Ok(regexp) = Regex::new(pattern) {
                 self.patterns.push(pattern.to_owned());
                 self.regexps.insert(
-                    pattern.to_owned(),
-                    regexp);
+                        pattern.to_owned(),
+                        regexp);
             } else {
                 // unable to compile this regexp
                 return;
@@ -66,7 +67,21 @@ impl Lexer {
     /// Returns `Err(e)` when the lexer was unable to tokenise this expression.
     #[allow(dead_code)]
     pub fn lex<'a>(&mut self, expression : &str) -> Result<Vec<Token>, &'a str> {
-
         Err("Not implemented")
+    }
+}
+impl fmt::Display for Lexer {
+    /// Formats the contents of this lexer.
+    #[allow(dead_code)]
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        let mut msg : String = String::new();
+        for pattern in &self.patterns {
+            let ident : &str = self.identifiers.get(pattern).unwrap();
+            if (&msg != "") {
+                msg.push_str(", ");
+            }
+            msg.push_str(&format!("({}, {})", ident, pattern));
+        }
+        write!(f, "[{}]", msg)
     }
 }
