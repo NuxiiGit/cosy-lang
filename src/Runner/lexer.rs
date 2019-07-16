@@ -68,20 +68,19 @@ impl Lexer {
     /// Returns `None` when no valid token was found.
     pub fn find_best_fit(&mut self, expression : &str, start : usize) -> Option<(String, usize, usize)> {
         let mut name : String = String::new();
-        let mut left : usize = std::usize::MAX;
-        let mut right : usize = std::usize::MIN;
+        let mut left : usize = start;
+        let mut right : usize = left;
         for pattern in &self.patterns {
             let ident : &str = self.identifiers.get(pattern).unwrap();
             let regexp : &Regex = self.regexps.get(pattern).unwrap();
             if let Some(pos) = regexp.find_at(expression, start) {
-                let start : usize = pos.start();
-                let end : usize = pos.end();
-                if (start < left)
-                || (start == left && end > right) {
-                    // update record
-                    name = ident.to_owned();
-                    left = start;
-                    right = end;
+                if pos.start() == left {
+                    let end : usize = pos.end();
+                    if end > right {
+                        // update record
+                        name = ident.to_owned();
+                        right = end;
+                    }
                 }
             }
         }
