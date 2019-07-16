@@ -5,14 +5,29 @@ use runner::token::Token;
 
 fn main() {
     let mut lexer : Lexer = Lexer::new();
+    // whitespace
     lexer.ignore(r"\s+");
-    lexer.add("LBRACE", r"\(");
-    lexer.add("RBRACE", r"\)");
+    // comments
+    lexer.add("COMMENT", r"(?:''.*(?:\n|$))|(?:'\{(?s:.)*\}')");
+    // braces
+    lexer.add("BRACKET_BEGIN", r"\(");
+    lexer.add("BRACKET_END", r"\)");
+    lexer.add("BLOCK_BEGIN", r"\{");
+    lexer.add("BLOCK_END", r"\}");
+    // label
+    lexer.add("LABEL", r"'[a-zA-Z]+[a-zA-Z0-9]*");
+    // conditions
     lexer.add("IF", "if");
-    lexer.add("MINUS", "-");
-    lexer.add("ARROW", "->");
-    lexer.add("COMMENT", r"(?:''.*(?:\n|$))|(?:'\{.*\}')");
-    match lexer.lex("if(->)'{ test '' comment ()}'-> ()\n if ") {
+    // lex and parse
+    let source_code : &str = "
+            'label3
+            if () {
+                '' this is a comment
+                '{
+                    test
+                }'
+            }";
+    match lexer.lex(source_code) {
         Ok(tokens) => {
             for token in &tokens {
                 println!("({}, {})", token.ident, token.value);
