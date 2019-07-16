@@ -125,44 +125,6 @@ impl Lexer {
         }
         Ok(tokens)
     }
-
-    /// Finds the "best-fit", left-most token in this expression, then returns the start and end positions of this substring.
-    /// # Errors
-    /// Returns `None` when no valid token was found.
-    pub fn find_best_fit(&mut self, expression : &str, start : usize) -> Option<(String, usize, usize)> {
-        let mut name : String = String::new();
-        let mut left : usize = start;
-        let mut right : usize = left;
-        // eliminate ignored phrases
-        if let Some(regexp) = &self.ignore {
-            if let Some(pos) = regexp.find_at(expression, start) {
-                if pos.start() == left {
-                    // the phrase you want to ignore is at the left-most position, so just update the existing starting position
-                    left = pos.end();
-                }
-            }
-        }
-        // search for tokens
-        for pattern in &self.patterns {
-            let ident : &str = self.identifiers.get(pattern).unwrap();
-            let regexp : &Regex = self.regexps.get(pattern).unwrap();
-            if let Some(pos) = regexp.find_at(expression, start) {
-                if pos.start() == left {
-                    let end : usize = pos.end();
-                    if end > right {
-                        // update record
-                        name = ident.to_owned();
-                        right = end;
-                    }
-                }
-            }
-        }
-        if left < right {
-            Some((name, left, right))
-        } else {
-            None
-        }
-    }
 }
 impl fmt::Display for Lexer {
     /// Formats the contents of this lexer.
