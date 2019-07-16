@@ -65,9 +65,41 @@ impl Lexer {
     /// Tokenises the input expression using this lexer, and returns a `Vec` of tokens `token::Token`.
     /// # Errors
     /// Returns `Err(e)` when the lexer was unable to tokenise this expression.
+    /// # Current Implementation
+    /// The idea behind tokenising is to find the "best-fit", left-most token which 
     #[allow(dead_code)]
     pub fn lex<'a>(&mut self, expression : &str) -> Result<Vec<Token>, &'a str> {
+        
         Err("Not implemented")
+    }
+
+    /// Finds the "best-fit", left-most token in this expression, then returns the start and end positions of this substring.
+    /// # Errors
+    /// Returns `None` when no valid token was found.
+    pub fn find_best_fit(&mut self, expression : &str, start : usize) -> Option<(String, usize, usize)> {
+        let mut name : String = String::new();
+        let mut left : usize = std::usize::MAX;
+        let mut right : usize = std::usize::MIN;
+        for pattern in &self.patterns {
+            let ident : &str = self.identifiers.get(pattern).unwrap();
+            let regexp : &Regex = self.regexps.get(pattern).unwrap();
+            if let Some(pos) = regexp.find_at(expression, start) {
+                let start : usize = pos.start();
+                let end : usize = pos.end();
+                if (start < left)
+                || (start == left && end > right) {
+                    // update record
+                    name = ident.to_owned();
+                    left = start;
+                    right = end;
+                }
+            }
+        }
+        if left < right {
+            Some((name, left, right))
+        } else {
+            None
+        }
     }
 }
 impl fmt::Display for Lexer {
@@ -77,7 +109,7 @@ impl fmt::Display for Lexer {
         let mut msg : String = String::new();
         for pattern in &self.patterns {
             let ident : &str = self.identifiers.get(pattern).unwrap();
-            if (&msg != "") {
+            if &msg != "" {
                 msg.push_str(", ");
             }
             msg.push_str(&format!("({}, {})", ident, pattern));
