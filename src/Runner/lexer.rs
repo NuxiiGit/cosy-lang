@@ -16,7 +16,10 @@ pub struct Lexer {
 
     /// Stores the maps from each pattern to its token identifier.
     /// This constrains each token type to a single pattern.
-    identifiers : HashMap<String, String>
+    identifiers : HashMap<String, String>,
+
+    /// Stores the maps from each pattern to its compiled regexp.
+    regexps : HashMap<String, Regex>
 }
 impl Lexer {
     /// Constructs an instance of `Lexer`.
@@ -24,7 +27,8 @@ impl Lexer {
     pub fn new() -> Lexer {
         Lexer {
             patterns : Vec::new(),
-            identifiers : HashMap::new()
+            identifiers : HashMap::new(),
+            regexps : HashMap::new()
         }
     }
 
@@ -41,7 +45,15 @@ impl Lexer {
                 .iter()
                 .position(|x| x == pattern) {
             // add new pattern
-            self.patterns.push(pattern.to_owned());
+            if let Ok(regexp) = Regex::new(pattern) {
+                self.patterns.push(pattern.to_owned());
+                self.regexps.insert(
+                    pattern.to_owned(),
+                    regexp);
+            } else {
+                // unable to compile this regexp
+                return;
+            }
         }
         // update identifier
         self.identifiers.insert(
@@ -54,6 +66,7 @@ impl Lexer {
     /// Returns `Err(e)` when the lexer was unable to tokenise this expression.
     #[allow(dead_code)]
     pub fn lex<'a>(&mut self, expression : &str) -> Result<Vec<Token>, &'a str> {
+
         Err("Not implemented")
     }
 }
