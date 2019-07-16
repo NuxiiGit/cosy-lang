@@ -1,5 +1,5 @@
-use runner::token;
-use runner::syntax_tree;
+use super::token::Token;
+use super::syntax_tree::SExpression;
 
 /// A struct which provides methods for defining a language grammar, and then using that to construct an abstract syntax tree.
 pub struct Parser {

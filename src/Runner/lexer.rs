@@ -1,12 +1,11 @@
-mod lexer;
-
 extern crate regex;
 
 use regex::Regex;
-use runner::token;
+use super::token::Token;
 
 /// A struct which which provides methods for defining and lexing token data.
 pub struct Lexer {
+    
 }
 impl Lexer {
     /// Adds a non-valuable token type.
