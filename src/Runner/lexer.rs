@@ -5,22 +5,18 @@ use std::collections::hash_map::HashMap;
 use regex::Regex;
 use super::token::Token;
 
-/// Stores the keyword for the ignore token.
-#[allow(dead_code)]
-const IGNORE : &str = "WHITESPACE";
-
 /// A struct which which provides methods for defining and lexing token data.
 #[allow(dead_code)]
 pub struct Lexer {
     /// Stores the available patterns in no required order.
     patterns : Vec<String>,
 
+    /// Stores the maps from each pattern to its compiled regexp.
+    regexps : HashMap<String, Regex>,
+
     /// Stores the maps from each pattern to its token identifier.
     /// This constrains each token type to a single pattern.
-    identifiers : HashMap<String, String>,
-
-    /// Stores the maps from each pattern to its compiled regexp.
-    regexps : HashMap<String, Regex>
+    identifiers : HashMap<String, String>
 }
 impl Lexer {
     /// Constructs an instance of `Lexer`.
@@ -28,15 +24,9 @@ impl Lexer {
     pub fn new() -> Lexer {
         Lexer {
             patterns : Vec::new(),
-            identifiers : HashMap::new(),
-            regexps : HashMap::new()
+            regexps : HashMap::new(),
+            identifiers : HashMap::new()
         }
-    }
-
-    /// Adds a non-valuable token type.
-    #[allow(dead_code)]
-    pub fn ignore(&mut self, pattern : &str) {
-        self.add(IGNORE, pattern);
     }
 
     /// Adds a token to the parser grammar.
