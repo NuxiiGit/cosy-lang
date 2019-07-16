@@ -11,10 +11,6 @@ impl fmt::Display for Token {
     /// Formats the contents of this token.
     #[allow(dead_code)]
     fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[ident={}, value={}, line={}, column={}]",
-                self.ident,
-                self.value,
-                self.line,
-                self.column)
+        write!(f, "({}, {})", self.ident, self.value.replace("\n", " "))
     }
 }

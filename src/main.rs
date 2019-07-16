@@ -30,7 +30,7 @@ fn main() {
     match lexer.lex(source_code) {
         Ok(tokens) => {
             for token in &tokens {
-                println!("({}, {})", token.ident, token.value);
+                println!("{}", token);
             }
         },
         Err(msg) => println!("{}", msg)
