@@ -2,13 +2,8 @@ mod runner;
 
 use runner::lexer::Lexer;
 use runner::token::Token;
-use runner::matcher::get_substring;
 
 fn main() {
-    match get_substring("ac", r"acf", 0) {
-        Some(exp) => println!("'{}'", exp),
-        None => println!("Nah")
-    }
     /*
     let mut lexer : Lexer = Lexer::new();
     // whitespace
