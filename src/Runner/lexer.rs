@@ -88,3 +88,70 @@ impl Lexer {
         Some(tokens)
     }
 }
+
+/// Automatically constructs a closure which matches any whitespace character.
+#[macro_export]
+macro_rules! lex_whitespace {
+    () => (|chars| {
+        let mut whitespace : String = String::new();
+        while match chars.peek() {
+            Some(ch) => ch.is_whitespace(),
+            None => false
+        } {
+            whitespace.push(chars.next().unwrap());
+        }
+        if whitespace == "" {
+            None
+        } else {
+            Some(whitespace)
+        }
+    });
+}
+
+/// Automatically constructs a closure which matches a keyword.
+#[macro_export]
+macro_rules! lex_keyword {
+    ($keyword : expr) => (|chars| {
+        let len : usize = $keyword.chars().count();
+        let value : String = chars.take(len).collect();
+        if value == $keyword {
+            Some(value)
+        } else {
+            None
+        }
+    });
+}
+
+/// Automatically constructs a closure which matches any phrase 
+/// which is between two delimiters.
+#[macro_export]
+macro_rules! lex_region {
+    ($delimiter : expr) => (lex_region!($delimiter, $delimiter));
+    ($begin : expr, $end : expr) => (|chars| {
+        let len : usize = $begin.chars().count();
+        let value : String = chars.take(len).collect();
+        if value == $begin {
+            // search for $end
+            let end : String = $end.chars().rev().collect();
+            let size : usize = $end.chars().count();
+            let mut inner : String = String::new();
+            while let Some(ch) = chars.next() {
+                inner.push(ch);
+                let delimiter : String = inner
+                        .chars()
+                        .rev()
+                        .take(size)
+                        .collect();
+                if delimiter == end {
+                    let mut i : usize = size;
+                    while i > 0 {
+                        inner.pop();
+                        i -= 1;
+                    }
+                    return Some(inner);
+                }
+            }
+        }
+        None
+    });
+}

@@ -4,16 +4,12 @@ use runner::lexer::Lexer;
 
 fn main() {
     let mut lexer : Lexer = Lexer::new();
-    lexer.ignore(Some(|chars| {
-        let whitespace : String = chars.take_while(|&x|
-                x == ' ' || x == '\n' || x == '\t' || x == '\r').collect();
-        if whitespace == "" {
-            None
-        } else {
-            Some(whitespace)
-        }
-    }));
-    match lexer.lex("x \n expression: &str") {
+    lexer.ignore(Some(lex_whitespace!()));
+    lexer.add("IF", lex_keyword!("if"));
+    lexer.add("IFNOT", lex_keyword!("ifnot"));
+    lexer.add("COMMENT", lex_region!("''", "end"));
+    lexer.add("COMMENT_2", lex_region!("'{", "}'"));
+    match lexer.lex("   if '' '{ ifnot ifnot}'if end") {
         Some(_) => println!("Success"),
         _ => println!("Failure")
     }
