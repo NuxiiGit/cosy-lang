@@ -11,6 +11,8 @@ impl Token {
         Token {
             name : name.to_owned(),
             value : value.to_owned()
+                    .escape_debug()
+                    .collect()
         }
     }
 
@@ -30,11 +32,6 @@ impl std::fmt::Display for Token {
     /// Formats the contents of this token.
     #[allow(dead_code)]
     fn fmt(&self, f : &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "({}, {})",
-                self.name,
-                self.value
-                        .replace("\n", r"\n")
-                        .replace("\t", r"\t")
-                        .replace("\r", r"\r"))
+        write!(f, "({}, {})", self.name, self.value)
     }
 }
