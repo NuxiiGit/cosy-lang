@@ -12,7 +12,11 @@ fn main() {
     match lexer.lex("   if '' '{ ifnot ifnot}'if end
     if '{another
     comment}'") {
-        Some(_) => println!("Success"),
+        Some(tokens) => {
+            for token in &tokens {
+                println!("{}", token);
+            }
+        },
         _ => println!("Failure")
     }
 }
