@@ -155,3 +155,19 @@ macro_rules! lex_region {
         None
     });
 }
+
+/// Automatically constructs a closure which matches any phrase 
+/// which is between some start character and the new line character `\n`.
+#[macro_export]
+macro_rules! lex_line {
+    ($begin : expr) => (|chars| {
+        let len : usize = $begin.chars().count();
+        let value : String = chars.take(len).collect();
+        if value == $begin {
+            Some(chars.take_while(|&x| x != '\n').collect())
+        } else {
+            None
+        }
+    });
+}
+

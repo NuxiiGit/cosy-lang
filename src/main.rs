@@ -7,7 +7,7 @@ fn main() {
     lexer.ignore(Some(lex_whitespace!()));
     lexer.add("IF", lex_keyword!("if"));
     lexer.add("IFNOT", lex_keyword!("ifnot"));
-    lexer.add("COMMENT", lex_region!("''", "end"));
+    lexer.add("COMMENT", lex_line!("''"));
     lexer.add("COMMENT_2", lex_region!("'{", "}'"));
     match lexer.lex("   if '' '{ ifnot ifnot}'if end") {
         Some(_) => println!("Success"),
