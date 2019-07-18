@@ -1,14 +1,11 @@
-mod runner;
+#[macro_use]
+pub mod runner;
+pub mod language;
 
 use runner::lexer::Lexer;
 
 fn main() {
-    let mut lexer : Lexer = Lexer::new();
-    lexer.ignore(Some(lex_whitespace!()));
-    lexer.add("IF", lex_keyword!("if"));
-    lexer.add("IFNOT", lex_keyword!("ifnot"));
-    lexer.add("COMMENT", lex_line!("''"));
-    lexer.add("COMMENT_2", lex_region!("'{", "}'"));
+    let lexer : Lexer = language::generate_lexer();
     match lexer.lex("   if '' '{ ifnot ifnot}'if end
     if '{another
     comment}'") {
