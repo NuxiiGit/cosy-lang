@@ -52,9 +52,7 @@ impl Lexer {
         loop {
             // eliminate ignored phrases
             if let Some(lex) = &self.ignore {
-                if let Some(whitespace) = lex(&mut chars) {
-                    println!("Found whitespace: '{}'", whitespace);
-                }
+                lex(&mut chars);
             }
             if chars.peek().is_none() {
                 // iterator is empty, so there is nothing left to lex
@@ -78,7 +76,6 @@ impl Lexer {
             // add best to the list of tokens
             if let Some((name, value, remaining_chars)) = best {
                 tokens.push(Token::new(&name, &value));
-                println!("Found token: ({}, {})", name, value);
                 chars = remaining_chars;
             } else {
                 // unexpected symbol
