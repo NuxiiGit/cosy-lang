@@ -1,3 +1,4 @@
+use super::runner::lexer::Chars;
 use super::runner::lexer::Lexer;
 
 /// Generates the language specific lexer.
@@ -11,5 +12,35 @@ pub fn generate_lexer() -> Lexer {
     // keywords
     lexer.add("IF", lex_keyword!("if"));
     lexer.add("IFNOT", lex_keyword!("ifnot"));
+    // identifiers
+    lexer.add("IDENTIFIER", |chars| find_identifier(chars));
+    lexer.add("LABEL", |chars| {
+        if let Some('\'') = chars.next() {
+            find_identifier(chars)
+        } else {
+            None
+        }
+    });
     lexer
+}
+
+fn find_identifier(chars : &mut Chars) -> Option<String> {
+    let mut contains_letter : bool = false;
+    let mut ident : String = String::new();
+    while match chars.peek() {
+        Some(&ch) => {
+            if ch.is_alphabetic() {
+                contains_letter = true;
+            }
+            ch.is_alphanumeric() || ch == '_'
+        },
+        None => false
+    } {
+        ident.push(chars.next().unwrap());
+    }
+    if !contains_letter || ident == "" {
+        None
+    } else {
+        Some(ident)
+    }
 }
