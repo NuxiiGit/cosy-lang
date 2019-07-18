@@ -46,7 +46,7 @@ impl Lexer {
     /// # Errors
     /// Returns `None` when the lexer was unable to tokenise this expression.
     #[allow(dead_code)]
-    pub fn lex(&mut self, expression :&str) -> Option<Vec<Token>> {
+    pub fn lex(&self, expression :&str) -> Option<Vec<Token>> {
         let mut tokens : Vec<Token> = Vec::new();
         let mut chars : Chars = expression.chars().peekable();
         loop {
