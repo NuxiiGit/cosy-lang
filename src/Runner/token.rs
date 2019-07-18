@@ -13,6 +13,18 @@ impl Token {
             value : value.to_owned()
         }
     }
+
+    /// Returns the name of this token.
+    #[allow(dead_code)]
+    pub fn name(&self) -> String {
+        self.name.to_owned()
+    }
+
+    /// Returns the value of this token.
+    #[allow(dead_code)]
+    pub fn value(&self) -> String {
+        self.value.to_owned()
+    }
 }
 impl std::fmt::Display for Token {
     /// Formats the contents of this token.
