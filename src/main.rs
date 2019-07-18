@@ -9,7 +9,9 @@ fn main() {
     lexer.add("IFNOT", lex_keyword!("ifnot"));
     lexer.add("COMMENT", lex_line!("''"));
     lexer.add("COMMENT_2", lex_region!("'{", "}'"));
-    match lexer.lex("   if '' '{ ifnot ifnot}'if end") {
+    match lexer.lex("   if '' '{ ifnot ifnot}'if end
+    if '{another
+    comment}'") {
         Some(_) => println!("Success"),
         _ => println!("Failure")
     }
