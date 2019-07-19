@@ -9,6 +9,12 @@ pub fn generate_lexer() -> Lexer {
     // comments
     lexer.add("COMMENT", lex_line!("''"));
     lexer.add("COMMENT_MULTILINE", lex_region!("'{", "}'"));
+    // blocks
+    lexer.add("BRACKET_BEGIN", lex_keyword!("("));
+    lexer.add("BRACKET_END", lex_keyword!(")"));
+    lexer.add("BLOCK_BEGIN", lex_keyword!("{"));
+    lexer.add("BLOCK_END", lex_keyword!("}"));
+    lexer.add("ENDLINE", lex_keyword!(";"));
     // keywords
     lexer.add("VAR", lex_keyword!("var"));
     lexer.add("IF", lex_keyword!("if"));
