@@ -18,8 +18,8 @@ pub struct Lexer {
     /// in some character iterator.
     closures : HashMap<String, LexMethod>,
 
-    /// Stores the closure of tokens to ignore.
-    ignore : Option<LexMethod>
+    /// Stores the list of closures of tokens to ignore.
+    ignore : Vec<LexMethod>
 }
 impl Lexer {
     /// Constructs a new lexer.
@@ -28,7 +28,7 @@ impl Lexer {
         Lexer {
             names : Vec::new(),
             closures : HashMap::new(),
-            ignore : None
+            ignore : Vec::new()
         }
     }
 
@@ -42,8 +42,8 @@ impl Lexer {
 
     /// Sets the phrase to ignore.
     #[allow(dead_code)]
-    pub fn ignore(mut self, lex : Option<LexMethod>) -> Self {
-        self.ignore = lex;
+    pub fn ignore(mut self, lex : LexMethod) -> Self {
+        self.ignore.push(lex);
         self
     }
 
@@ -56,7 +56,7 @@ impl Lexer {
         let mut chars : Chars = expression.chars().peekable();
         loop {
             // eliminate ignored phrases
-            if let Some(lex) = &self.ignore {
+            for lex in &self.ignore {
                 lex(&mut chars);
             }
             if chars.peek().is_none() {
