@@ -4,7 +4,7 @@ use super::token::Token;
 /// A type which represents the char iterator used by the lexer.
 pub type Chars<'a> = std::iter::Peekable<std::str::Chars<'a>>;
 
-/// A type which represents the signature for the closures use by the lexer.
+/// A type which represents the signature for the closures used by the lexer.
 pub type LexMethod = fn(&mut Chars) -> Option<String>;
 
 /// A struct which provides methods for defining and lexing token data.
@@ -24,7 +24,7 @@ pub struct Lexer {
 impl Lexer {
     /// Constructs a new lexer.
     #[allow(dead_code)]
-    pub fn new() -> Lexer {
+    pub fn new() -> Self {
         Lexer {
             names : Vec::new(),
             closures : HashMap::new(),
@@ -34,15 +34,17 @@ impl Lexer {
 
     /// Adds a new style to the lexer.
     #[allow(dead_code)]
-    pub fn add(&mut self, name : &str, lex : LexMethod) {
+    pub fn add(mut self, name : &str, lex : LexMethod) -> Self {
         self.names.push(name.to_owned());
         self.closures.insert(name.to_owned(), lex);
+        self
     }
 
     /// Sets the phrase to ignore.
     #[allow(dead_code)]
-    pub fn ignore(&mut self, lex : Option<LexMethod>) {
+    pub fn ignore(mut self, lex : Option<LexMethod>) -> Self {
         self.ignore = lex;
+        self
     }
 
     /// Tokenises the input expression into a list of tokens `token::Token`.
