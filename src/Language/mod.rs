@@ -10,8 +10,15 @@ pub fn generate_lexer() -> Lexer {
     lexer.add("COMMENT", lex_line!("''"));
     lexer.add("COMMENT_MULTILINE", lex_region!("'{", "}'"));
     // keywords
+    lexer.add("VAR", lex_keyword!("var"));
     lexer.add("IF", lex_keyword!("if"));
     lexer.add("IFNOT", lex_keyword!("ifnot"));
+    lexer.add("ELSE", lex_keyword!("else"));
+    lexer.add("REPEAT", lex_keyword!("repeat"));
+    lexer.add("WHILE", lex_keyword!("while"));
+    lexer.add("UNTIL", lex_keyword!("until"));
+    lexer.add("FOR", lex_keyword!("for"));
+    lexer.add("FUNCTION", lex_keyword!("function"));
     // identifiers
     lexer.add("IDENTIFIER", |chars| find_identifier(chars));
     lexer.add("LABEL", |chars| {
