@@ -29,6 +29,30 @@ pub fn generate_lexer() -> Lexer {
         }
     });
     lexer.add("STRING", lex_region!("\""));
+    lexer.add("NUMBER", |chars| {
+        let mut contains_point : bool = false;
+        let mut numb : String = String::new();
+        while match chars.peek() {
+            Some(&ch) => {
+                if ch == '.' {
+                    if contains_point {
+                        // cannot have multiple points
+                        return None;
+                    }
+                    contains_point = true;
+                }
+                ch.is_numeric()
+            },
+            None => false
+        } {
+            numb.push(chars.next().unwrap());
+        }
+        if numb == "" {
+            None
+        } else {
+            Some(numb)
+        }
+    });
     lexer
 }
 
