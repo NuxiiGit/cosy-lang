@@ -28,6 +28,7 @@ pub fn generate_lexer() -> Lexer {
             None
         }
     });
+    lexer.add("STRING", lex_region!("\""));
     lexer
 }
 
