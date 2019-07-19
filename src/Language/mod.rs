@@ -40,8 +40,10 @@ pub fn generate_lexer() -> Lexer {
                         return None;
                     }
                     contains_point = true;
+                    true
+                } else {
+                    ch.is_numeric()
                 }
-                ch.is_numeric()
             },
             None => false
         } {
