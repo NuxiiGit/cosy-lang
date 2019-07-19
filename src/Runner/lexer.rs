@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 use super::token::Token;
 
+/// A type which represents the char iterator used by the lexer.
 pub type Chars<'a> = std::iter::Peekable<std::str::Chars<'a>>;
+
+/// A type which represents the signature for the closures use by the lexer.
 pub type LexMethod = fn(&mut Chars) -> Option<String>;
 
 /// A struct which provides methods for defining and lexing token data.
