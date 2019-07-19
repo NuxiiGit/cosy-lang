@@ -1,5 +1,5 @@
-use super::runner::lexer::Chars;
-use super::runner::lexer::Lexer;
+use super::interface::lexer::Chars;
+use super::interface::lexer::Lexer;
 
 /// Generates the language specific lexer.
 pub fn generate_lexer() -> Lexer {

@@ -1,12 +1,8 @@
-#[macro_use]
-pub mod runner;
-pub mod language;
-
-use runner::lexer::Lexer;
+mod runner;
 
 fn main() {
-    let lexer : Lexer = language::generate_lexer();
-    match lexer.lex("
+    let lexer = runner::language::generate_lexer();
+    let source : &str = "
             'exit
             if (1st_variable_name) {
                 repeat {
@@ -21,7 +17,8 @@ fn main() {
                     .910
                     11.
                 } until (2nd_variable_name);
-            }") {
+            }";
+    match lexer.lex(source) {
         Some(tokens) => {
             for token in &tokens {
                 println!("{}", token);
