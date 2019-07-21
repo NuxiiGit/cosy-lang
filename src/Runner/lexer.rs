@@ -15,63 +15,44 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
             .peekable();
     while let Some(ch) = &chars.next() {
         match ch {
-            &x if x.is_whitespace() => continue,
-            &x if x.is_alphabetic() || x == '_' => {
-                // keyword or identifier
-                let mut s : String = x.to_string();
-                while let Some(&x) = chars.peek() {
-                    if x.is_alphanumeric() || x == '_' {
-                        s.push(x);
-                        chars.next();
-                    } else {
-                        break;
-                    }
-                }
-                if &s == "_" || 
-                        &s == "var" ||
-                        &s == "if" ||
-                        &s == "ifnot" ||
-                        &s == "then" ||
-                        &s == "else" ||
-                        &s == "repeat" ||
-                        &s == "while" ||
-                        &s == "until" ||
-                        &s == "for" ||
-                        &s == "step" ||
-                        &s == "function" ||
-                        &s == "return" ||
-                        &s == "break" {
-                    tokens.push(Token::new(&s, None))
-                } else {
-                    tokens.push(Token::new("identifier", Some(&s)))
-                }
-            },
-            &x if x.is_numeric() => {
-                // number
-                let mut contains_point : bool = false;
-                let mut s : String = x.to_string();
-                while let Some(&x) = chars.peek() {
-                    if x.is_numeric() ||
-                            (!contains_point && x == '.') {
-                        s.push(x);
-                        chars.next();
-                        if x == '.' {
-                            contains_point = true;
+            '(' => tokens.push(Token::new("(", None)),
+            ')' => tokens.push(Token::new(")", None)),
+            '{' => tokens.push(Token::new("{", None)),
+            '}' => tokens.push(Token::new("}", None)),
+            '[' => tokens.push(Token::new("[", None)),
+            ']' => tokens.push(Token::new("]", None)),
+            ';' => tokens.push(Token::new(";", None)),
+            ':' => tokens.push(Token::new(":", None)),
+            '.' => tokens.push(Token::new(".", None)),
+            '?' => tokens.push(Token::new("?", None)),
+            '!' => tokens.push(Token::new("!", None)),
+            '"' => {
+                // string
+                let mut value : String = String::new();
+                loop {
+                    if let Some(x) = chars.next() {
+                        match x {
+                            '\\' => {
+                                if let Some('"') = chars.peek() {
+                                    value.push('"');
+                                    chars.next();
+                                } else {
+                                    value.push('\\');
+                                }
+                            },
+                            '"' => break,
+                            x => value.push(x)
                         }
                     } else {
-                        break;
+                        return None;
                     }
                 }
-                tokens.push(Token::new("number", Some(&s)));
+                tokens.push(Token::new("string", Some(&value)));
             },
-            &x if x == '(' || x == ')' ||
-                    x == '{' || x == '}' ||
-                    x == '[' || x == ']' ||
-                    x == ';'=> tokens.push(Token::new(&x.to_string(), None)),
-            '\'' => {
-                match chars.peek() {
-                    Some('\'') => {
-                        // single line comment
+            '\'' => if let Some(x) = chars.peek() {
+                match x {
+                    '\'' => {
+                        // comment
                         chars.next();
                         while let Some(x) = chars.next() {
                             if x == '\n' {
@@ -80,7 +61,7 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                         }
                         continue;
                     },
-                    Some('{') => {
+                    '{' => {
                         // multiline comment
                         chars.next();
                         while let Some(x) = chars.next() {
@@ -93,40 +74,78 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                         }
                         continue;
                     },
-                    Some(&x) if x.is_alphabetic() || x == '_' => {
+                    &x if x.is_alphabetic() || x == '_' => {
                         // label
-                        let mut s : String = x.to_string();
-                        chars.next();
+                        let mut value : String = String::new();
                         while let Some(&x) = chars.peek() {
                             if x.is_alphanumeric() || x == '_' {
-                                s.push(x);
+                                value.push(x);
                                 chars.next();
                             } else {
                                 break;
                             }
                         }
-                        tokens.push(Token::new("label", Some(&s)));
-                    }
+                        tokens.push(Token::new("label", Some(&value)));
+                    },
                     _ => return None
                 }
+            } else {
+                return None;
             },
-            '"' => {
-                // string
-                let mut escape : bool = false;
-                let mut s : String = String::new();
-                loop {
-                    if let Some(x) = chars.next() {
-                        match x {
-                            '\\' => escape = true,
-                            '"' if !escape => break,
-                            x => s.push(x)
-                        }
+            &x if x.is_whitespace() => continue,
+            &x if x.is_alphabetic() || x == '_' => {
+                // keyword or identifier
+                let mut value : String = x.to_string();
+                while let Some(&x) = chars.peek() {
+                    if x.is_alphanumeric() || x == '_' {
+                        value.push(x);
+                        chars.next();
                     } else {
-                        return None;
+                        break;
                     }
                 }
-                tokens.push(Token::new("string", Some(&s)));
+                if &value == "_"
+                        || &value == "var"
+                        || &value == "if"
+                        || &value == "ifnot"
+                        || &value == "then"
+                        || &value == "else"
+                        || &value == "repeat"
+                        || &value == "while"
+                        || &value == "until"
+                        || &value == "for"
+                        || &value == "next"
+                        || &value == "break"
+                        || &value == "function"
+                        || &value == "return" {
+                    tokens.push(Token::new(&value, None));
+                } else {
+                    tokens.push(Token::new("identifier", Some(&value)));
+                }
             },
+            &x if x.is_numeric() => {
+                // int or float
+                let mut float : bool = false;
+                let mut value : String = x.to_string();
+                while let Some(&x) = chars.peek() {
+                    match x {
+                        '.' => {
+                            if float {
+                                break;
+                            }
+                            float = true;
+                            value.push('.');
+                            chars.next();
+                        },
+                        x if x.is_numeric() => {
+                            value.push(x);
+                            chars.next();
+                        }
+                        _ => break
+                    }
+                }
+                tokens.push(Token::new(if float {"float"} else {"integer"}, Some(&value)));
+            }
             _ => return None
         }
     }
