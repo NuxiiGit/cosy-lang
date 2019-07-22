@@ -16,7 +16,7 @@ function max(a : Int, b : Int) : Int {
 var clamp_positive : Int -> Int = max?(0);
 
 '' creates an anonymous function which returns true if some string equals "bob"
-var is_bob : String -> Bool = (x) . x == "bob";
+var is_bob : String -> Bool = (x) => x == "bob";
 
 '' repeat this code n-many times whilst the condition is true
 var n : Int = 12;
