@@ -35,9 +35,18 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                     tokens.push(Token::new("=>", None));
                     chars.next();
                 },
-                _ => {
-                    tokens.push(Token::new("=", None));
-                }
+                _ => tokens.push(Token::new("=", None))
+            },
+            '-' => match chars.peek() {
+                Some('=') => {
+                    tokens.push(Token::new("-=", None));
+                    chars.next();
+                },
+                Some('>') => {
+                    tokens.push(Token::new("->", None));
+                    chars.next();
+                },
+                _ => tokens.push(Token::new("-", None))
             },
             '"' => {
                 // string
