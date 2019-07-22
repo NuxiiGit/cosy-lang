@@ -46,6 +46,6 @@ repeat {
 }
 
 '' example of a for loop
-for i : Int = 0 while i < 10 step i += 1 {
+for i : Int = 0 while i < 10 next i += 1 {
     '' increments i by 1 every loop whilst i is less than 10
 }
