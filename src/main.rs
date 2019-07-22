@@ -5,12 +5,17 @@ use std::time::Instant;
 
 fn main() {
     let now = Instant::now();
-    match lexer::lex(r#"'exit if (1st_variable_name) { repeat { '{ this is also a comment }' "this is a string" 1234 5.678 0.910 11. } until (2nd_variable_name); } '' this is a"#) {
+    match lexer::lex(r#"
+        if condition {
+            '' do stuff
+            something();
+        }
+    "#) {
         Some(tokens) => {
             println!("Success!");
-            /*for token in tokens {
+            for token in tokens {
                 println!("{}", token);
-            }*/
+            }
         },
         None => println!("Error!")
     }
