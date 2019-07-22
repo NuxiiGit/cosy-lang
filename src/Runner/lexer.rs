@@ -15,81 +15,11 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
             .peekable();
     while let Some(ch) = &chars.next() {
         match ch {
-            '(' => tokens.push(Token::new("(", None)),
-            ')' => tokens.push(Token::new(")", None)),
-            '{' => tokens.push(Token::new("{", None)),
-            '}' => tokens.push(Token::new("}", None)),
-            '[' => tokens.push(Token::new("[", None)),
-            ']' => tokens.push(Token::new("]", None)),
-            ';' => tokens.push(Token::new(";", None)),
-            ':' => tokens.push(Token::new(":", None)),
-            ',' => tokens.push(Token::new(".", None)),
-            '.' => tokens.push(Token::new(".", None)),
-            '?' => tokens.push(Token::new("?", None)),
-            '!' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new("!=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new("!", None));
-            },
-            '>' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new(">=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new(">", None));
-            },
-            '<' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new("<=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new("<", None));
-            },
-            '=' => match chars.peek() {
-                Some('=') => {
-                    tokens.push(Token::new("==", None));
-                    chars.next();
-                },
-                Some('>') => {
-                    tokens.push(Token::new("=>", None));
-                    chars.next();
-                },
-                _ => tokens.push(Token::new("=", None))
-            },
-            '+' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new("+=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new("+", None));
-            },
-            '-' => match chars.peek() {
-                Some('=') => {
-                    tokens.push(Token::new("-=", None));
-                    chars.next();
-                },
-                Some('>') => {
-                    tokens.push(Token::new("->", None));
-                    chars.next();
-                },
-                _ => tokens.push(Token::new("-", None))
-            },
-            '*' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new("*=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new("*", None));
-            },
-            '/' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new("/=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new("/", None));
-            },
-            '%' => if let Some('=') = chars.peek() {
-                tokens.push(Token::new("%=", None));
-                chars.next();
-            } else {
-                tokens.push(Token::new("%", None));
-            },
+            '(' => tokens.push(Token::Symbol("(".to_owned())),
+            ')' => tokens.push(Token::Symbol(")".to_owned())),
+            '{' => tokens.push(Token::Symbol("{".to_owned())),
+            '}' => tokens.push(Token::Symbol("}".to_owned())),
+            ';' => tokens.push(Token::Symbol(";".to_owned())),
             '"' => {
                 // string
                 let mut value : String = String::new();
@@ -111,7 +41,7 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                         return None;
                     }
                 }
-                tokens.push(Token::new("string", Some(&value)));
+                tokens.push(Token::Str(value));
             },
             '\'' => if let Some(x) = chars.peek() {
                 match x {
@@ -138,19 +68,6 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                         }
                         continue;
                     },
-                    &x if x.is_alphabetic() || x == '_' => {
-                        // label
-                        let mut value : String = String::new();
-                        while let Some(&x) = chars.peek() {
-                            if x.is_alphanumeric() || x == '_' {
-                                value.push(x);
-                                chars.next();
-                            } else {
-                                break;
-                            }
-                        }
-                        tokens.push(Token::new("label", Some(&value)));
-                    },
                     _ => return None
                 }
             } else {
@@ -172,19 +89,10 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                         || &value == "var"
                         || &value == "if"
                         || &value == "ifnot"
-                        || &value == "then"
-                        || &value == "else"
-                        || &value == "repeat"
-                        || &value == "while"
-                        || &value == "until"
-                        || &value == "for"
-                        || &value == "next"
-                        || &value == "break"
-                        || &value == "function"
-                        || &value == "return" {
-                    tokens.push(Token::new(&value, None));
+                        || &value == "else" {
+                    tokens.push(Token::Keyword(value));
                 } else {
-                    tokens.push(Token::new("identifier", Some(&value)));
+                    tokens.push(Token::Ident(value));
                 }
             },
             &x if x.is_numeric() => {
@@ -208,7 +116,7 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                         _ => break
                     }
                 }
-                tokens.push(Token::new(if float {"float"} else {"integer"}, Some(&value)));
+                tokens.push(Token::Numb(value));
             },
             _ => return None
         }
