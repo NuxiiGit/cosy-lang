@@ -25,7 +25,12 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
             ':' => tokens.push(Token::new(":", None)),
             '.' => tokens.push(Token::new(".", None)),
             '?' => tokens.push(Token::new("?", None)),
-            '!' => tokens.push(Token::new("!", None)),
+            '!' => if let Some('=') = chars.peek() {
+                tokens.push(Token::new("!=", None));
+                chars.next();
+            } else {
+                tokens.push(Token::new("!", None));
+            },
             '>' => if let Some('=') = chars.peek() {
                 tokens.push(Token::new(">=", None));
                 chars.next();
