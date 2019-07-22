@@ -54,6 +54,12 @@ pub fn lex(expression : &str) -> Option<Vec<Token>> {
                 },
                 _ => tokens.push(Token::new("-", None))
             },
+            '*' => if let Some('=') = chars.peek() {
+                tokens.push(Token::new("*=", None));
+                chars.next();
+            } else {
+                tokens.push(Token::new("*", None));
+            },
             '"' => {
                 // string
                 let mut value : String = String::new();
