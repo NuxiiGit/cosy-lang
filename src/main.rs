@@ -8,7 +8,7 @@ fn main() {
     match lexer::lex(r#"
         if condition {
             '' do stuff
-            something();
+            something("string");
         }
     "#) {
         Some(tokens) => {
