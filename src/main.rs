@@ -11,13 +11,13 @@ fn main() {
             something("string");
         }
     "#) {
-        Some(tokens) => {
+        Ok(tokens) => {
             println!("Success!");
-            for token in tokens {
+            for token in &tokens {
                 println!("{}", token);
             }
         },
-        None => println!("Error!")
+        Err(msg) => println!("Error! {}", msg)
     }
     let duration = now.elapsed().as_micros();
     let duration_s : f64 = (duration as f64) / 1000000.0;
