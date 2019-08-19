@@ -82,7 +82,7 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                 } {
                     Token::Keyword(ident)
                 } else {
-                    Token::Ident(ident)
+                    Token::Identifier(ident)
                 }
             }
             // match numbers
@@ -95,7 +95,7 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                         break;
                     }
                 }
-                Token::Numb(numb)
+                Token::Int(numb)
             },
             // match whitespace
             _ if ch.is_whitespace() => continue,

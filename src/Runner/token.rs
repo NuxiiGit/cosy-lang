@@ -4,9 +4,8 @@
 pub enum Token {
     Symbol(String),
     Keyword(String),
-    Ident(String),
-    Label(String),
-    Numb(String),
+    Identifier(String),
+    Int(String),
     Str(String)
 }
 impl std::fmt::Display for Token {
