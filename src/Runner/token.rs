@@ -16,8 +16,12 @@ pub enum Token {
     RParen,
     LBrace,
     RBrace,
-    SemiColon
+    SemiColon,
     // Operators
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division
 }
 impl std::fmt::Display for Token {
     /// Formats the contents of this token.
