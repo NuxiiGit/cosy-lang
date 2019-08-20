@@ -1,5 +1,4 @@
-use super::token::Token;
-use super::token::TokenType;
+use super::token::*;
 
 /// A type which represents the char iterator used by the lexer.
 #[allow(dead_code)]
