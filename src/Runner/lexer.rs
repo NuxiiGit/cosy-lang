@@ -16,6 +16,8 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
     while let Some(ch) = &chars.next() {
         let next : Option<&char> = chars.peek();
         let token : Token = match ch {
+            // match whitespace
+            _ if ch.is_whitespace() => continue,
             // match comments
             '\'' if match next {
                 Some('\'') => true,
@@ -57,33 +59,10 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                             }
                         }
                     } else {
-                        return Err("Unclosed string");
+                        return Err("Unclosed string!");
                     }
                 }
                 Token::Str(inner)
-            }
-            // match keywords or identifiers
-            _ if ch.is_alphabetic() || *ch == '_' => {
-                let mut ident : String = ch.to_string();
-                while let Some(x) = chars.peek() {
-                    if x.is_alphanumeric() || *x == '_' {
-                        ident.push(chars.next().unwrap());
-                    } else {
-                        break;
-                    }
-                }
-                let phrase : &str = &ident;
-                if match phrase {
-                    "var" => true,
-                    "if" => true,
-                    "ifnot" => true,
-                    "else" => true,
-                    _ => false
-                } {
-                    Token::Keyword(ident)
-                } else {
-                    Token::Identifier(ident)
-                }
             }
             // match numbers
             _ if ch.is_numeric() => {
@@ -97,10 +76,33 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                 }
                 Token::Int(numb)
             },
-            // match whitespace
-            _ if ch.is_whitespace() => continue,
-            // match single character symbols
-            _ => Token::Symbol(ch.to_string())
+            // match keywords or identifiers
+            _ if ch.is_alphabetic() || *ch == '_' => {
+                let mut ident : String = ch.to_string();
+                while let Some(x) = chars.peek() {
+                    if x.is_alphanumeric() || *x == '_' {
+                        ident.push(chars.next().unwrap());
+                    } else {
+                        break;
+                    }
+                }
+                let phrase : &str = &ident;
+                match phrase {
+                    "var" => Token::Var,
+                    "if" => Token::If,
+                    "ifnot" => Token::IfNot,
+                    "else" => Token::Else,
+                    _ => Token::Identifier(ident)
+                }
+            }
+            // match symbols
+            '(' => Token::LParen,
+            ')' => Token::RParen,
+            '{' => Token::LBrace,
+            '}' => Token::RBrace,
+            ';' => Token::SemiColon,
+            // match everything else
+            _ => return Err("Unexpected symbol!")
         };
         tokens.push(token);
     }

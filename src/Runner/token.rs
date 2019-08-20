@@ -2,11 +2,22 @@
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum Token {
-    Symbol(String),
-    Keyword(String),
-    Identifier(String),
+    // literals
+    Str(String),
     Int(String),
-    Str(String)
+    // Keywords
+    Identifier(String),
+    Var,
+    If,
+    IfNot,
+    Else,
+    // Symbols
+    LParen,
+    RParen,
+    LBrace,
+    RBrace,
+    SemiColon
+    // Operators
 }
 impl std::fmt::Display for Token {
     /// Formats the contents of this token.
