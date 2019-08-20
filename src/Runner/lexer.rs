@@ -104,7 +104,7 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
             ';' => TokenType::SemiColon,
             // match operators
             '+' => TokenType::Plus,
-            '-' => TokenType::Dash,
+            '-' => TokenType::Minus,
             '*' => TokenType::Star,
             '/' => TokenType::ForwardSlash,
             '\\' => TokenType::BackwardSlash,

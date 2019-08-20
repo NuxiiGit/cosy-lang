@@ -63,7 +63,7 @@ pub enum TokenType {
     SemiColon,
     // Operators
     Plus,
-    Dash,
+    Minus,
     Star,
     ForwardSlash,
     BackwardSlash
