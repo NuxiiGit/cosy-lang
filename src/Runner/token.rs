@@ -12,10 +12,10 @@ pub enum Token {
     IfNot,
     Else,
     // Symbols
-    LParen,
-    RParen,
-    LBrace,
-    RBrace,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
     SemiColon,
     // Operators
     Plus,

@@ -96,10 +96,10 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                 }
             }
             // match symbols
-            '(' => Token::LParen,
-            ')' => Token::RParen,
-            '{' => Token::LBrace,
-            '}' => Token::RBrace,
+            '(' => Token::LeftParen,
+            ')' => Token::RightParen,
+            '{' => Token::LeftBrace,
+            '}' => Token::RightBrace,
             ';' => Token::SemiColon,
             // match operators
             '+' => Token::Plus,
