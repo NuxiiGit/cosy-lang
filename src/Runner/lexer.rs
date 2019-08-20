@@ -1,4 +1,5 @@
 use super::token::Token;
+use super::token::TokenType;
 
 /// A type which represents the char iterator used by the lexer.
 #[allow(dead_code)]
@@ -15,7 +16,7 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
             .peekable();
     while let Some(ch) = &chars.next() {
         let next : Option<&char> = chars.peek();
-        let token : Token = match ch {
+        let flavour : TokenType = match ch {
             // match whitespace
             _ if ch.is_whitespace() => continue,
             // match comments
@@ -62,7 +63,7 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                         return Err("Unclosed string!");
                     }
                 }
-                Token::Str(inner)
+                TokenType::Str(inner)
             }
             // match numbers
             _ if ch.is_numeric() => {
@@ -74,7 +75,7 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                         break;
                     }
                 }
-                Token::Int(numb)
+                TokenType::Int(numb)
             },
             // match keywords or identifiers
             _ if ch.is_alphabetic() || *ch == '_' => {
@@ -88,28 +89,29 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
                 }
                 let phrase : &str = &ident;
                 match phrase {
-                    "var" => Token::Var,
-                    "if" => Token::If,
-                    "ifnot" => Token::IfNot,
-                    "else" => Token::Else,
-                    _ => Token::Identifier(ident)
+                    "var" => TokenType::Var,
+                    "if" => TokenType::If,
+                    "ifnot" => TokenType::IfNot,
+                    "else" => TokenType::Else,
+                    _ => TokenType::Identifier(ident)
                 }
             }
             // match symbols
-            '(' => Token::LeftParen,
-            ')' => Token::RightParen,
-            '{' => Token::LeftBrace,
-            '}' => Token::RightBrace,
-            ';' => Token::SemiColon,
+            '(' => TokenType::LeftParen,
+            ')' => TokenType::RightParen,
+            '{' => TokenType::LeftBrace,
+            '}' => TokenType::RightBrace,
+            ';' => TokenType::SemiColon,
             // match operators
-            '+' => Token::Plus,
-            '-' => Token::Dash,
-            '*' => Token::Star,
-            '/' => Token::ForwardSlash,
-            '\\' => Token::BackwardSlash,
+            '+' => TokenType::Plus,
+            '-' => TokenType::Dash,
+            '*' => TokenType::Star,
+            '/' => TokenType::ForwardSlash,
+            '\\' => TokenType::BackwardSlash,
             // match everything else
             _ => return Err("Unexpected symbol!")
         };
+        let token : Token = Token::new(flavour, 0, 0);
         tokens.push(token);
     }
     Ok(tokens)
