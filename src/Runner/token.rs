@@ -18,10 +18,11 @@ pub enum Token {
     RBrace,
     SemiColon,
     // Operators
-    Addition,
-    Subtraction,
-    Multiplication,
-    Division
+    Plus,
+    Dash,
+    Star,
+    ForwardSlash,
+    BackwardSlash
 }
 impl std::fmt::Display for Token {
     /// Formats the contents of this token.

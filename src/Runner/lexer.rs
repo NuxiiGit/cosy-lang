@@ -102,10 +102,11 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
             '}' => Token::RBrace,
             ';' => Token::SemiColon,
             // match operators
-            '+' => Token::Addition,
-            '-' => Token::Subtraction,
-            '*' => Token::Multiplication,
-            '/' => Token::Division,
+            '+' => Token::Plus,
+            '-' => Token::Dash,
+            '*' => Token::Star,
+            '/' => Token::ForwardSlash,
+            '\\' => Token::BackwardSlash,
             // match everything else
             _ => return Err("Unexpected symbol!")
         };
