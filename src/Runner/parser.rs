@@ -21,14 +21,17 @@ fn expression(tokens : &mut Tokens) -> Result<Expr, &'static str> {
 fn addition(tokens : &mut Tokens) -> Result<Expr, &'static str> {
     let mut expr : Expr = primary(tokens)?;
     while let Some(token) = tokens.peek() {
-        let operator : Operator = match token.flavour() {
-            TokenType::Plus => Operator::Add,
-            TokenType::Minus => Operator::Subtract,
-            _ => break
-        };
-        tokens.next();
-        let right : Expr = primary(tokens)?;
-        expr = Expr::Operation(operator, vec![expr, right]);
+        let flavour : &TokenType = token.flavour();
+        if let TokenType::Plus | TokenType::Minus = flavour {
+            tokens.next();
+            let right : Expr = primary(tokens)?;
+            expr = match flavour {
+                TokenType::Plus => Expr::Add(Box::new(expr), Box::new(right)),
+                _ => Expr::Sub(Box::new(expr), Box::new(right))
+            }
+        } else {
+            break;
+        }
     }
     Ok(expr)
 }
