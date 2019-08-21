@@ -38,12 +38,12 @@ fn addition(tokens : &mut Tokens) -> Result<Expr, &'static str> {
 }
 
 fn multiplication(tokens : &mut Tokens) -> Result<Expr, &'static str> {
-    let mut expr : Expr = primary(tokens)?;
+    let mut expr : Expr = unary(tokens)?;
     while let Some(token) = tokens.peek() {
         let flavour : &TokenType = token.flavour();
         if let TokenType::Star | TokenType::ForwardSlash = flavour {
             tokens.next();
-            let right : Expr = primary(tokens)?;
+            let right : Expr = unary(tokens)?;
             expr = match flavour {
                 TokenType::Star => Expr::Multiply(Box::new(expr), Box::new(right)),
                 TokenType::ForwardSlash => Expr::Divide(Box::new(expr), Box::new(right)),
@@ -54,6 +54,22 @@ fn multiplication(tokens : &mut Tokens) -> Result<Expr, &'static str> {
         }
     }
     Ok(expr)
+}
+
+fn unary(tokens : &mut Tokens) -> Result<Expr, &'static str> {
+    if let Some(token) = tokens.peek() {
+        let flavour : &TokenType = token.flavour();
+        if let TokenType::Minus | TokenType::Plus = flavour {
+            tokens.next();
+            let right : Expr = unary(tokens)?;
+            return Ok(match flavour {
+                TokenType::Minus => Expr::Negate(Box::new(right)),
+                TokenType::Plus => right,
+                _ => unreachable!()
+            });
+        }
+    }
+    primary(tokens)
 }
 
 fn primary(tokens : &mut Tokens) -> Result<Expr, &'static str> {
@@ -78,11 +94,3 @@ fn primary(tokens : &mut Tokens) -> Result<Expr, &'static str> {
         Err("Expected expression: Got nothing")
     }
 }
-
-/*
- * expression      -> addition
- * addition        -> multiplication (("-" | "+") multiplication)*
- * multiplication  -> unary (("*" | "/") unary)*
- * unary           -> ("-" | "+")* primary
- * primary         -> INT | "(" expression ")"
- */
