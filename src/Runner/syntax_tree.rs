@@ -2,11 +2,15 @@
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum Expr {
+    // literals
     Int(String),
     Str(String),
     Identifier(String),
+    // operators
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
+    Multiply(Box<Expr>, Box<Expr>),
+    Divide(Box<Expr>, Box<Expr>),
     Negate(Box<Expr>)
 }
 impl std::fmt::Display for Expr {

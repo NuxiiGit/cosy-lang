@@ -19,15 +19,35 @@ fn expression(tokens : &mut Tokens) -> Result<Expr, &'static str> {
 }
 
 fn addition(tokens : &mut Tokens) -> Result<Expr, &'static str> {
-    let mut expr : Expr = primary(tokens)?;
+    let mut expr : Expr = multiplication(tokens)?;
     while let Some(token) = tokens.peek() {
         let flavour : &TokenType = token.flavour();
         if let TokenType::Plus | TokenType::Minus = flavour {
             tokens.next();
-            let right : Expr = primary(tokens)?;
+            let right : Expr = multiplication(tokens)?;
             expr = match flavour {
                 TokenType::Plus => Expr::Add(Box::new(expr), Box::new(right)),
-                _ => Expr::Sub(Box::new(expr), Box::new(right))
+                TokenType::Minus => Expr::Sub(Box::new(expr), Box::new(right)),
+                _ => unreachable!()
+            }
+        } else {
+            break;
+        }
+    }
+    Ok(expr)
+}
+
+fn multiplication(tokens : &mut Tokens) -> Result<Expr, &'static str> {
+    let mut expr : Expr = primary(tokens)?;
+    while let Some(token) = tokens.peek() {
+        let flavour : &TokenType = token.flavour();
+        if let TokenType::Star | TokenType::ForwardSlash = flavour {
+            tokens.next();
+            let right : Expr = primary(tokens)?;
+            expr = match flavour {
+                TokenType::Star => Expr::Multiply(Box::new(expr), Box::new(right)),
+                TokenType::ForwardSlash => Expr::Divide(Box::new(expr), Box::new(right)),
+                _ => unreachable!()
             }
         } else {
             break;

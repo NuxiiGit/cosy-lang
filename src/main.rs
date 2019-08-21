@@ -6,7 +6,7 @@ use std::time::Instant;
 
 fn main() {
     let now = Instant::now();
-    match lexer::lex(r#"(1 + (3) - 1)"#) {
+    match lexer::lex(r#"(1 + 4*(3)/8 - 1/2)"#) {
         Ok(tokens) => {
             println!("Success!");
             for token in &tokens {
