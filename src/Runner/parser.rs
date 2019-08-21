@@ -44,20 +44,12 @@ fn primary(tokens : &mut Tokens) -> Result<Expr, &'static str> {
             TokenType::Identifier(x) => Ok(Expr::Identifier(x.to_owned())),
             TokenType::LeftParen => {
                 let expr : Expr = expression(tokens)?;
-                if {
-                    if let Some(token) = tokens.next() {
-                        if let TokenType::RightParen = token.flavour() {
-                            true
-                        } else {
-                            false
-                        }
-                    } else {
-                        false
-                    }
-                } {
-                    Ok(expr)
-                } else {
-                    Err("Expected ')' after expression")
+                match tokens.next() {
+                    Some(token) if match token.flavour() {
+                        TokenType::RightParen => true,
+                        _ => false
+                    } => Ok(expr),
+                    _ => Err("Expected ')' after expression")
                 }
             },
             token => {
