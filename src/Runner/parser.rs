@@ -72,10 +72,7 @@ fn primary(tokens : &mut Tokens) -> Result<Expr, &'static str> {
                     _ => Err("Expected ')' after expression")
                 }
             },
-            token => {
-                println!("{}", token);
-                Err("Expected identifier or literal")
-            }
+            _ => Err("Expected identifier or literal")
         }
     } else {
         Err("Expected expression: Got nothing")
