@@ -56,11 +56,12 @@ pub enum TokenType {
     IfNot,
     Else,
     // Symbols
+    Operator(String),
     LeftParen,
     RightParen,
     LeftBrace,
     RightBrace,
-    SemiColon,
+    SemiColon,,
     // Operators
     Plus,
     Minus,
