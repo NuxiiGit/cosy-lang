@@ -38,10 +38,10 @@ while y <= 15 {
 }
 
 '' uses a label to break out of two nested loops
-'loop
+loop:
 repeat {
     repeat {
-        break 'loop;
+        break loop;
     }
 }
 
