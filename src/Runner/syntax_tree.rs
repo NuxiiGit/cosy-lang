@@ -6,15 +6,9 @@ pub enum Expr {
     Int(String),
     Str(String),
     Identifier(String),
-    // operator types
-    Unary(Box<Expr>),
-    Binary(Box<Expr>),
     // operators
-    Add(Box<Expr>, Box<Expr>),
-    Sub(Box<Expr>, Box<Expr>),
-    Multiply(Box<Expr>, Box<Expr>),
-    Divide(Box<Expr>, Box<Expr>),
-    Negate(Box<Expr>)
+    Unary(Box<Expr>),
+    Binary(Box<Expr>)
 }
 impl std::fmt::Display for Expr {
     /// Formats the contents of this `Expr`.

@@ -102,13 +102,17 @@ pub fn lex(expression : &str) -> Result<Vec<Token>, &'static str> {
             '}' => TokenType::RightBrace,
             ';' => TokenType::SemiColon,
             // match operators
-            '+' => TokenType::Plus,
-            '-' => TokenType::Minus,
-            '*' => TokenType::Star,
-            '/' => TokenType::ForwardSlash,
-            '\\' => TokenType::BackwardSlash,
-            // match everything else
-            _ => return Err("Unexpected symbol!")
+            _ => {
+                let mut ident : String = ch.to_string();
+                while let Some(x) = chars.peek() {
+                    if !x.is_alphanumeric() {
+                        ident.push(chars.next().unwrap());
+                    } else {
+                        break;
+                    }
+                }
+                TokenType::Operator(ident)
+            }
         };
         let token : Token = Token::new(flavour, 0, 0);
         tokens.push(token);

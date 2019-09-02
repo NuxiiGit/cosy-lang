@@ -61,13 +61,7 @@ pub enum TokenType {
     RightParen,
     LeftBrace,
     RightBrace,
-    SemiColon,,
-    // Operators
-    Plus,
-    Minus,
-    Star,
-    ForwardSlash,
-    BackwardSlash
+    SemiColon
 }
 impl std::fmt::Display for TokenType {
     /// Formats the contents of this `TokenType`.
