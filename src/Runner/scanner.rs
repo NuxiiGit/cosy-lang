@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// A struct which allows you to iterate and slice `&str` types.
 pub struct Scanner<'a> {
     context : &'a str,
@@ -68,5 +70,4 @@ impl<'a> Scanner<'a> {
 }
 
 /// A type which represents the char iterator used by the lexer.
-#[allow(dead_code)]
 type Chars<'a> = std::str::CharIndices<'a>;
