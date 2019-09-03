@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use std::fmt;
-
 /// A struct which stores location information about a `TokenType`.
 pub struct Token<'a> {
     flavour : TokenType<'a>,
@@ -28,11 +26,6 @@ impl<'a> Token<'a> {
         (self.row, self.col)
     }
 }
-impl<'a> fmt::Display for Token<'a> {
-    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.flavour)
-    }
-}
 
 /// An enum which stores the type of `Token`.
 #[derive(Debug)]
@@ -53,9 +46,4 @@ pub enum TokenType<'a> {
     LeftBrace,
     RightBrace,
     SemiColon
-}
-impl<'a> fmt::Display for TokenType<'a> {
-    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
 }

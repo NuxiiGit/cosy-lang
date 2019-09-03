@@ -14,7 +14,7 @@ fn main() {
     "#) {
         Ok(tokens) => {
             for token in tokens {
-                println!("{}", token);
+                println!("{:?}", token.flavour());
             }
         },
         Err((msg, row, col)) => {
