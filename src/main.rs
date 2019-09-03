@@ -7,6 +7,7 @@ use runner::lexer::*;
 //use std::time::Instant;
 
 fn main() {
+
     match lex(r#"
     if condition==(-1+3){
         var k="string";
