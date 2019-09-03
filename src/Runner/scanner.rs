@@ -57,7 +57,7 @@ impl<'a> Scanner<'a> {
     }
 
     /// Munches the current substring and returns its slice.
-    pub fn string(&mut self) -> &'a str {
+    pub fn munch(&mut self) -> &'a str {
         let slice : &str = self.slice();
         self.drop();
         slice
@@ -68,15 +68,31 @@ impl<'a> Scanner<'a> {
         &self.context[self.start..self.end]
     }
 
+    /// Returns the left partition at that index.
+    pub fn slice_left(&self, index : usize) -> &'a str {
+        &self.context[self.start..index]
+    }
+
+    /// Returns the left partition at that index.
+    pub fn slice_right(&self, index : usize) -> &'a str {
+        &self.context[index..self.end]
+    }
+
     /// Drops the current substring.
     pub fn drop(&mut self) {
         self.start = self.end;
+    }
+
+    /// Returns the current slice index.
+    pub fn index(&mut self) -> usize {
+        self.end
     }
 
     /// Returns the current position as a two value tuple of `(row, column)`.
     pub fn position(&mut self) -> (usize, usize) {
         (self.row, self.col)
     }
+
 }
 
 /// A type which represents the char iterator used by the lexer.
