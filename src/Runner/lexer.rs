@@ -141,14 +141,14 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
 
 /// Additional methods for `char`
 trait CharExt {
-    /// Returns whether this `char` is a bracket.
+    /// Returns `true` if this `char` is a bracket.
     /// These include: `( )`, `{ }`, and `[ ]`.
     fn is_bracket(&self) -> bool;
 
-    /// Returns whether this `char` is a symbol.
+    /// Returns `true` if this `char` is a symbol.
     fn is_quote(&self) -> bool;
 
-    /// Returns whether this `char` is a symbol.
+    /// Returns `true` if this `char` is a symbol.
     fn is_symbol(&self) -> bool;
 }
 impl CharExt for char {

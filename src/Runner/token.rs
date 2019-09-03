@@ -3,7 +3,6 @@
 use std::fmt;
 
 /// A struct which stores location information about a `TokenType`.
-#[allow(dead_code)]
 pub struct Token<'a> {
     flavour : TokenType<'a>,
     row : usize,
@@ -11,7 +10,6 @@ pub struct Token<'a> {
 }
 impl<'a> Token<'a> {
     /// Creates a new instance of `Token`.
-    #[allow(dead_code)]
     pub fn new(flavour : TokenType, row : usize, col : usize) -> Token {
         Token {
             flavour : flavour,
