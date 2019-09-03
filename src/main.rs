@@ -7,7 +7,9 @@ use runner::lexer::*;
 //use std::time::Instant;
 
 fn main() {
-    match lex(r#""okay, okay!"if _x'y''86_' else 12349 ifnot"1234""#) {
+    match lex(r#"
+    if condition==(1+3){var k="string";}
+    "#) {
         Ok(tokens) => {
             for token in tokens {
                 println!("{}", token);

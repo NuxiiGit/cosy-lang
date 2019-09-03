@@ -35,7 +35,6 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                         scanner.next();
                     }
                 }
-                scanner.munch();
             },
             // match comments
             '\'' if match scanner.peek() {
@@ -57,11 +56,10 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                         }
                     }
                 }
-                scanner.munch();
             }
             // match strings
             '"' => {
-                scanner.munch(); // ignore first '"'
+                scanner.drop(); // ignore first '"'
                 loop {
                     match scanner.peek() {
                         Some('"') => {
@@ -77,20 +75,20 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                     }
                     scanner.next();
                 };
-                push!(TokenType::String(scanner.munch()));
+                push!(TokenType::String(scanner.slice()));
                 scanner.next(); // ignore final '"'
-                scanner.munch();
             }
             // match numbers
             x if x.is_numeric() => {
                 while let Some(x) = scanner.peek() {
-                    if x.is_numeric() {
+                    if x.is_numeric() ||
+                            *x == '_' {
                         scanner.next();
                     } else {
                         break;
                     }
                 }
-                push!(TokenType::Integer(scanner.munch()));
+                push!(TokenType::Integer(scanner.slice()));
             },
             // match keywords and identifiers
             x if x.is_alphabetic() || x == '_' => {
@@ -102,7 +100,7 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                         break;
                     }
                 }
-                push!(match scanner.munch() {
+                push!(match scanner.slice() {
                     "var" => TokenType::Var,
                     "if" => TokenType::If,
                     "ifnot" => TokenType::IfNot,
@@ -110,9 +108,12 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                     x => TokenType::Identifier(x)
                 });
             }
-            // not implemented
-            _ => unreachable!()
+            // unknown symbol
+            _ => {
+                return lexerror!("Unknown symbol");
+            }
         }
+        scanner.drop();
     }
     Ok(tokens)
 }
