@@ -56,13 +56,14 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                 }
             }
             // match strings
-            '"' => {
+            x if x.is_quote() => {
+                let quote_type : char = x;
                 let start : usize = scanner.index_right(); // ignore first '"'
                 loop {
                     if let Some(x) = scanner.next() {
                         if x == '\\' {
                             scanner.next();
-                        } else if x == '"' {
+                        } else if x == quote_type {
                             break;
                         }
                     } else {
@@ -106,11 +107,70 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
                     x => TokenType::Identifier(x)
                 });
             },
-            // unknown symbol
+            // match brackets
+            x if x.is_bracket() => {
+                push!(match x {
+                    '(' => TokenType::LeftParen,
+                    ')' => TokenType::RightParen,
+                    '{' => TokenType::LeftBrace,
+                    '}' => TokenType::RightBrace,
+                    _ => lexerror!("Unknown bracket type!")
+                });
+            },
             _ => {
-                return lexerror!("Unknown symbol");
+                let start : usize = scanner.index_left();
+                while let Some(x) = scanner.peek() {
+                    if x.is_symbol() &&
+                            !x.is_bracket() &&
+                            !x.is_quote() {
+                        scanner.next();
+                    } else {
+                        break;
+                    }
+                }
+                let end : usize = scanner.index_right();
+                push!(match scanner.slice(start, end) {
+                    ";" => TokenType::SemiColon,
+                    x => TokenType::Operator(x)
+                });
             }
         }
     }
     Ok(tokens)
+}
+
+/// Additional methods for `char`
+trait CharExt {
+    /// Returns whether this `char` is a bracket.
+    /// These include: `( )`, `{ }`, and `[ ]`.
+    fn is_bracket(&self) -> bool;
+
+    /// Returns whether this `char` is a symbol.
+    fn is_quote(&self) -> bool;
+
+    /// Returns whether this `char` is a symbol.
+    fn is_symbol(&self) -> bool;
+}
+impl CharExt for char {
+    fn is_bracket(&self) -> bool {
+        if let '(' | ')' |
+                '{' | '}' |
+                '[' | ']' = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn is_quote(&self) -> bool {
+        if let '\'' | '"' | '`' = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn is_symbol(&self) -> bool {
+        !(self.is_alphanumeric() || self.is_whitespace())
+    }
 }

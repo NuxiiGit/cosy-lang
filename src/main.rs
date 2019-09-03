@@ -8,7 +8,9 @@ use runner::lexer::*;
 
 fn main() {
     match lex(r#"
-    if condition 1 3 var k "string"
+    if condition==(-1+3){
+        var k="string";
+    }
     "#) {
         Ok(tokens) => {
             for token in tokens {
