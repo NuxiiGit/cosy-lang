@@ -57,17 +57,22 @@ impl<'a> Scanner<'a> {
     }
 
     /// Munches the current substring and returns its slice.
-    pub fn munch(&mut self) -> &'a str {
-        let slice : &str = &self.context[self.start..self.end];
+    pub fn string(&mut self) -> &'a str {
+        let slice : &str = self.slice();
         self.drop();
         slice
+    }
+
+    /// Returns the current substring.
+    pub fn slice(&self) -> &'a str {
+        &self.context[self.start..self.end]
     }
 
     /// Drops the current substring.
     pub fn drop(&mut self) {
         self.start = self.end;
     }
-    
+
     /// Returns the current position as a two value tuple of `(row, column)`.
     pub fn position(&mut self) -> (usize, usize) {
         (self.row, self.col)
