@@ -13,15 +13,13 @@ fn main() {
         var k="string";
     }
     "#) {
-        Ok(tokens) => {
+        LexResult::Ok(tokens) => {
             for token in tokens {
                 println!("{:?}", token.flavour());
             }
         },
-        Err(error) => {
-            println!("Error! {} at row={} col={}",
-                    error.message(), 
-                    error.row(), error.column());
+        LexResult::Err { message, row, column } => {
+            println!("Error! {} at row={} col={}", message, row, column);
         }
     }
 
