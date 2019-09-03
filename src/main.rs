@@ -18,8 +18,10 @@ fn main() {
                 println!("{:?}", token.flavour());
             }
         },
-        Err((msg, row, col)) => {
-            println!("Error! {} at row={} col={}", msg, row, col);
+        Err(error) => {
+            println!("Error! {} at row={} col={}",
+                    error.message(), 
+                    error.row(), error.column());
         }
     }
 

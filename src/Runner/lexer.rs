@@ -2,9 +2,10 @@
 
 use super::token::*;
 use super::scanner::*;
+use super::error::*;
 
 /// Tokenises the input expression into a list of tokens `token::Token<'a>`.
-pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, usize, usize)> {
+pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, CompileError> {
     let mut tokens : Vec<Token<'a>> = Vec::new();
     let mut scanner : Scanner = Scanner::new(expression);
     macro_rules! push {
@@ -19,7 +20,8 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
     }
     macro_rules! lexerror {
         ($msg:expr) => ({
-            return Err(($msg, scanner.row(), scanner.column()));
+            return Err(CompileError::new($msg,
+                    scanner.row(), scanner.column()));
         })
     }
     while let Some(c) = scanner.next() {
