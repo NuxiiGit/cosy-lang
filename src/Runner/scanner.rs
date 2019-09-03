@@ -5,8 +5,8 @@ pub struct Scanner<'a> {
     context : &'a str,
     chars : Chars<'a>,
     current : Option<char>,
-    start : usize,
-    end : usize,
+    index : usize,
+    index_next : usize,
     row : usize,
     col : usize
 }
@@ -17,8 +17,8 @@ impl<'a> Scanner<'a> {
             context : context,
             chars : context.char_indices(),
             current : None,
-            start : 0,
-            end : 0,
+            index : 0,
+            index_next : 0,
             row : 0,
             col : 0,
         };
@@ -46,51 +46,40 @@ impl<'a> Scanner<'a> {
                 self.col += 1;
             }
         }
-        if let Some((i, x)) = self.chars.next() {
+        self.index = self.index_next;
+        self.index_next = if let Some((i, x)) = self.chars.next() {
             self.current = Some(x);
-            self.end = i;
+            i
         } else {
             self.current = None;
-            self.end = self.context.len();
-        }
+            self.context.len()
+        };
         current
     }
 
-    /// Munches the current substring and returns its slice.
-    pub fn munch(&mut self) -> &'a str {
-        let slice : &str = self.slice();
-        self.drop();
-        slice
+    /// Returns a slice of the scanner context.
+    pub fn slice(&self, left : usize, right : usize) -> &'a str {
+        &self.context[left..right]
     }
 
-    /// Returns the current substring.
-    pub fn slice(&self) -> &'a str {
-        &self.context[self.start..self.end]
+    /// Returns the current left-most index.
+    pub fn index_left(&mut self) -> usize {
+        self.index
+    }
+    
+    /// Returns the current right-most index.
+    pub fn index_right(&mut self) -> usize {
+        self.index_next
     }
 
-    /// Returns the left partition at that index.
-    pub fn slice_left(&self, index : usize) -> &'a str {
-        &self.context[self.start..index]
+    /// Returns the current row of the scanner.
+    pub fn row(&mut self) -> usize {
+        self.row
     }
 
-    /// Returns the left partition at that index.
-    pub fn slice_right(&self, index : usize) -> &'a str {
-        &self.context[index..self.end]
-    }
-
-    /// Drops the current substring.
-    pub fn drop(&mut self) {
-        self.start = self.end;
-    }
-
-    /// Returns the current slice index.
-    pub fn index(&mut self) -> usize {
-        self.end
-    }
-
-    /// Returns the current position as a two value tuple of `(row, column)`.
-    pub fn position(&mut self) -> (usize, usize) {
-        (self.row, self.col)
+    /// Returns the current column of the scanner.
+    pub fn column(&mut self) -> usize {
+        self.col
     }
 
 }
