@@ -9,8 +9,9 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
     let mut scanner : Scanner = Scanner::new(expression);
     macro_rules! push {
         ($flavour:expr) => ({
+            let flavour : TokenType = $flavour;
             let (row, col) : (usize, usize) = scanner.position();
-            push!($flavour, row, col);
+            push!(flavour, row, col);
         });
         ($flavour:expr, $row:expr, $col:expr) => ({
             let token : Token = Token::new($flavour, $row, $col);
@@ -83,14 +84,32 @@ pub fn lex<'a>(expression : &'a str) -> Result<Vec<Token<'a>>, (&'static str, us
             // match numbers
             x if x.is_numeric() => {
                 while let Some(x) = scanner.peek() {
-                    if !x.is_numeric() {
-                        break;
-                    } else {
+                    if x.is_numeric() {
                         scanner.next();
+                    } else {
+                        break;
                     }
                 }
                 push!(TokenType::Integer(scanner.munch()));
             },
+            // match keywords and identifiers
+            x if x.is_alphabetic() || x == '_' => {
+                while let Some(x) = scanner.peek() {
+                    if x.is_alphanumeric() ||
+                            *x == '_' {
+                        scanner.next();
+                    } else {
+                        break;
+                    }
+                }
+                push!(match scanner.munch() {
+                    "var" => TokenType::Var,
+                    "if" => TokenType::If,
+                    "ifnot" => TokenType::IfNot,
+                    "else" => TokenType::Else,
+                    x => TokenType::Identifier(x)
+                });
+            }
             // not implemented
             _ => unreachable!()
         }
