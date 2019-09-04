@@ -2,10 +2,9 @@
 
 use super::token::*;
 use super::syntax_tree::*;
-use super::error::*;
 
 /// Parses an array of `Token`s into a parse tree.
-pub fn parser<'a>(tokens : &[Token<'a>]) -> Result<Expr<'a>, CompileError<'static>> {
+pub fn parser<'a>(tokens : &[Token<'a>]) -> Option<Expr<'a>> {
     let mut tokens : Tokens = tokens
             .iter()
             .peekable();
@@ -13,13 +12,13 @@ pub fn parser<'a>(tokens : &[Token<'a>]) -> Result<Expr<'a>, CompileError<'stati
 }
 
 /// Parse an expression.
-fn expression<'a>(tokens : &mut Tokens) -> Result<Expr<'a>, CompileError<'static>> {
+fn expression<'a>(tokens : &mut Tokens) -> Option<Expr<'a>> {
     addition(tokens)
 }
 
 /// Parse a string of `+` and `-` operators.
-fn addition<'a>(tokens : &mut Tokens) -> Result<Expr<'a>, CompileError<'static>> {
-    Err(CompileError::new("Not implemented", 0, 0))
+fn addition<'a>(tokens : &mut Tokens) -> Option<Expr<'a>> {
+    None
 }
 
 /// A type which represents the char iterator used by the lexer.
