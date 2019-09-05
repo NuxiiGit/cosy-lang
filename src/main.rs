@@ -1,42 +1,31 @@
 mod runner;
 
+use runner::parser;
 use runner::lexer::Lexer;
-
-//use runner::parser;
-//use std::time::Instant;
+use runner::error::Error;
+use std::time::Instant;
 
 fn main() {
-    let mut lexer = Lexer::lex(
-            r#"'{
-}'"string" if condition==(-1+3){
-    var k="string";♀
-}"#);
+    let t = Instant::now();
+    let mut lexer = Lexer::lex(r#"
+            ' comment
+            if condition == (-1 + 3) {
+                '{
+                    multi-line comment
+                
+                var k = "string";
+            }"#);
     println!("Tokens:");
     while let Some(t) = lexer.next() {
         println!("{:?}", t.flavour());
     }
-    let errors = lexer.errors();
-    if errors.len() != 0 {
-        println!("\nLexer Errors:");
+    if let Some(errors) = Error::log() {
+        println!("\nErrors:");
         for e in errors {
             println!("{}", e);
         }
     }
-
-    /*let now = Instant::now();
-    let tokens = lexer::lex(r#"-(-1 + 4*(3)/8 - 1/2)"#);
-    for token in &tokens {
-        println!("{}", token);
-    }
-    /*match parser::parse(&tokens) {
-        Ok(expr) => {
-            println!("{}", expr);
-        },
-        Err(msg) => {
-            println!("{}", msg);
-        }
-    }*/
-    let duration = now.elapsed().as_micros();
-    let duration_s : f64 = (duration as f64) / 1000000.0;
-    println!("Time: {} s ({} Ms)", duration_s, duration);*/
+    let micro = t.elapsed().as_micros();
+    let second : f64 = (micro as f64) / 1000000.0;
+    println!("\nTime: {} s ({} Ms)", second, micro);
 }

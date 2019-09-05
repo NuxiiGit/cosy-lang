@@ -2,24 +2,54 @@
 
 use std::fmt;
 
+static mut ERRORS : Option<Vec<Error>> = None;
+
 /// A struct which holds error information.
-pub struct Error<'a> {
-    message : &'a str,
+pub struct Error {
+    message : &'static str,
     row : usize,
     column : usize
 }
-impl<'a> Error<'a> {
+impl Error {
+    /// Returns the current error log.
+    pub fn log() -> Option<&'static [Error]> {
+        unsafe {
+            if let Some(errors) = &ERRORS {
+                Some(errors)
+            } else {
+                None
+            }
+        }
+    }
+
+    /// Clears the current error log.
+    pub fn clear() {
+        unsafe {
+            ERRORS = None;
+        }
+    }
+
     /// Construct a new error instance.
-    pub fn new(message : &'a str, row : usize, column : usize) -> Error<'a> {
-        Error {
-            message : message,
-            row : row,
-            column : column
+    pub fn throw(message : &'static str, row : usize, column : usize) {
+        unsafe {
+            if let None = &ERRORS {
+                ERRORS = Some(Vec::new());
+            }
+            if let Some(ref mut errors) = &mut ERRORS {
+                errors.push(
+                        Error {
+                            message : message,
+                            row : row,
+                            column : column
+                        });
+            } else {
+                unreachable!();
+            }
         }
     }
 
     /// Returns the error message.
-    pub fn message(&self) -> &'a str {
+    pub fn message(&self) -> &'static str {
         self.message
     }
 
@@ -33,7 +63,7 @@ impl<'a> Error<'a> {
         self.column
     }
 }
-impl<'a> fmt::Display for Error<'a> {
+impl fmt::Display for Error {
     fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Error at (row. {}, col. {}): {}",
                 self.row, self.column, self.message)

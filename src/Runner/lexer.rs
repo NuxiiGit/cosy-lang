@@ -8,7 +8,6 @@ use std::str::CharIndices;
 pub struct Lexer<'a> {
     context : &'a str,
     scanner : CharIndices<'a>,
-    errors : Vec<Error<'static>>,
     next : Option<(usize, char)>,
     row : usize,
     column : usize
@@ -21,22 +20,15 @@ impl<'a> Lexer<'a> {
         Lexer {
             context : context,
             scanner : scanner,
-            errors : Vec::new(),
             next : first,
             row : 1,
             column : 1
         }
     }
 
-    /// Return a slice of the current lexer errors.
-    pub fn errors(&self) -> &[Error<'static>] {
-        &self.errors
-    }
-
     /// Push an error onto the error list.
     fn lexer_error(&mut self, message : &'static str) {
-        self.errors.push(
-                Error::new(message, self.row, self.column));
+        Error::throw(message, self.row, self.column);
     }
 
     /// Create a new token with the current row and column numbers.
