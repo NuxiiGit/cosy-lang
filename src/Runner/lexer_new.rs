@@ -5,23 +5,25 @@ use super::error::*;
 use std::str::CharIndices;
 
 /// A struct which encapsulates the state of the scanner.
-pub struct Lexer<'a> {
+pub struct Lexer<'a, F> where
+        F : FnMut(Error<'static>) {
     context : &'a str,
     scanner : CharIndices<'a>,
-    errors : &'a mut Vec<Error<'a>>,
+    error_handler : &'a mut F,
     next : Option<(usize, char)>,
     row : usize,
     column : usize
 }
-impl<'a> Lexer<'a> {
+impl<'a, F> Lexer<'a, F> where
+        F : FnMut(Error<'static>) {
     /// Construct a new scanner.
-    pub fn new(context : &'a str, errors : &'a mut Vec<Error<'a>>) -> Lexer<'a> {
+    pub fn new(context : &'a str, error_handler : &'a mut F) -> Lexer<'a, F> {
         let mut scanner : CharIndices = context.char_indices();
         let first : Option<(usize, char)> = scanner.next();
         Lexer {
             context : context,
             scanner : scanner,
-            errors : errors,
+            error_handler : error_handler,
             next : first,
             row : 0,
             column : 0
@@ -30,25 +32,14 @@ impl<'a> Lexer<'a> {
 
     /// Push an error onto the error list.
     fn lexer_error(&mut self, message : &'static str) {
-        self.errors.push(Error::new(message,
-                self.row, self.column));
+        (self.error_handler)(
+                Error::new(message, self.row, self.column));
     }
 
     /// Create a new token with the current row and column numbers.
     fn create_token(&self, flavour : TokenType<'a>) -> Token<'a> {
         Token::new(flavour, 
                 self.row, self.column)
-    }
-
-    /// Drop the whitespace.
-    fn drop_whitespace(&mut self) {
-        while let Some(x) = self.peek_char() {
-            if x.is_whitespace() {
-                self.next_char();
-            } else {
-                break;
-            }
-        }
     }
 
     /// Move to the next character.
@@ -92,11 +83,47 @@ impl<'a> Lexer<'a> {
         self.next
     }
 }
-impl<'a> Iterator for Lexer<'a> {
+impl<'a, F> Iterator for Lexer<'a, F> where
+        F : FnMut(Error<'static>) {
     type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.drop_whitespace();
+        loop {
+            match self.peek_char() {
+                // drop leading whitespace
+                Some(x) if x.is_whitespace() => {
+                    self.next_char();
+                }
+                // drop comments
+                Some('\'') => {
+                    self.next_char();
+                    if let Some('{') = self.peek_char() {
+                        // block comment
+                        loop {
+                            if let Some(x) = self.next_char() {
+                                if x == '}' {
+                                    if let Some('\'') = self.next_char() {
+                                        break;
+                                    }
+                                }
+                            } else {
+                                self.lexer_error("Unclosed comment block.");
+                                break;
+                            }
+                        }
+                    } else {
+                        // line comment
+                        while let Some(x) = self.next_char() {
+                            if x == '\n' {
+                                break;
+                            }
+                        }
+                    }
+                }
+                // nothing to discard
+                _ => break
+            }
+        }
         let (c, mut start) = self.scanner.next()?;
         match c {
             // match nothing

@@ -2,25 +2,26 @@ mod runner;
 
 use runner::scanner::*;
 use runner::lexer::*;
+use runner::lexer_new::*;
+use runner::error::*;
 
 //use runner::parser;
 //use std::time::Instant;
 
 fn main() {
-
-    match lex(r#"
+    let mut errors : Vec<Error> = Vec::new();
+    println!("Tokens:");
+    for t in Lexer::new(r#"
+    '{
     if condition==(-1+3){
         var k="string";
     }
-    "#) {
-        LexResult::Ok(tokens) => {
-            for token in tokens {
-                println!("{:?}", token.flavour());
-            }
-        },
-        LexResult::Err { message, row, column } => {
-            println!("Error! {} at row={} col={}", message, row, column);
-        }
+    "#, &mut |e| errors.push(e)) {
+        println!("{:?}", t.flavour());
+    }
+    println!("\nErrors:");
+    for e in &errors {
+        println!("{}", e);
     }
 
     /*let now = Instant::now();
