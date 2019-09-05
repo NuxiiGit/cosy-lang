@@ -8,8 +8,6 @@ use std::iter::Peekable;
 /// A struct which encapsulates the state of the scanner.
 pub struct Lexer<'a> {
     scanner : Peekable<Scanner<'a>>,
-    row : usize,
-    column : usize,
     errors : &'a mut Vec<Error<'a>>
 }
 impl<'a> Lexer<'a> {
@@ -26,12 +24,14 @@ impl<'a> Lexer<'a> {
 
     /// Push an error onto the error list.
     fn lexer_error(&mut self, message : &'static str) {
-        self.errors.push(Error::new(message, self.row, self.column));
+        self.errors.push(Error::new(message, 
+                scanner.row(), scanner.column()));
     }
 
     /// Create a new token with the current row and column numbers.
     fn create_token(&self, flavour : TokenType<'a>) -> Token<'a> {
-        Token::new(flavour, self.row, self.column)
+        Token::new(flavour, 
+                scanner.row(), scanner.column())
     }
 
     /// Drop the whitespace.
