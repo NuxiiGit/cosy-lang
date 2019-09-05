@@ -1,9 +1,6 @@
 mod runner;
 
-use runner::scanner::*;
-use runner::lexer::*;
-use runner::lexer_new::*;
-use runner::error::*;
+use runner::lexer::Lexer;
 
 //use runner::parser;
 //use std::time::Instant;

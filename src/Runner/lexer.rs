@@ -1,155 +1,230 @@
 #![allow(dead_code)]
 
 use super::token::*;
-use super::scanner::*;
+use super::error::Error;
+use std::str::CharIndices;
 
-/// Tokenises the input expression into a list of tokens `token::Token<'a>`.
-pub fn lex<'a>(expression : &'a str) -> LexResult<'a> {
-    let mut tokens : Vec<Token<'a>> = Vec::new();
-    let mut scanner : Scanner = Scanner::new(expression);
-    macro_rules! push {
-        ($flavour:expr) => ({
-            let flavour : TokenType = $flavour;
-            push!(flavour, scanner.row(), scanner.column());
-        });
-        ($flavour:expr, $row:expr, $col:expr) => ({
-            let token : Token = Token::new($flavour, $row, $col);
-            tokens.push(token);
-        })
+/// A struct which encapsulates the state of the scanner.
+pub struct Lexer<'a> {
+    context : &'a str,
+    scanner : CharIndices<'a>,
+    errors : Vec<Error<'static>>,
+    next : Option<(usize, char)>,
+    row : usize,
+    column : usize
+}
+impl<'a> Lexer<'a> {
+    /// Construct a new scanner.
+    pub fn lex(context : &'a str) -> Lexer<'a> {
+        let mut scanner : CharIndices = context.char_indices();
+        let first : Option<(usize, char)> = scanner.next();
+        Lexer {
+            context : context,
+            scanner : scanner,
+            errors : Vec::new(),
+            next : first,
+            row : 1,
+            column : 1
+        }
     }
-    macro_rules! lexerror {
-        ($msg:expr) => ({
-            return LexResult::Err {
-                message : $msg,
-                row : scanner.row(),
-                column : scanner.column()
-            };
-        })
+
+    /// Return a slice of the current lexer errors.
+    pub fn errors(&self) -> &[Error<'static>] {
+        &self.errors
     }
-    while let Some(c) = scanner.next() {
+
+    /// Push an error onto the error list.
+    fn lexer_error(&mut self, message : &'static str) {
+        self.errors.push(
+                Error::new(message, self.row, self.column));
+    }
+
+    /// Create a new token with the current row and column numbers.
+    fn create_token(&self, flavour : TokenType<'a>) -> Token<'a> {
+        Token::new(flavour, 
+                self.row, self.column)
+    }
+
+    /// Move to the next character.
+    fn next_char(&mut self) -> Option<char> {
+        let (_, x) = self.next_charindex()?;
+        Some(x)
+    }
+
+    /// Move to the next character-index pair.
+    fn next_charindex(&mut self) -> Option<(usize, char)> {
+        let next : Option<(usize, char)> = self.next;
+        if let Some((_, x)) = next {
+            if let '\n' = x {
+                self.row += 1;
+                self.column = 1;
+            } else {
+                self.column += 1;
+            }
+            self.next = self.scanner.next();
+        }
+        next
+    }
+
+    /// Peek at the next character.
+    fn peek_char(&self) -> Option<char> {
+        let (_, x) = self.peek_charindex()?;
+        Some(x)
+    }
+
+    /// Peek at the next index. Returns `context.len()` if the end is reached.
+    fn peek_index(&self) -> usize {
+        if let Some((i, _)) = self.peek_charindex() {
+            i
+        } else {
+            self.context.len()
+        }
+    }
+
+    /// Peek at the next character-index pair.
+    fn peek_charindex(&self) -> Option<(usize, char)> {
+        self.next
+    }
+}
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Token<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (mut start, c) = self.next_charindex()?;
         match c {
-            // match whitespace
+            // leading whitespace
             x if x.is_whitespace() => {
-                while let Some(x) = scanner.peek() {
-                    if !x.is_whitespace() {
-                        break;
+                while let Some(x) = self.peek_char() {
+                    if x.is_whitespace() {
+                        self.next_char();
                     } else {
-                        scanner.next();
+                        break;
                     }
                 }
-            },
-            // match comments
-            '\'' if match scanner.peek() {
-                Some('\'') | Some('{') => true,
-                _ => false
-            } => {
-                if let Some('\'') = scanner.next() {
-                    while let Some(x) = scanner.next() {
-                        if x == '\n' {
+                self.next()
+            }
+            // comments
+            '\'' => {
+                if let Some('{') = self.peek_char() {
+                    // block comment
+                    loop {
+                        if let Some(x) = self.next_char() {
+                            if x == '}' {
+                                if let Some('\'') = self.next_char() {
+                                    break;
+                                }
+                            }
+                        } else {
+                            self.lexer_error("Unclosed comment block");
                             break;
                         }
                     }
                 } else {
-                    while let Some(x) = scanner.next() {
-                        if x == '}' {
-                            if let Some('\'') = scanner.next() {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            // match strings
-            x if x.is_quote() => {
-                let quote_type : char = x;
-                let start : usize = scanner.index_right(); // ignore first '"'
-                loop {
-                    if let Some(x) = scanner.next() {
-                        if x == '\\' {
-                            scanner.next();
-                        } else if x == quote_type {
+                    // line comment
+                    while let Some(x) = self.next_char() {
+                        if x == '\n' {
                             break;
                         }
-                    } else {
-                        lexerror!("Unclosed string!");
-                    }
-                };
-                let end : usize = scanner.index_left(); // ignore final '"'
-                push!(TokenType::String(scanner.slice(start, end)));
-            }
-            // match numbers
-            x if x.is_numeric() => {
-                let start : usize = scanner.index_left();
-                while let Some(x) = scanner.peek() {
-                    if x.is_numeric() ||
-                            *x == '_' {
-                        scanner.next();
-                    } else {
-                        break;
                     }
                 }
-                let end : usize = scanner.index_right();
-                push!(TokenType::Integer(scanner.slice(start, end)));
+                self.next()
             },
             // match keywords and identifiers
             x if x.is_alphabetic() || x == '_' => {
-                let start : usize = scanner.index_left();
-                while let Some(x) = scanner.peek() {
+                while let Some(x) = self.peek_char() {
                     if x.is_alphanumeric() ||
-                            *x == '_' {
-                        scanner.next();
+                            x == '_' ||
+                            x == '\'' {
+                        self.next_char();
                     } else {
                         break;
                     }
                 }
-                let end : usize = scanner.index_right();
-                push!(match scanner.slice(start, end) {
-                    "var" => TokenType::Var,
-                    "if" => TokenType::If,
-                    "ifnot" => TokenType::IfNot,
-                    "else" => TokenType::Else,
-                    x => TokenType::Identifier(x)
-                });
+                Some(self.create_token(
+                        match &self.context[start..self.peek_index()] {
+                            "var" => TokenType::Var,
+                            "if" => TokenType::If,
+                            "ifnot" => TokenType::IfNot,
+                            "else" => TokenType::Else,
+                            x => TokenType::Identifier(x)
+                        }))
             },
-            // match brackets
+            // match string types
+            x if x.is_quote() => {
+                match x {
+                    '"' => {
+                        start = self.peek_index();
+                        loop {
+                            if let Some((i, x)) = self.next_charindex() {
+                                if x == '\\' {
+                                    self.next_char();
+                                } else if x == '"' {
+                                    break Some(self.create_token(
+                                        TokenType::String(&self.context[start..i])));
+                                }
+                            } else {
+                                self.lexer_error("Unclosed string");
+                                break self.next();
+                            }
+                        }
+                    },
+                    _ => {
+                        self.lexer_error("Unknown quote type");
+                        self.next()
+                    }
+                }
+            },
+            // match number types
+            x if x.is_numeric() => {
+                while let Some(x) = self.peek_char() {
+                    if x.is_numeric() ||
+                            x == '\'' {
+                        self.next_char();
+                    } else {
+                        break;
+                    }
+                }
+                Some(self.create_token(
+                        TokenType::Integer(&self.context[start..self.peek_index()])))
+            },
+            // match bracket types
             x if x.is_bracket() => {
-                push!(match x {
-                    '(' => TokenType::LeftParen,
-                    ')' => TokenType::RightParen,
-                    '{' => TokenType::LeftBrace,
-                    '}' => TokenType::RightBrace,
-                    _ => lexerror!("Unknown bracket type!")
-                });
+                if let Some(flavour) = match x {
+                    '(' => Some(TokenType::LeftParen),
+                    ')' => Some(TokenType::RightParen),
+                    '{' => Some(TokenType::LeftBrace),
+                    '}' => Some(TokenType::RightBrace),
+                    _ => None
+                } {
+                    Some(self.create_token(flavour))
+                } else {
+                    self.lexer_error("Unknown bracket type");
+                    self.next()
+                }
             },
-            _ => {
-                let start : usize = scanner.index_left();
-                while let Some(x) = scanner.peek() {
+            // match symbols and operators
+            x if x.is_symbol() => {
+                while let Some(x) = self.peek_char() {
                     if x.is_symbol() &&
                             !x.is_bracket() &&
                             !x.is_quote() {
-                        scanner.next();
+                        self.next_char();
                     } else {
                         break;
                     }
                 }
-                let end : usize = scanner.index_right();
-                push!(match scanner.slice(start, end) {
-                    ";" => TokenType::SemiColon,
-                    x => TokenType::Operator(x)
-                });
+                Some(self.create_token(
+                        match &self.context[start..self.peek_index()] {
+                            ";" => TokenType::SemiColon,
+                            x => TokenType::Operator(x)
+                        }))
+            }
+            // match nothing
+            _ => {
+                self.lexer_error("Unknown symbol");
+                self.next()
             }
         }
-    }
-    LexResult::Ok(tokens)
-}
-
-/// A custom `Result` enum for the lexer.
-pub enum LexResult<'a> {
-    Ok(Vec<Token<'a>>),
-    Err {
-        message : &'static str,
-        row : usize,
-        column : usize
     }
 }
 
