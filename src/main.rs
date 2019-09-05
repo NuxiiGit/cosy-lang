@@ -11,10 +11,9 @@ use runner::error::*;
 fn main() {
     let mut lexer = Lexer::lex(
             r#"'{
-            }'if condition==(-1+3){
-                var k="string";
-            }
-            "#);
+}'"string" if condition==(-1+3){
+    var k="string";♀
+}"#);
     println!("Tokens:");
     while let Some(t) = lexer.next() {
         println!("{:?}", t.flavour());

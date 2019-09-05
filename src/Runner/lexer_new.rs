@@ -90,46 +90,176 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            match self.peek_char() {
-                // drop leading whitespace
-                Some(x) if x.is_whitespace() => {
-                    self.next_char();
-                }
-                // drop comments
-                Some('\'') => {
-                    self.next_char();
-                    if let Some('{') = self.peek_char() {
-                        // block comment
-                        loop {
-                            if let Some(x) = self.next_char() {
-                                if x == '}' {
-                                    if let Some('\'') = self.next_char() {
-                                        break;
-                                    }
-                                }
-                            } else {
-                                self.lexer_error("Unclosed comment block.");
-                                break;
-                            }
-                        }
+        let (mut start, c) = self.next_charindex()?;
+        match c {
+            // leading whitespace
+            x if x.is_whitespace() => {
+                while let Some(x) = self.peek_char() {
+                    if x.is_whitespace() {
+                        self.next_char();
                     } else {
-                        // line comment
-                        while let Some(x) = self.next_char() {
-                            if x == '\n' {
-                                break;
+                        break;
+                    }
+                }
+                self.next()
+            }
+            // comments
+            '\'' => {
+                if let Some('{') = self.peek_char() {
+                    // block comment
+                    loop {
+                        if let Some(x) = self.next_char() {
+                            if x == '}' {
+                                if let Some('\'') = self.next_char() {
+                                    break;
+                                }
                             }
+                        } else {
+                            self.lexer_error("Unclosed comment block");
+                            break;
+                        }
+                    }
+                } else {
+                    // line comment
+                    while let Some(x) = self.next_char() {
+                        if x == '\n' {
+                            break;
                         }
                     }
                 }
-                // nothing to discard
-                _ => break
+                self.next()
+            },
+            // match keywords and identifiers
+            x if x.is_alphabetic() || x == '_' => {
+                while let Some(x) = self.peek_char() {
+                    if x.is_alphanumeric() ||
+                            x == '_' ||
+                            x == '\'' {
+                        self.next_char();
+                    } else {
+                        break;
+                    }
+                }
+                Some(self.create_token(
+                        match &self.context[start..self.peek_index()] {
+                            "var" => TokenType::Var,
+                            "if" => TokenType::If,
+                            "ifnot" => TokenType::IfNot,
+                            "else" => TokenType::Else,
+                            x => TokenType::Identifier(x)
+                        }))
+            },
+            // match string types
+            x if x.is_quote() => {
+                match x {
+                    '"' => {
+                        start = self.peek_index();
+                        loop {
+                            if let Some((i, x)) = self.next_charindex() {
+                                if x == '\\' {
+                                    self.next_char();
+                                } else if x == '"' {
+                                    break Some(self.create_token(
+                                        TokenType::String(&self.context[start..i])));
+                                }
+                            } else {
+                                self.lexer_error("Unclosed string");
+                                break self.next();
+                            }
+                        }
+                    },
+                    _ => {
+                        self.lexer_error("Unknown quote type");
+                        self.next()
+                    }
+                }
+            },
+            // match number types
+            x if x.is_numeric() => {
+                while let Some(x) = self.peek_char() {
+                    if x.is_numeric() ||
+                            x == '\'' {
+                        self.next_char();
+                    } else {
+                        break;
+                    }
+                }
+                Some(self.create_token(
+                        TokenType::Integer(&self.context[start..self.peek_index()])))
+            },
+            // match bracket types
+            x if x.is_bracket() => {
+                if let Some(flavour) = match x {
+                    '(' => Some(TokenType::LeftParen),
+                    ')' => Some(TokenType::RightParen),
+                    '{' => Some(TokenType::LeftBrace),
+                    '}' => Some(TokenType::RightBrace),
+                    _ => None
+                } {
+                    Some(self.create_token(flavour))
+                } else {
+                    self.lexer_error("Unknown bracket type");
+                    self.next()
+                }
+            },
+            // match symbols and operators
+            x if x.is_symbol() => {
+                while let Some(x) = self.peek_char() {
+                    if x.is_symbol() &&
+                            !x.is_bracket() &&
+                            !x.is_quote() {
+                        self.next_char();
+                    } else {
+                        break;
+                    }
+                }
+                Some(self.create_token(
+                        match &self.context[start..self.peek_index()] {
+                            ";" => TokenType::SemiColon,
+                            x => TokenType::Operator(x)
+                        }))
+            }
+            // match nothing
+            _ => {
+                self.lexer_error("Unknown symbol");
+                self.next()
             }
         }
-        let (c, mut start) = self.scanner.next()?;
-        match c {
-            // match nothing
-            _ => None
+    }
+}
+
+/// Additional methods for `char`
+trait CharExt {
+    /// Returns `true` if this `char` is a bracket.
+    /// These include: `( )`, `{ }`, and `[ ]`.
+    fn is_bracket(&self) -> bool;
+
+    /// Returns `true` if this `char` is a symbol.
+    fn is_quote(&self) -> bool;
+
+    /// Returns `true` if this `char` is a symbol.
+    fn is_symbol(&self) -> bool;
+}
+impl CharExt for char {
+    fn is_bracket(&self) -> bool {
+        if let '(' | ')' |
+                '{' | '}' |
+                '[' | ']' = self {
+            true
+        } else {
+            false
         }
+    }
+
+    fn is_quote(&self) -> bool {
+        if let '\'' | '"' | '`' = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn is_symbol(&self) -> bool {
+        !(self.is_alphanumeric() || self.is_whitespace())
     }
 }
