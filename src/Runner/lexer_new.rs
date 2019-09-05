@@ -5,34 +5,37 @@ use super::error::*;
 use std::str::CharIndices;
 
 /// A struct which encapsulates the state of the scanner.
-pub struct Lexer<'a, F> where
-        F : FnMut(Error<'static>) {
+pub struct Lexer<'a> {
     context : &'a str,
     scanner : CharIndices<'a>,
-    error_handler : &'a mut F,
+    errors : Vec<Error<'static>>,
     next : Option<(usize, char)>,
     row : usize,
     column : usize
 }
-impl<'a, F> Lexer<'a, F> where
-        F : FnMut(Error<'static>) {
+impl<'a> Lexer<'a> {
     /// Construct a new scanner.
-    pub fn new(context : &'a str, error_handler : &'a mut F) -> Lexer<'a, F> {
+    pub fn lex(context : &'a str) -> Lexer<'a> {
         let mut scanner : CharIndices = context.char_indices();
         let first : Option<(usize, char)> = scanner.next();
         Lexer {
             context : context,
             scanner : scanner,
-            error_handler : error_handler,
+            errors : Vec::new(),
             next : first,
-            row : 0,
-            column : 0
+            row : 1,
+            column : 1
         }
+    }
+
+    /// Return a slice of the current lexer errors.
+    pub fn errors(&self) -> &[Error<'static>] {
+        &self.errors
     }
 
     /// Push an error onto the error list.
     fn lexer_error(&mut self, message : &'static str) {
-        (self.error_handler)(
+        self.errors.push(
                 Error::new(message, self.row, self.column));
     }
 
@@ -54,7 +57,7 @@ impl<'a, F> Lexer<'a, F> where
         if let Some((_, x)) = next {
             if let '\n' = x {
                 self.row += 1;
-                self.column = 0;
+                self.column = 1;
             } else {
                 self.column += 1;
             }
@@ -83,8 +86,7 @@ impl<'a, F> Lexer<'a, F> where
         self.next
     }
 }
-impl<'a, F> Iterator for Lexer<'a, F> where
-        F : FnMut(Error<'static>) {
+impl<'a> Iterator for Lexer<'a> {
     type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {

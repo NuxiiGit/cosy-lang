@@ -9,19 +9,22 @@ use runner::error::*;
 //use std::time::Instant;
 
 fn main() {
-    let mut errors : Vec<Error> = Vec::new();
+    let mut lexer = Lexer::lex(
+            r#"'{
+            }'if condition==(-1+3){
+                var k="string";
+            }
+            "#);
     println!("Tokens:");
-    for t in Lexer::new(r#"
-    '{
-    if condition==(-1+3){
-        var k="string";
-    }
-    "#, &mut |e| errors.push(e)) {
+    while let Some(t) = lexer.next() {
         println!("{:?}", t.flavour());
     }
-    println!("\nErrors:");
-    for e in &errors {
-        println!("{}", e);
+    let errors = lexer.errors();
+    if errors.len() != 0 {
+        println!("\nLexer Errors:");
+        for e in errors {
+            println!("{}", e);
+        }
     }
 
     /*let now = Instant::now();
