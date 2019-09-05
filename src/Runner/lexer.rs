@@ -13,7 +13,12 @@ pub struct Lexer<'a> {
     column : usize
 }
 impl<'a> Lexer<'a> {
-    /// Construct a new scanner.
+    /// Constructs a new scanner.
+    /// # Errors
+    /// Errors are logged to `error::Error`, and can be obtained using:
+    /// ```
+    /// let errors = error::Error::log();
+    /// ```
     pub fn lex(context : &'a str) -> Lexer<'a> {
         let mut scanner : CharIndices = context.char_indices();
         let first : Option<(usize, char)> = scanner.next();

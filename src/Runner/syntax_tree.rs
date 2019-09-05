@@ -3,7 +3,7 @@
 /// An enum which stores the root of the syntax tree.
 #[derive(Debug)]
 pub enum SyntaxTree<'a> {
-    Expression(Box<Expr<'a>>)
+    Expression(Expr<'a>)
 }
 
 /// A recursive enum which stores expression information.

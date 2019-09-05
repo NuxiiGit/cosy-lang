@@ -1,25 +1,36 @@
 #![allow(dead_code)]
 
+use super::lexer::Lexer;
+use super::error::Error;
 use super::token::*;
 use super::syntax_tree::*;
 
-/// Parses an array of `Token`s into a parse tree.
-pub fn parser<'a>(tokens : &[Token<'a>]) -> Option<Expr<'a>> {
-    let mut tokens : Tokens = tokens
-            .iter()
-            .peekable();
-    expression(&mut tokens)
+/// A struct which encapsulates the state of the parser.
+pub struct Parser<'a> {
+    lexer : Lexer<'a>
 }
+impl<'a> Parser<'a> {
+    /// Parses an expression and returns its syntax tree.
+    /// # Errors
+    /// Errors are logged to `error::Error`, and can be obtained using:
+    /// ```
+    /// let errors = error::Error::log();
+    /// ```
+    pub fn parse(context : &'a str) -> Option<SyntaxTree<'a>> {
+        let mut parser : Parser = Parser {
+            lexer : Lexer::lex(context)
+        };
+        let expr : Expr = parser.parse_expression()?;
+        Some(SyntaxTree::Expression(expr))
+    }
 
-/// Parse an expression.
-fn expression<'a>(tokens : &mut Tokens) -> Option<Expr<'a>> {
-    addition(tokens)
+    /// Parses an expression.
+    fn parse_expression(&mut self) -> Option<Expr<'a>> {
+        self.parse_addition()
+    }
+    
+    /// Parses an string of `+` and `-` binary operators.
+    fn parse_addition(&mut self) -> Option<Expr<'a>> {
+        None
+    }
 }
-
-/// Parse a string of `+` and `-` operators.
-fn addition<'a>(tokens : &mut Tokens) -> Option<Expr<'a>> {
-    None
-}
-
-/// A type which represents the char iterator used by the lexer.
-type Tokens<'a> = std::iter::Peekable<std::slice::Iter<'a, Token<'a>>>;

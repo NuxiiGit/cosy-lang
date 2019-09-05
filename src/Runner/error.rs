@@ -35,15 +35,15 @@ impl Error {
             if let None = &ERRORS {
                 ERRORS = Some(Vec::new());
             }
-            if let Some(ref mut errors) = &mut ERRORS {
-                errors.push(
-                        Error {
-                            message : message,
-                            row : row,
-                            column : column
-                        });
-            } else {
-                unreachable!();
+            match &mut ERRORS {
+                Some(ref mut errors) => {
+                    errors.push(Error {
+                        message : message,
+                        row : row,
+                        column : column
+                    });
+                },
+                _ => unreachable!()
             }
         }
     }

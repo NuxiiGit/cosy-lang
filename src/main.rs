@@ -17,15 +17,15 @@ fn main() {
             }"#);
     println!("Tokens:");
     while let Some(t) = lexer.next() {
-        println!("{:?}", t.flavour());
+        println!(" - {:?}", t.flavour());
     }
     if let Some(errors) = Error::log() {
         println!("\nErrors:");
         for e in errors {
-            println!("{}", e);
+            println!(" |> {}", e);
         }
     }
     let micro = t.elapsed().as_micros();
     let second : f64 = (micro as f64) / 1000000.0;
-    println!("\nTime: {} s ({} Ms)", second, micro);
+    println!("\nTime:\n{} s ({} Ms)", second, micro);
 }
