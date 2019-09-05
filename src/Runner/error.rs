@@ -1,3 +1,7 @@
+#![allow(dead_code)]
+
+use std::fmt;
+
 /// A struct which holds error information.
 pub struct Error<'a> {
     message : &'a str,
@@ -27,5 +31,11 @@ impl<'a> Error<'a> {
     /// Returns the column number the error occured on.
     pub fn column(&self) -> usize {
         self.column
+    }
+}
+impl<'a> fmt::Display for Error<'a> {
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Error at (row. {}, col. {}): {}",
+                self.row, self.column, self.message)
     }
 }
