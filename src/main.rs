@@ -7,7 +7,7 @@ use std::time::Instant;
 
 fn main() {
     let t = Instant::now();
-    let ast = Parser::parse(r#"1 + 3 - 4"#);
+    let ast = Parser::parse(r#"1 - + 3 - 4 +"#);
     if let Some(errors) = Error::log() {
         println!("\nErrors:");
         for e in errors {

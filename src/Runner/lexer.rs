@@ -31,20 +31,6 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    /// Push an error onto the error list.
-    fn lexer_error(&mut self, message : &'static str) {
-        Error::throw(message, self.row, self.column);
-    }
-
-    /// Create a new token with the current row and column numbers.
-    fn create_token(&self, flavour : TokenType<'a>) -> Token<'a> {
-        Token {
-            flavour : flavour,
-            row : self.row,
-            column : self.column
-        }
-    }
-
     /// Move to the next character.
     fn next_char(&mut self) -> Option<char> {
         let (_, x) = self.next_charindex()?;
@@ -85,6 +71,20 @@ impl<'a> Lexer<'a> {
     fn peek_charindex(&self) -> Option<(usize, char)> {
         self.next
     }
+
+    /// Create a new token with the current row and column numbers.
+    fn token(&self, flavour : TokenType<'a>) -> Option<Token<'a>> {
+        Some(Token {
+            flavour : flavour,
+            row : self.row,
+            column : self.column
+        })
+    }
+
+    /// Push an error onto the error list.
+    fn error(&mut self, message : &'static str) {
+        Error::throw(message, self.row, self.column);
+    }
 }
 impl<'a> Iterator for Lexer<'a> {
     type Item = Token<'a>;
@@ -115,7 +115,7 @@ impl<'a> Iterator for Lexer<'a> {
                                 }
                             }
                         } else {
-                            self.lexer_error("Unclosed comment block");
+                            self.error("Unclosed comment block");
                             break;
                         }
                     }
@@ -140,14 +140,13 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                Some(self.create_token(
-                        match &self.context[start..self.peek_index()] {
-                            "var" => TokenType::Var,
-                            "if" => TokenType::If,
-                            "ifnot" => TokenType::IfNot,
-                            "else" => TokenType::Else,
-                            x => TokenType::Identifier(x)
-                        }))
+                self.token(match &self.context[start..self.peek_index()] {
+                    "var" => TokenType::Var,
+                    "if" => TokenType::If,
+                    "ifnot" => TokenType::IfNot,
+                    "else" => TokenType::Else,
+                    x => TokenType::Identifier(x)
+                })
             },
             // match string types
             x if x.is_quote() => {
@@ -159,17 +158,17 @@ impl<'a> Iterator for Lexer<'a> {
                                 if x == '\\' {
                                     self.next_char();
                                 } else if x == '"' {
-                                    break Some(self.create_token(
-                                        TokenType::String(&self.context[start..i])));
+                                    break self.token(TokenType::String(
+                                            &self.context[start..i]));
                                 }
                             } else {
-                                self.lexer_error("Unclosed string");
+                                self.error("Unclosed string");
                                 break self.next();
                             }
                         }
                     },
                     _ => {
-                        self.lexer_error("Unknown quote type");
+                        self.error("Unknown quote type");
                         self.next()
                     }
                 }
@@ -184,8 +183,8 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                Some(self.create_token(
-                        TokenType::Integer(&self.context[start..self.peek_index()])))
+                self.token(TokenType::Integer(
+                        &self.context[start..self.peek_index()]))
             },
             // match bracket types
             x if x.is_bracket() => {
@@ -196,9 +195,9 @@ impl<'a> Iterator for Lexer<'a> {
                     '}' => Some(TokenType::RightBrace),
                     _ => None
                 } {
-                    Some(self.create_token(flavour))
+                    self.token(flavour)
                 } else {
-                    self.lexer_error("Unknown bracket type");
+                    self.error("Unknown bracket type");
                     self.next()
                 }
             },
@@ -213,16 +212,15 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                Some(self.create_token(
-                        match &self.context[start..self.peek_index()] {
-                            ":" => TokenType::Colon,
-                            ";" => TokenType::SemiColon,
-                            x => TokenType::Operator(x)
-                        }))
+                self.token(match &self.context[start..self.peek_index()] {
+                    ":" => TokenType::Colon,
+                    ";" => TokenType::SemiColon,
+                    x => TokenType::Operator(x)
+                })
             }
             // match nothing
             _ => {
-                self.lexer_error("Unknown symbol");
+                self.error("Unknown symbol");
                 self.next()
             }
         }

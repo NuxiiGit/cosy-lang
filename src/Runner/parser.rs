@@ -69,7 +69,7 @@ impl<'a> Parser<'a> {
                         TokenType::Identifier(..))) {
             return Some(Expr::Terminal(token));
         }
-        panic!("Expected an expression, got nothing.");
+        self.error("Malformed expression.");
         None
     }
 
@@ -92,6 +92,11 @@ impl<'a> Parser<'a> {
         } else {
             None
         }
+    }
+
+    /// Push an error onto the error list.
+    fn error(&mut self, message : &'static str) {
+        Error::throw(message, self.row, self.column);
     }
 }
 
