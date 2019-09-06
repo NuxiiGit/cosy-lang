@@ -2,29 +2,9 @@
 
 /// A struct which stores location information about a `TokenType`.
 pub struct Token<'a> {
-    flavour : TokenType<'a>,
-    row : usize,
-    col : usize
-}
-impl<'a> Token<'a> {
-    /// Creates a new instance of `Token`.
-    pub fn new(flavour : TokenType<'a>, row : usize, col : usize) -> Token<'a> {
-        Token {
-            flavour : flavour,
-            row : row,
-            col : col
-        }
-    }
-
-    /// Returns a reference to the type of this `Token`.
-    pub fn flavour(&self) -> &TokenType<'a> {
-        &self.flavour
-    }
-
-    /// Returns the current position as a two value tuple of `(row, column)`.
-    pub fn position(&mut self) -> (usize, usize) {
-        (self.row, self.col)
-    }
+    pub flavour : TokenType<'a>,
+    pub row : usize,
+    pub column : usize
 }
 
 /// An enum which stores the type of `Token`.

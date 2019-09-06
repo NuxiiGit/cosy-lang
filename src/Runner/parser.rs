@@ -7,12 +7,26 @@ use super::syntax_tree::*;
 use std::iter::Peekable;
 
 macro_rules! truth {
-    ($($condition:tt)*) => (if $($condition)* {true} else {false});
+    ($value:expr, $($condition:tt)*) => ({
+        match $value {
+            $($condition)* => true,
+            _ => false
+        }
+    });
+    ($($condition:tt)*) => ({
+        if $($condition)* {
+            true
+        } else {
+            false
+        }
+    });
 }
 
 /// A struct which encapsulates the state of the parser.
 pub struct Parser<'a> {
-    lexer : Peekable<Lexer<'a>>
+    lexer : Peekable<Lexer<'a>>,
+    row : usize,
+    column : usize
 }
 impl<'a> Parser<'a> {
     /// Parses an expression and returns its syntax tree.
@@ -23,7 +37,9 @@ impl<'a> Parser<'a> {
     /// ```
     pub fn parse(context : &'a str) -> Option<SyntaxTree<'a>> {
         let mut parser : Parser = Parser {
-            lexer : Lexer::lex(context).peekable()
+            lexer : Lexer::lex(context).peekable(),
+            row : 0,
+            column : 0
         };
         let expr : Expr = parser.parse_expr()?;
         Some(SyntaxTree::Expression(expr))
@@ -37,14 +53,8 @@ impl<'a> Parser<'a> {
     /// Parses a string of `+` and `-` binary operators.
     fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_frontier()?;
-        while let Some(token) = self.consume_if(|x| {
-            if let TokenType::Operator(op) = x {
-                if let "+" | "-" = &op[..1] {
-                    return true;
-                }
-            }
-            false
-        }) {
+        while let Some(token) = self.consume_if(|x|
+                truth!(x, TokenType::Operator(op) if truth!(&op[..1], "+" | "-"))) {
             let right : Expr = self.parse_expr_frontier()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -54,9 +64,9 @@ impl<'a> Parser<'a> {
     /// Parses the frontier of an expression.
     fn parse_expr_frontier(&mut self) -> Option<Expr<'a>> {
         if let Some(token) = self.consume_if(|x|
-                truth!(let TokenType::String(..) = x) || 
-                truth!(let TokenType::Integer(..) = x) || 
-                truth!(let TokenType::Identifier(..) = x)) {
+                truth!(x, TokenType::String(..) |
+                        TokenType::Integer(..) |
+                        TokenType::Identifier(..))) {
             return Some(Expr::Terminal(token));
         }
         panic!("Expected an expression, got nothing.");
@@ -66,8 +76,19 @@ impl<'a> Parser<'a> {
     /// Consumes the next token if the closure returns true.
     fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Option<Token<'a>> {
         let token : &Token = self.lexer.peek()?;
-        if f(token.flavour()) {
-            self.lexer.next()
+        if f(&token.flavour) {
+            self.consume()
+        } else {
+            None
+        }
+    }
+
+    /// Consumes the next token.
+    fn consume(&mut self) -> Option<Token<'a>> {
+        if let Some(token) = self.lexer.next() {
+            self.row = token.row;
+            self.column = token.column;
+            Some(token)
         } else {
             None
         }

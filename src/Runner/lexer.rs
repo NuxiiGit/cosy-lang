@@ -38,8 +38,11 @@ impl<'a> Lexer<'a> {
 
     /// Create a new token with the current row and column numbers.
     fn create_token(&self, flavour : TokenType<'a>) -> Token<'a> {
-        Token::new(flavour, 
-                self.row, self.column)
+        Token {
+            flavour : flavour,
+            row : self.row,
+            column : self.column
+        }
     }
 
     /// Move to the next character.
