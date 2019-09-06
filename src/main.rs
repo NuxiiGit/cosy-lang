@@ -1,24 +1,13 @@
 mod runner;
 
-use runner::parser;
+use runner::parser::Parser;
 use runner::lexer::Lexer;
 use runner::error::Error;
 use std::time::Instant;
 
 fn main() {
     let t = Instant::now();
-    let mut lexer = Lexer::lex(r#"
-            ' comment
-            if condition == (-1 + 3) {
-                '{
-                    multi-line comment
-                
-                var k = "string";
-            }"#);
-    println!("Tokens:");
-    while let Some(t) = lexer.next() {
-        println!(" - {:?}", t.flavour());
-    }
+    let ast = Parser::parse(r#"1 + 3 - 4"#);
     if let Some(errors) = Error::log() {
         println!("\nErrors:");
         for e in errors {

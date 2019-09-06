@@ -8,7 +8,7 @@ pub struct Token<'a> {
 }
 impl<'a> Token<'a> {
     /// Creates a new instance of `Token`.
-    pub fn new(flavour : TokenType, row : usize, col : usize) -> Token {
+    pub fn new(flavour : TokenType<'a>, row : usize, col : usize) -> Token<'a> {
         Token {
             flavour : flavour,
             row : row,
@@ -17,7 +17,7 @@ impl<'a> Token<'a> {
     }
 
     /// Returns a reference to the type of this `Token`.
-    pub fn flavour(&self) -> &TokenType {
+    pub fn flavour(&self) -> &TokenType<'a> {
         &self.flavour
     }
 
@@ -45,5 +45,6 @@ pub enum TokenType<'a> {
     RightParen,
     LeftBrace,
     RightBrace,
+    Colon,
     SemiColon
 }

@@ -4,10 +4,15 @@ use super::lexer::Lexer;
 use super::error::Error;
 use super::token::*;
 use super::syntax_tree::*;
+use std::iter::Peekable;
+
+macro_rules! truth {
+    ($($condition:tt)*) => (if $($condition)* {true} else {false});
+}
 
 /// A struct which encapsulates the state of the parser.
 pub struct Parser<'a> {
-    lexer : Lexer<'a>
+    lexer : Peekable<Lexer<'a>>
 }
 impl<'a> Parser<'a> {
     /// Parses an expression and returns its syntax tree.
@@ -18,19 +23,94 @@ impl<'a> Parser<'a> {
     /// ```
     pub fn parse(context : &'a str) -> Option<SyntaxTree<'a>> {
         let mut parser : Parser = Parser {
-            lexer : Lexer::lex(context)
+            lexer : Lexer::lex(context).peekable()
         };
-        let expr : Expr = parser.parse_expression()?;
+        let expr : Expr = parser.parse_expr()?;
         Some(SyntaxTree::Expression(expr))
     }
 
     /// Parses an expression.
-    fn parse_expression(&mut self) -> Option<Expr<'a>> {
-        self.parse_addition()
+    fn parse_expr(&mut self) -> Option<Expr<'a>> {
+        self.parse_expr_addition()
     }
-    
-    /// Parses an string of `+` and `-` binary operators.
-    fn parse_addition(&mut self) -> Option<Expr<'a>> {
+
+    /// Parses a string of `+` and `-` binary operators.
+    fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_frontier()?;
+        while let Some(token) = self.consume_if(|x| {
+            if let TokenType::Operator(op) = x {
+                if let "+" | "-" = &op[..1] {
+                    return true;
+                }
+            }
+            false
+        }) {
+            let right : Expr = self.parse_expr_frontier()?;
+            left = Expr::Binary(token, Box::new(left), Box::new(right));
+        }
+        Some(left)
+    }
+
+    /// Parses the frontier of an expression.
+    fn parse_expr_frontier(&mut self) -> Option<Expr<'a>> {
+        if let Some(token) = self.consume_if(|x|
+                truth!(let TokenType::String(..) = x) || 
+                truth!(let TokenType::Integer(..) = x) || 
+                truth!(let TokenType::Identifier(..) = x)) {
+            return Some(Expr::Terminal(token));
+        }
+        panic!("Expected an expression, got nothing.");
         None
     }
+
+    /// Consumes the next token if the closure returns true.
+    fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Option<Token<'a>> {
+        let token : &Token = self.lexer.peek()?;
+        if f(token.flavour()) {
+            self.lexer.next()
+        } else {
+            None
+        }
+    }
 }
+
+/*
+fn primary(tokens : &mut Tokens) -> Result<Expr, &'static str> {
+    if let Some(token) = tokens.next() {
+        match token.flavour() {
+            TokenType::Str(x) => Ok(Expr::Str(x.to_owned())),
+            TokenType::Int(x) => Ok(Expr::Int(x.to_owned())),
+            TokenType::Identifier(x) => Ok(Expr::Identifier(x.to_owned())),
+            TokenType::LeftParen => {
+                let expr : Expr = expression(tokens)?;
+                if {
+                    if let Some(token) = tokens.next() {
+                        if let TokenType::RightParen = token.flavour() {
+                            true
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } {
+                    Ok(expr)
+                } else {
+                    Err("Expected ')' after expression")
+                match tokens.next() {
+                    Some(token) if match token.flavour() {
+                        TokenType::RightParen => true,
+                        _ => false
+                    } => Ok(expr),
+                    _ => Err("Expected ')' after expression")
+                }
+            },
+            token => {
+                println!("{}", token);
+                Err("Expected identifier or literal")
+            }
+        }
+    } else {
+        Err("Expected expression: Got nothing")
+    }
+}*/

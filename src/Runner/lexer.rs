@@ -212,6 +212,7 @@ impl<'a> Iterator for Lexer<'a> {
                 }
                 Some(self.create_token(
                         match &self.context[start..self.peek_index()] {
+                            ":" => TokenType::Colon,
                             ";" => TokenType::SemiColon,
                             x => TokenType::Operator(x)
                         }))
