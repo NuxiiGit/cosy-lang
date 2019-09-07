@@ -29,19 +29,23 @@ pub struct Parser<'a> {
     column : usize
 }
 impl<'a> Parser<'a> {
-    /// Parses an expression and returns its syntax tree.
+    /// Constructs a new parser.
     /// # Errors
     /// Errors are logged to `error::Error`, and can be obtained using:
     /// ```
     /// let errors = error::Error::log();
     /// ```
-    pub fn parse(context : &'a str) -> Option<SyntaxTree<'a>> {
-        let mut parser : Parser = Parser {
-            lexer : Lexer::lex(context).peekable(),
+    pub fn new(scanner : Lexer<'a>) -> Parser<'a> {
+        Parser {
+            lexer : scanner.peekable(),
             row : 0,
             column : 0
-        };
-        let expr : Expr = parser.parse_expr()?;
+        }
+    }
+
+    /// Parses an expression and returns its syntax tree.
+    pub fn into_ast(mut self) -> Option<SyntaxTree<'a>> {
+        let expr : Expr = self.parse_expr()?;
         Some(SyntaxTree::Expression(expr))
     }
 

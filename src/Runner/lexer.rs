@@ -19,7 +19,7 @@ impl<'a> Lexer<'a> {
     /// ```
     /// let errors = error::Error::log();
     /// ```
-    pub fn lex(context : &'a str) -> Lexer<'a> {
+    pub fn new(context : &'a str) -> Lexer<'a> {
         let mut scanner : CharIndices = context.char_indices();
         let first : Option<(usize, char)> = scanner.next();
         Lexer {
