@@ -40,7 +40,9 @@ impl<'a> Parser<'a> {
     /// Parses an expression and returns its syntax tree.
     pub fn into_ast(mut self) -> Option<SyntaxTree<'a>> {
         let expr : Expr = self.parse_expr()?;
-        Some(SyntaxTree::Expression(expr))
+        Some(SyntaxTree::Expression {
+            body : expr
+        })
     }
 
     /// Parses an expression.
@@ -135,7 +137,9 @@ impl<'a> Parser<'a> {
         if let Some(literal) = self.consume_if(|x| matches!(x,
                 TokenType::String(..) |
                 TokenType::Integer(..))) {
-            Some(Expr::Literal(literal))
+            Some(Expr::Literal {
+                value : literal
+            })
         } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen)) {
             let expr : Expr = self.parse_expr()?;
             if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen)) {
