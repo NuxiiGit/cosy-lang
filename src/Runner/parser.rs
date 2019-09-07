@@ -48,7 +48,11 @@ impl<'a> Parser<'a> {
         let mut left : Expr = self.parse_expr_addition()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
             let right : Expr = self.parse_expr_addition()?;
-            left = Expr::Binary(operator, Box::new(left), Box::new(right));
+            left = Expr::Binary {
+                operator : operator,
+                left : Box::new(left),
+                right : Box::new(right)
+            };
         }
         Some(left)
     }
@@ -59,7 +63,11 @@ impl<'a> Parser<'a> {
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "!" | "="))) {
             let right : Expr = self.parse_expr_inequality()?;
-            left = Expr::Binary(operator, Box::new(left), Box::new(right));
+            left = Expr::Binary {
+                operator : operator,
+                left : Box::new(left),
+                right : Box::new(right)
+            };
         }
         Some(left)
     }
@@ -70,7 +78,11 @@ impl<'a> Parser<'a> {
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), ">" | "<"))) {
             let right : Expr = self.parse_expr_addition()?;
-            left = Expr::Binary(operator, Box::new(left), Box::new(right));
+            left = Expr::Binary {
+                operator : operator,
+                left : Box::new(left),
+                right : Box::new(right)
+            };
         }
         Some(left)
     }
@@ -81,7 +93,11 @@ impl<'a> Parser<'a> {
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "+" | "-"))) {
             let right : Expr = self.parse_expr_multiplication()?;
-            left = Expr::Binary(operator, Box::new(left), Box::new(right));
+            left = Expr::Binary {
+                operator : operator,
+                left : Box::new(left),
+                right : Box::new(right)
+            };
         }
         Some(left)
     }
@@ -92,7 +108,11 @@ impl<'a> Parser<'a> {
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "*" | "/" | "%"))) {
             let right : Expr = self.parse_expr_unary()?;
-            left = Expr::Binary(operator, Box::new(left), Box::new(right));
+            left = Expr::Binary {
+                operator : operator,
+                left : Box::new(left),
+                right : Box::new(right)
+            };
         }
         Some(left)
     }
@@ -101,7 +121,10 @@ impl<'a> Parser<'a> {
     fn parse_expr_unary(&mut self) -> Option<Expr<'a>> {
         if let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
             let right : Expr = self.parse_expr_unary()?;
-            Some(Expr::Unary(operator, Box::new(right)))
+            Some(Expr::Unary {
+                operator : operator,
+                expr : Box::new(right)
+            })
         } else {
             self.parse_expr_frontier()
         }
