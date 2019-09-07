@@ -11,7 +11,7 @@ pub enum SyntaxTree<'a> {
 /// A recursive enum which stores expression information.
 #[derive(Debug)]
 pub enum Expr<'a> {
-    Terminal(Token<'a>),
+    Literal(Token<'a>),
     Unary(Token<'a>, Box<Expr<'a>>),
     Binary(Token<'a>, Box<Expr<'a>>, Box<Expr<'a>>),
 }
