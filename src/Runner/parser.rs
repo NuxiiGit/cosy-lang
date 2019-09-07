@@ -17,29 +17,22 @@ macro_rules! matches {
 }
 
 /// A struct which encapsulates the state of the parser.
-pub struct Parser<'a> {
-    lexer : Peekable<Lexer<'a>>,
+pub struct Parser<'a, I> where
+        I : Iterator<Item = Token<'a>> + Sized {
+    scanner : Peekable<I>,
     row : usize,
     column : usize
 }
-impl<'a> Parser<'a> {
-    /// Constructs a new parser.
-    /// # Errors
-    /// Errors are logged to `error::Error`, and can be obtained using:
-    /// ```
-    /// let errors = error::Error::log();
-    /// ```
-    pub fn new(scanner : Lexer<'a>) -> Parser<'a> {
-        Parser {
-            lexer : scanner.peekable(),
+impl<'a, I> Parser<'a, I> where
+        I : Iterator<Item = Token<'a>> + Sized {
+    /// Parses a into a syntax tree.
+    pub fn parse(scanner : I) -> Option<SyntaxTree<'a>> {
+        let mut parser : Parser<I> = Parser {
+            scanner : scanner.peekable(),
             row : 0,
             column : 0
-        }
-    }
-
-    /// Parses an expression and returns its syntax tree.
-    pub fn into_ast(mut self) -> Option<SyntaxTree<'a>> {
-        let expr : Expr = self.parse_expr()?;
+        };
+        let expr : Expr = parser.parse_expr()?;
         Some(SyntaxTree::Expression {
             body : expr
         })
@@ -156,7 +149,7 @@ impl<'a> Parser<'a> {
 
     /// Consumes the next token if the closure returns true.
     fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Option<Token<'a>> {
-        let token : &Token = self.lexer.peek()?;
+        let token : &Token = self.scanner.peek()?;
         if f(&token.flavour) {
             self.consume_next()
         } else {
@@ -166,7 +159,7 @@ impl<'a> Parser<'a> {
 
     /// Consumes the next token.
     fn consume_next(&mut self) -> Option<Token<'a>> {
-        if let Some(token) = self.lexer.next() {
+        if let Some(token) = self.scanner.next() {
             self.row = token.row;
             self.column = token.column;
             Some(token)

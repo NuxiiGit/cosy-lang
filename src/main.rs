@@ -9,8 +9,7 @@ fn main() {
     let t = Instant::now();
     // compile
     let scanner = Lexer::new(r#"(1+3)*3"#);
-    let parser = Parser::new(scanner);
-    let ast = parser.into_ast();
+    let ast = Parser::parse(scanner);
     // record time
     let micro = t.elapsed().as_micros();
     let second : f64 = (micro as f64) / 1000000.0;
