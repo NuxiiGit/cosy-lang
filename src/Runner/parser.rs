@@ -57,7 +57,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_equality(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_addition()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.first(), Some('!') | Some('=')))) {
+                matches!(op.substring(0, 1), "!" | "="))) {
             let right : Expr = self.parse_expr_addition()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -68,7 +68,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_multiplication()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.first(), Some('+') | Some('-')))) {
+                matches!(op.substring(0, 1), "+" | "-"))) {
             let right : Expr = self.parse_expr_multiplication()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -79,7 +79,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_frontier()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.first(), Some('*') | Some('/') | Some('%')))) {
+                matches!(op.substring(0, 1), "*" | "/" | "%"))) {
             let right : Expr = self.parse_expr_frontier()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -137,11 +137,20 @@ impl<'a> Parser<'a> {
 
 /// Additional methods for `str`
 trait StrExt {
-    /// Returns the first char of this `str`
-    fn first(&self) -> Option<char>;
+    /// Returns a substring of this `str`.
+    fn substring<'a>(&'a self, i : usize, n : usize) -> &'a str;
 }
 impl StrExt for str {
-    fn first(&self) -> Option<char> {
-        self.chars().next()
+    fn substring<'a>(&'a self, i : usize, n : usize) -> &'a str {
+        let start : usize = i;
+        let end : usize = if let Some((x, _)) = self
+                .char_indices()
+                .take(n + start)
+                .next() {
+            x
+        } else {
+            self.len()
+        };
+        &self[start..end]
     }
 }
