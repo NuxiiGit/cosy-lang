@@ -55,9 +55,20 @@ impl<'a> Parser<'a> {
 
     /// Parses a string of `!=` and `==` binary operators.
     fn parse_expr_equality(&mut self) -> Option<Expr<'a>> {
-        let mut left : Expr = self.parse_expr_addition()?;
+        let mut left : Expr = self.parse_expr_inequality()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "!" | "="))) {
+            let right : Expr = self.parse_expr_inequality()?;
+            left = Expr::Binary(token, Box::new(left), Box::new(right));
+        }
+        Some(left)
+    }
+
+    /// Parses a string of `!=` and `==` binary operators.
+    fn parse_expr_inequality(&mut self) -> Option<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_addition()?;
+        while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(op.substring(0, 1), ">" | "<"))) {
             let right : Expr = self.parse_expr_addition()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
