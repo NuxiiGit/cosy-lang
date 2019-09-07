@@ -8,7 +8,7 @@ use std::time::Instant;
 fn main() {
     let t = Instant::now();
     // compile
-    let scanner = Lexer::new(r#"4* 2 £ 4"#);
+    let scanner = Lexer::new(r#"4* $ - £24"#);
     let parser = Parser::new(scanner);
     let ast = parser.into_ast();
     // record time

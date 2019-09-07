@@ -88,13 +88,23 @@ impl<'a> Parser<'a> {
 
     /// Parses a string of `*`, `/`, and '%' binary operators.
     fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
-        let mut left : Expr = self.parse_expr_frontier()?;
+        let mut left : Expr = self.parse_expr_unary()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "*" | "/" | "%"))) {
-            let right : Expr = self.parse_expr_frontier()?;
+            let right : Expr = self.parse_expr_unary()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
         Some(left)
+    }
+
+    /// Parses any sort of chained unary operators.
+    fn parse_expr_unary(&mut self) -> Option<Expr<'a>> {
+        if let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
+            let right : Expr = self.parse_expr_unary()?;
+            Some(Expr::Unary(token, Box::new(right)))
+        } else {
+            self.parse_expr_frontier()
+        }
     }
 
     /// Parses the frontier of an expression.
