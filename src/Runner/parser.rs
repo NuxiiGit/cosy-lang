@@ -57,7 +57,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_equality(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_addition()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(&op[..1], "!" | "="))) {
+                matches!(op.first(), Some('!') | Some('=')))) {
             let right : Expr = self.parse_expr_addition()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -68,7 +68,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_multiplication()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(&op[..1], "+" | "-"))) {
+                matches!(op.first(), Some('+') | Some('-')))) {
             let right : Expr = self.parse_expr_multiplication()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -79,7 +79,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_frontier()?;
         while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(&op[..1], "*" | "/" | "%"))) {
+                matches!(op.first(), Some('*') | Some('/') | Some('%')))) {
             let right : Expr = self.parse_expr_frontier()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -131,5 +131,17 @@ impl<'a> Parser<'a> {
     /// Push an error onto the error list.
     fn error(&mut self, message : &'static str) {
         Error::throw(message, self.row, self.column);
+    }
+}
+
+
+/// Additional methods for `str`
+trait StrExt {
+    /// Returns the first char of this `str`
+    fn first(&self) -> Option<char>;
+}
+impl StrExt for str {
+    fn first(&self) -> Option<char> {
+        self.chars().next()
     }
 }
