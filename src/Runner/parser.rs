@@ -46,9 +46,9 @@ impl<'a> Parser<'a> {
     /// Parses an expression.
     fn parse_expr(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_addition()?;
-        while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
+        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
             let right : Expr = self.parse_expr_addition()?;
-            left = Expr::Binary(token, Box::new(left), Box::new(right));
+            left = Expr::Binary(operator, Box::new(left), Box::new(right));
         }
         Some(left)
     }
@@ -56,10 +56,10 @@ impl<'a> Parser<'a> {
     /// Parses a string of `!=` and `==` binary operators.
     fn parse_expr_equality(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_inequality()?;
-        while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "!" | "="))) {
             let right : Expr = self.parse_expr_inequality()?;
-            left = Expr::Binary(token, Box::new(left), Box::new(right));
+            left = Expr::Binary(operator, Box::new(left), Box::new(right));
         }
         Some(left)
     }
@@ -67,10 +67,10 @@ impl<'a> Parser<'a> {
     /// Parses a string of `!=` and `==` binary operators.
     fn parse_expr_inequality(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_addition()?;
-        while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), ">" | "<"))) {
             let right : Expr = self.parse_expr_addition()?;
-            left = Expr::Binary(token, Box::new(left), Box::new(right));
+            left = Expr::Binary(operator, Box::new(left), Box::new(right));
         }
         Some(left)
     }
@@ -78,10 +78,10 @@ impl<'a> Parser<'a> {
     /// Parses a string of `+` and `-` binary operators.
     fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_multiplication()?;
-        while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "+" | "-"))) {
             let right : Expr = self.parse_expr_multiplication()?;
-            left = Expr::Binary(token, Box::new(left), Box::new(right));
+            left = Expr::Binary(operator, Box::new(left), Box::new(right));
         }
         Some(left)
     }
@@ -89,19 +89,19 @@ impl<'a> Parser<'a> {
     /// Parses a string of `*`, `/`, and '%' binary operators.
     fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
         let mut left : Expr = self.parse_expr_unary()?;
-        while let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(op.substring(0, 1), "*" | "/" | "%"))) {
             let right : Expr = self.parse_expr_unary()?;
-            left = Expr::Binary(token, Box::new(left), Box::new(right));
+            left = Expr::Binary(operator, Box::new(left), Box::new(right));
         }
         Some(left)
     }
 
     /// Parses any sort of chained unary operators.
     fn parse_expr_unary(&mut self) -> Option<Expr<'a>> {
-        if let Some(token) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
+        if let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
             let right : Expr = self.parse_expr_unary()?;
-            Some(Expr::Unary(token, Box::new(right)))
+            Some(Expr::Unary(operator, Box::new(right)))
         } else {
             self.parse_expr_frontier()
         }
@@ -109,23 +109,22 @@ impl<'a> Parser<'a> {
 
     /// Parses the frontier of an expression.
     fn parse_expr_frontier(&mut self) -> Option<Expr<'a>> {
-        if let Some(token) = self.consume_if(|x| matches!(x,
+        if let Some(literal) = self.consume_if(|x| matches!(x,
                 TokenType::String(..) |
                 TokenType::Integer(..))) {
-            return Some(Expr::Literal(token));
-        } else {
-            if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen)) {
-                let expr : Expr = self.parse_expr()?;
-                if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen)) {
-                    return Some(expr);
-                } else {
-                    self.error("Expected ending ')' after expression");
-                }
+            Some(Expr::Literal(literal))
+        } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen)) {
+            let expr : Expr = self.parse_expr()?;
+            if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen)) {
+                Some(expr)
             } else {
-                self.error("Malformed expression");
+                self.error("Expected ending ')' after expression");
+                None
             }
+        } else {
+            self.error("Malformed expression");
+            None
         }
-        None
     }
 
     /// Consumes the next token if the closure returns true.
@@ -154,7 +153,6 @@ impl<'a> Parser<'a> {
         Error::throw(message, self.row, self.column);
     }
 }
-
 
 /// Additional methods for `str`
 trait StrExt {

@@ -12,6 +12,7 @@ pub enum SyntaxTree<'a> {
 #[derive(Debug)]
 pub enum Expr<'a> {
     Literal(Token<'a>),
+    Field(Token<'a>),
     Unary(Token<'a>, Box<Expr<'a>>),
     Binary(Token<'a>, Box<Expr<'a>>, Box<Expr<'a>>),
 }
