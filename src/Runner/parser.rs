@@ -56,9 +56,20 @@ impl<'a> Parser<'a> {
 
     /// Parses a string of `+` and `-` binary operators.
     fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
-        let mut left : Expr = self.parse_expr_frontier()?;
+        let mut left : Expr = self.parse_expr_multiplication()?;
         while let Some(token) = self.consume_if(|x|
                 truth!(x, TokenType::Operator(op) if truth!(&op[..1], "+" | "-"))) {
+            let right : Expr = self.parse_expr_multiplication()?;
+            left = Expr::Binary(token, Box::new(left), Box::new(right));
+        }
+        Some(left)
+    }
+
+    /// Parses a string of `*`, `/`, and '%' binary operators.
+    fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_frontier()?;
+        while let Some(token) = self.consume_if(|x|
+                truth!(x, TokenType::Operator(op) if truth!(&op[..1], "*" | "/" | "%"))) {
             let right : Expr = self.parse_expr_frontier()?;
             left = Expr::Binary(token, Box::new(left), Box::new(right));
         }
@@ -72,8 +83,20 @@ impl<'a> Parser<'a> {
                         TokenType::Integer(..) |
                         TokenType::Identifier(..))) {
             return Some(Expr::Terminal(token));
+        } else {
+            if let Some(_) = self.consume_if(|x|
+                    truth!(x, TokenType::LeftParen)) {
+                let expr : Expr = self.parse_expr()?;
+                if let Some(_) = self.consume_if(|x|
+                        truth!(x, TokenType::RightParen)) {
+                    return Some(expr);
+                } else {
+                    self.error("Expected ending ')' after expression");
+                }
+            } else {
+                self.error("Malformed expression");
+            }
         }
-        self.error("Malformed expression.");
         None
     }
 
