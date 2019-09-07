@@ -51,7 +51,13 @@ impl<'a> Parser<'a> {
 
     /// Parses an expression.
     fn parse_expr(&mut self) -> Option<Expr<'a>> {
-        self.parse_expr_addition()
+        let mut left : Expr = self.parse_expr_addition()?;
+        while let Some(token) = self.consume_if(|x|
+                truth!(x, TokenType::Operator(..))) {
+            let right : Expr = self.parse_expr_addition()?;
+            left = Expr::Binary(token, Box::new(left), Box::new(right));
+        }
+        Some(left)
     }
 
     /// Parses a string of `+` and `-` binary operators.
