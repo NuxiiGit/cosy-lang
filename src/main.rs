@@ -1,6 +1,6 @@
 mod runner;
 
-use runner::parser::Parser;
+use runner::parser::*;
 use runner::lexer::Lexer;
 use runner::error::Error;
 use std::time::Instant;
@@ -9,7 +9,7 @@ fn main() {
     let t = Instant::now();
     // compile
     let scanner = Lexer::new(r#"(1+3)*3"#);
-    let ast = Parser::parse(scanner);
+    let ast = scanner.into_ast();
     // record time
     let micro = t.elapsed().as_micros();
     let second : f64 = (micro as f64) / 1000000.0;

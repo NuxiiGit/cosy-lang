@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use super::lexer::Lexer;
 use super::error::Error;
 use super::token::*;
 use super::syntax_tree::*;
@@ -18,14 +17,14 @@ macro_rules! matches {
 
 /// A struct which encapsulates the state of the parser.
 pub struct Parser<'a, I> where
-        I : Iterator<Item = Token<'a>> + Sized {
+        I : Iterator<Item = Token<'a>> {
     scanner : Peekable<I>,
     row : usize,
     column : usize
 }
 impl<'a, I> Parser<'a, I> where
-        I : Iterator<Item = Token<'a>> + Sized {
-    /// Parses a into a syntax tree.
+        I : Iterator<Item = Token<'a>> {
+    /// Parses an expression into a syntax tree.
     pub fn parse(scanner : I) -> Option<SyntaxTree<'a>> {
         let mut parser : Parser<I> = Parser {
             scanner : scanner.peekable(),
@@ -171,6 +170,23 @@ impl<'a, I> Parser<'a, I> where
     /// Push an error onto the error list.
     fn error(&mut self, message : &'static str) {
         Error::throw(message, self.row, self.column);
+    }
+}
+
+/// Implement `into_ast()` methods onto all iterators where their item is `token::Token`.
+pub trait IteratorExt<'a>: Iterator<Item = Token<'a>> {
+    /// Consumes this iterator and converts it into a parse tree of tokens.
+    /// # Errors
+    /// Errors are logged to `error::Error`, and can be obtained using:
+    /// ```
+    /// let errors = error::Error::log();
+    /// ```
+    fn into_ast(self) -> Option<SyntaxTree<'a>>;
+}
+impl<'a, I> IteratorExt<'a> for I where 
+        I : Iterator<Item = Token<'a>> {
+    fn into_ast(self) -> Option<SyntaxTree<'a>> {
+        Parser::parse(self)
     }
 }
 
