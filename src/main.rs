@@ -8,8 +8,8 @@ use std::time::Instant;
 fn main() {
     let t = Instant::now();
     // compile
-    let scanner = Lexer::new(r#"(1+3)*3"#);
-    let ast = scanner.into_ast();
+    let ast = Lexer::new(r#"(1+3)*3"#)
+            .into_ast();
     // record time
     let micro = t.elapsed().as_micros();
     let second : f64 = (micro as f64) / 1000000.0;

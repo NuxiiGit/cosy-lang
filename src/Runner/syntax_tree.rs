@@ -5,8 +5,8 @@ use super::token::*;
 /// An enum which stores the root of the syntax tree.
 #[derive(Debug)]
 pub enum SyntaxTree<'a> {
-    Expression {
-        body : Expr<'a>
+    Statement {
+        expr : Expr<'a>
     }
 }
 
@@ -27,5 +27,9 @@ pub enum Expr<'a> {
         operator : Token<'a>,
         left : Box<Expr<'a>>,
         right : Box<Expr<'a>>
-    }
+    },
+    Composition {
+        expr : Box<Expr<'a>>,
+        field : Token<'a>
+    },
 }
