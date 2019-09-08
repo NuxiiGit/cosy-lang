@@ -120,8 +120,20 @@ impl<'a, I> Parser<'a, I> where
                 expr : Box::new(right)
             })
         } else {
-            self.parse_expr_frontier()
+            self.parse_expr_member()
         }
+    }
+
+    /// Parses a chain of identifiers.
+    fn parse_expr_member(&mut self) -> Option<Expr<'a>> {
+        let mut expr : Expr = self.parse_expr_frontier()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Identifier(..))) {
+            expr = Expr::Member {
+                expr : Box::new(expr),
+                field : ident
+            }
+        }
+        Some(expr)
     }
 
     /// Parses the frontier of an expression.

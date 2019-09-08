@@ -8,7 +8,7 @@ use std::time::Instant;
 fn main() {
     let t = Instant::now();
     // compile
-    let ast = Lexer::new(r#"(1+3)*3"#)
+    let ast = Lexer::new(r#"1 test testing another + 2"#)
             .into_ast();
     // record time
     let micro = t.elapsed().as_micros();

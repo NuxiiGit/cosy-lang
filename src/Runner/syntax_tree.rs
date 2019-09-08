@@ -28,7 +28,7 @@ pub enum Expr<'a> {
         left : Box<Expr<'a>>,
         right : Box<Expr<'a>>
     },
-    Composition {
+    Member {
         expr : Box<Expr<'a>>,
         field : Token<'a>
     },
