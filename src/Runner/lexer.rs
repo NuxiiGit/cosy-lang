@@ -153,7 +153,8 @@ impl<'a> Iterator for Lexer<'a> {
                                 if x == '\\' {
                                     self.next_char();
                                 } else if x == '"' {
-                                    break self.token(TokenType::String(
+                                    break self.token(TokenType::Literal(
+                                            "string",
                                             &self.context[start..i]));
                                 }
                             } else {
@@ -179,7 +180,8 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.peek_index();
-                self.token(TokenType::Integer(
+                self.token(TokenType::Literal(
+                        "integer",
                         &self.context[start..end]))
             },
             // match bracket types
