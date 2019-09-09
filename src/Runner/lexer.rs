@@ -1,7 +1,9 @@
 #![allow(dead_code)]
 
-use super::token::*;
-use super::error::Error;
+use super::essentials::{
+    token::*,
+    error::*
+};
 use std::iter::Peekable;
 use std::str::CharIndices;
 

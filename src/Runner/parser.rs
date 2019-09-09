@@ -1,8 +1,10 @@
 #![allow(dead_code)]
 
-use super::error::Error;
-use super::token::*;
-use super::syntax_tree::*;
+use super::essentials::{
+    token::*,
+    error::*,
+    syntax_tree::*
+};
 use std::iter::Peekable;
 
 /// A macro for matching a value with a pattern.

@@ -2,7 +2,7 @@ mod runner;
 
 use runner::parser::*;
 use runner::lexer::Lexer;
-use runner::error::Error;
+use runner::essentials::error::Error;
 use std::time::Instant;
 
 fn main() {

@@ -6,9 +6,9 @@ static mut ERRORS : Option<Vec<Error>> = None;
 
 /// A struct which holds error information.
 pub struct Error {
-    message : &'static str,
-    row : usize,
-    column : usize
+    pub message : &'static str,
+    pub row : usize,
+    pub column : usize
 }
 impl Error {
     /// Returns the current error log.
@@ -46,21 +46,6 @@ impl Error {
                 _ => unreachable!()
             }
         }
-    }
-
-    /// Returns the error message.
-    pub fn message(&self) -> &'static str {
-        self.message
-    }
-
-    /// Returns the row number the error occured on.
-    pub fn row(&self) -> usize {
-        self.row
-    }
-
-    /// Returns the column number the error occured on.
-    pub fn column(&self) -> usize {
-        self.column
     }
 }
 impl fmt::Display for Error {
