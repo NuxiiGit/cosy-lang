@@ -2,30 +2,24 @@
 
 use super::token::*;
 use super::error::Error;
+use std::iter::Peekable;
 use std::str::CharIndices;
 
 /// A struct which encapsulates the state of the scanner.
 pub struct Lexer<'a> {
     context : &'a str,
-    scanner : CharIndices<'a>,
-    next : Option<(usize, char)>,
+    scanner : Peekable<CharIndices<'a>>,
     row : usize,
     column : usize
 }
 impl<'a> Lexer<'a> {
     /// Constructs a new scanner.
-    /// # Errors
-    /// Errors are logged to `error::Error`, and can be obtained using:
-    /// ```
-    /// let errors = error::Error::log();
-    /// ```
     pub fn new(context : &'a str) -> Lexer<'a> {
-        let mut scanner : CharIndices = context.char_indices();
-        let first : Option<(usize, char)> = scanner.next();
         Lexer {
             context : context,
-            scanner : scanner,
-            next : first,
+            scanner : context
+                    .char_indices()
+                    .peekable(),
             row : 1,
             column : 1
         }
@@ -33,33 +27,30 @@ impl<'a> Lexer<'a> {
 
     /// Move to the next character.
     fn next_char(&mut self) -> Option<char> {
-        let (_, x) = self.next_charindex()?;
+        let (_, x) : (_, char) = self.next_charindex()?;
         Some(x)
     }
 
     /// Move to the next character-index pair.
     fn next_charindex(&mut self) -> Option<(usize, char)> {
-        let next : Option<(usize, char)> = self.next;
-        if let Some((_, x)) = next {
-            if let '\n' = x {
-                self.row += 1;
-                self.column = 1;
-            } else {
-                self.column += 1;
-            }
-            self.next = self.scanner.next();
+        let next : (usize, char) = self.scanner.next()?;
+        if let (_, '\n') = next {
+            self.row += 1;
+            self.column = 1;
+        } else {
+            self.column = 1;
         }
-        next
+        Some(next)
     }
 
     /// Peek at the next character.
-    fn peek_char(&self) -> Option<char> {
+    fn peek_char(&mut self) -> Option<char> {
         let (_, x) = self.peek_charindex()?;
         Some(x)
     }
 
     /// Peek at the next index. Returns `context.len()` if the end is reached.
-    fn peek_index(&self) -> usize {
+    fn peek_index(&mut self) -> usize {
         if let Some((i, _)) = self.peek_charindex() {
             i
         } else {
@@ -68,8 +59,9 @@ impl<'a> Lexer<'a> {
     }
 
     /// Peek at the next character-index pair.
-    fn peek_charindex(&self) -> Option<(usize, char)> {
-        self.next
+    fn peek_charindex(&mut self) -> Option<(usize, char)> {
+        let peek : &(usize, char) = self.scanner.peek()?;
+        Some(*peek)
     }
 
     /// Create a new token with the current row and column numbers.
@@ -140,7 +132,8 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                self.token(match &self.context[start..self.peek_index()] {
+                let end : usize = self.peek_index();
+                self.token(match &self.context[start..end] {
                     "var" => TokenType::Var,
                     "if" => TokenType::If,
                     "ifnot" => TokenType::IfNot,
@@ -183,8 +176,9 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
+                let end : usize = self.peek_index();
                 self.token(TokenType::Integer(
-                        &self.context[start..self.peek_index()]))
+                        &self.context[start..end]))
             },
             // match bracket types
             x if x.is_bracket() => {
@@ -212,7 +206,8 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                self.token(match &self.context[start..self.peek_index()] {
+                let end : usize = self.peek_index();
+                self.token(match &self.context[start..end] {
                     ":" => TokenType::Colon,
                     ";" => TokenType::SemiColon,
                     x => TokenType::Operator(x)

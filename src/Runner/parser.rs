@@ -32,7 +32,7 @@ impl<'a, I> Parser<'a, I> where
             column : 0
         };
         let expr : Expr = parser.parse_expr()?;
-        Some(SyntaxTree::Statement {
+        Some(SyntaxTree::ExpressionStatement {
             expr : expr
         })
     }
@@ -117,7 +117,7 @@ impl<'a, I> Parser<'a, I> where
             let right : Expr = self.parse_expr_unary()?;
             Some(Expr::Unary {
                 operator : operator,
-                expr : Box::new(right)
+                right : Box::new(right)
             })
         } else {
             self.parse_expr_member()
@@ -129,7 +129,7 @@ impl<'a, I> Parser<'a, I> where
         let mut expr : Expr = self.parse_expr_frontier()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Identifier(..))) {
             expr = Expr::Member {
-                expr : Box::new(expr),
+                left : Box::new(expr),
                 field : ident
             }
         }
@@ -188,11 +188,6 @@ impl<'a, I> Parser<'a, I> where
 /// Implement `into_ast()` methods onto all iterators where their item is `token::Token`.
 pub trait IteratorExt<'a>: Iterator<Item = Token<'a>> {
     /// Consumes this iterator and converts it into a parse tree of tokens.
-    /// # Errors
-    /// Errors are logged to `error::Error`, and can be obtained using:
-    /// ```
-    /// let errors = error::Error::log();
-    /// ```
     fn into_ast(self) -> Option<SyntaxTree<'a>>;
 }
 impl<'a, I> IteratorExt<'a> for I where 
