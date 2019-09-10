@@ -34,8 +34,10 @@ impl<'a, I> Parser<'a, I> where
             column : 0
         };
         let expr : Expr = parser.parse_expr()?;
-        Some(SyntaxTree::ExpressionStatement {
-            expr : expr
+        Some(SyntaxTree::Program {
+            body : Statement::ExpressionStatement {
+                expr
+            }
         })
     }
 
