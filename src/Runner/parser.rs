@@ -28,17 +28,15 @@ pub struct Parser<'a, I> where
 impl<'a, I> Parser<'a, I> where
         I : Iterator<Item = Token<'a>> {
     /// Parses an expression into a syntax tree.
-    pub fn parse(scanner : I) -> Option<SyntaxTree<'a>> {
+    pub fn parse(scanner : I) -> Option<Statement<'a>> {
         let mut parser : Parser<I> = Parser {
             scanner : scanner.peekable(),
             row : 0,
             column : 0
         };
         let expr : Expr = parser.parse_expr()?;
-        Some(SyntaxTree::Program {
-            body : Statement::ExpressionStatement {
-                expr
-            }
+        Some(Statement::ExpressionStatement {
+            expr
         })
     }
 
@@ -192,11 +190,11 @@ impl<'a, I> Parser<'a, I> where
 /// Implement `into_ast()` methods onto all iterators where their item is `token::Token`.
 pub trait IteratorExt<'a>: Iterator<Item = Token<'a>> {
     /// Consumes this iterator and converts it into a parse tree of tokens.
-    fn into_ast(self) -> Option<SyntaxTree<'a>>;
+    fn into_ast(self) -> Option<Statement<'a>>;
 }
 impl<'a, I> IteratorExt<'a> for I where 
         I : Iterator<Item = Token<'a>> {
-    fn into_ast(self) -> Option<SyntaxTree<'a>> {
+    fn into_ast(self) -> Option<Statement<'a>> {
         Parser::parse(self)
     }
 }

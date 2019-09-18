@@ -11,7 +11,7 @@ use std::iter::Peekable;
 /// A struct which encapsulates the state of the evaluator.
 struct Interpreter;
 impl<'a> Interpreter {
-    fn execute_program(&mut self, tree : &SyntaxTree<'a>) -> Option<Value> {
+    fn execute_program(&mut self, tree : &Statement<'a>) -> Option<Value> {
         None
     }
 }

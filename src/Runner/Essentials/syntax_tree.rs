@@ -2,14 +2,6 @@
 
 use super::token::*;
 
-/// An enum which stores the root of the syntax tree.
-#[derive(Debug)]
-pub enum SyntaxTree<'a> {
-    Program {
-        body : Statement<'a>
-    }
-}
-
 /// An enum which stores statement information.
 #[derive(Debug)]
 pub enum Statement<'a> {
