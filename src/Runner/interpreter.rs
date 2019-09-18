@@ -41,9 +41,17 @@ impl<'a> Interpreter {
 
     /// Evaluates a literal.
     fn touch_expression_literal(&mut self, token : &Token<'a>) -> Option<Value> {
-        None
+        match token.flavour {
+            TokenType::Integer(literal) => {
+                if let Ok(value) = literal.parse::<i64>() {
+                    Some(Value::Integer(value))
+                } else {
+                    None
+                }
+            },
+            _ => panic!()
+        }
     }
-
 }
 
 /// An enum which describes the different types of value.

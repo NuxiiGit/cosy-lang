@@ -18,7 +18,8 @@ impl<'a> fmt::Debug for Token<'a> {
 #[derive(Debug)]
 pub enum TokenType<'a> {
     // literals
-    Literal(&'static str, &'a str),
+    String(&'a str),
+    Integer(&'a str),
     // Keywords
     Identifier(&'a str),
     Var,
