@@ -11,7 +11,12 @@ use std::iter::Peekable;
 /// A struct which encapsulates the state of the evaluator.
 struct Interpreter;
 impl<'a> Interpreter {
-    fn execute_program(&mut self, tree : &Statement<'a>) -> Option<Value> {
+    pub fn execute(program : &Statement<'a>) -> Option<Value> {
+        let mut eval : Interpreter = Interpreter {};
+        eval.touch_statement(program)
+    }
+
+    fn touch_statement(&mut self, statement : &Statement<'a>) -> Option<Value> {
         None
     }
 }
