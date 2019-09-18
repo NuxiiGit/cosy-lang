@@ -9,14 +9,18 @@ use super::essentials::{
 use std::iter::Peekable;
 
 /// A struct which encapsulates the state of the evaluator.
-struct Interpreter;
-impl<'a> Interpreter {
-    pub fn execute(program : &Statement<'a>) -> Option<Value> {
-        let mut eval : Interpreter = Interpreter {};
-        eval.touch_statement(program)
+struct Interpreter<'a> {
+    program : Statement<'a>
+}
+impl<'a> Interpreter<'a> {
+    /// Constructs a new evaluator.
+    pub fn new(program : Statement<'a>) -> Interpreter<'a> {
+        Interpreter {
+            program
+        }
     }
 
-    fn touch_statement(&mut self, statement : &Statement<'a>) -> Option<Value> {
+    pub fn execute(mut self) -> Option<Value> {
         None
     }
 }
