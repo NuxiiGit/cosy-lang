@@ -1,22 +1,22 @@
 mod runner;
 
 use runner::parser::*;
-use runner::lexer::Lexer;
+use runner::lexer::*;
+use runner::interpreter::*;
 use runner::essentials::error::Error;
 use std::time::Instant;
 
 fn main() {
     let t = Instant::now();
     // compile
-    let ast = Lexer::new(r#"1 test testing another + 2"#)
-            .into_ast();
-    // record time
-    let micro = t.elapsed().as_micros();
-    let second : f64 = (micro as f64) / 1000000.0;
-    println!("\nCompile Time:\n{} s ({} Ms)", second, micro);
-    // display the syntax tree
-    if let Some(program) = ast {
-        println!("\nTree:\n{:#?}", program);
+    if let Some(ast) = Lexer::new(r#"12"#).into_ast() {
+        // display the syntax tree
+        println!("\nTree:\n{:#?}\n", &ast);
+        // display the result
+        match Interpreter::new().execute(&ast) {
+            Ok(x) => println!("Result = {:?}", x),
+            Err(e) => println!("Runtime Error:\n{}", e)
+        }
     }
     // log errors
     if let Some(errors) = Error::log() {
@@ -25,4 +25,8 @@ fn main() {
             println!(" |> {}", e);
         }
     }
+    // record time
+    let micro = t.elapsed().as_micros();
+    let second : f64 = (micro as f64) / 1000000.0;
+    println!("\nCompile Time:\n{} s ({} Ms)", second, micro);
 }

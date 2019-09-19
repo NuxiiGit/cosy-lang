@@ -7,7 +7,7 @@ use super::essentials::{
 };
 
 /// A struct which encapsulates the state of the evaluator.
-struct Interpreter;
+pub struct Interpreter;
 impl<'a> Interpreter {
     /// Constructs a new evaluator.
     pub fn new() -> Interpreter {
@@ -42,7 +42,7 @@ impl<'a> Interpreter {
                 if let Ok(value) = literal.parse::<i64>() {
                     Ok(Value::Integer(value))
                 } else {
-                    Err("Unable to parse integer literal", token.row, token.column))
+                    Err(Error::new("Unable to parse integer literal", token.row, token.column))
                 }
             },
             _ => unimplemented!()
@@ -51,6 +51,7 @@ impl<'a> Interpreter {
 }
 
 /// An enum which describes the different types of value.
+#[derive(Debug)]
 pub enum Value {
     Char(char),
     Integer(i64),
