@@ -187,7 +187,7 @@ impl<'a, I> Parser<'a, I> where
 
     /// Push an error onto the error list.
     fn error(&mut self, message : &'static str) {
-        Error::throw(message, self.row, self.column);
+        Error::new(message, self.row, self.column).throw();
     }
 }
 

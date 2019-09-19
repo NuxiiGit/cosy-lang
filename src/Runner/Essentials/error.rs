@@ -30,19 +30,18 @@ impl Error {
     }
 
     /// Construct a new error instance.
-    pub fn throw(message : &'static str, row : usize, column : usize) {
+    pub fn new(message : &'static str, row : usize, column : usize) -> Error {
+        Error { message, row, column }
+    }
+
+    /// Pushes this error onto the error list.
+    pub fn throw(self) {
         unsafe {
             if let None = &ERRORS {
                 ERRORS = Some(Vec::new());
             }
             match &mut ERRORS {
-                Some(ref mut errors) => {
-                    errors.push(Error {
-                        message : message,
-                        row : row,
-                        column : column
-                    });
-                },
+                Some(ref mut errors) => errors.push(self),
                 _ => unreachable!()
             }
         }

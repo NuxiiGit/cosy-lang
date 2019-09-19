@@ -15,51 +15,38 @@ impl<'a> Interpreter {
     }
 
     /// Executes this program and returns a value.
-    pub fn execute(mut self, program : &Statement<'a>) -> Option<Value> {
+    pub fn execute(mut self, program : &Statement<'a>) -> Result<Value, Error> {
         self.touch_statement(program)
     }
 
     /// Evaluates a statement.
-    fn touch_statement(&mut self, statement : &Statement<'a>) -> Option<Value> {
+    fn touch_statement(&mut self, statement : &Statement<'a>) -> Result<Value, Error> {
         match statement {
             Statement::ExpressionStatement { expr } => self.touch_expression(expr),
-            _ => None
+            _ => unimplemented!()
         }
     }
 
     /// Evaluates an expression.
-    fn touch_expression(&mut self, expr : &Expr<'a>) -> Option<Value> {
+    fn touch_expression(&mut self, expr : &Expr<'a>) -> Result<Value, Error> {
         match expr {
             Expr::Literal { value } => self.touch_expression_literal(value),
-            //Expr::Variable { ident } => None,
-            //Expr::Unary { operator, right } => None,
-            Expr::Binary { operator, left, right } => self.touch_expression_binary(
-                    operator, left, right),
-            //Expr::Member { left, field } => None,
-            _ => None
+            _ => unimplemented!()
         }
     }
 
     /// Evaluates a literal.
-    fn touch_expression_literal(&mut self, token : &Token<'a>) -> Option<Value> {
+    fn touch_expression_literal(&mut self, token : &Token<'a>) -> Result<Value, Error> {
         match token.flavour {
             TokenType::Integer(literal) => {
                 if let Ok(value) = literal.parse::<i64>() {
-                    Some(Value::Integer(value))
+                    Ok(Value::Integer(value))
                 } else {
-                    None
+                    Err(Error::new("Unable to parse integer literal", token.row, token.column))
                 }
             },
-            _ => None
+            _ => unimplemented!()
         }
-    }
-
-    /// Evaluates a binary operation.
-    fn touch_expression_binary(&mut self,
-            operator : &Token<'a>,
-            left : &Expr<'a>,
-            right : &Expr<'a>) -> Option<Value> {
-        None
     }
 }
 

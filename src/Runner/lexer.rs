@@ -78,7 +78,7 @@ impl<'a> Lexer<'a> {
 
     /// Push an error onto the error list.
     fn error(&mut self, message : &'static str) {
-        Error::throw(message, self.row, self.column);
+        Error::new(message, self.row, self.column).throw();
     }
 }
 impl<'a> Iterator for Lexer<'a> {
