@@ -22,8 +22,7 @@ impl<'a> Interpreter {
     /// Evaluates a statement.
     fn touch_statement(&mut self, statement : &Statement<'a>) -> Result<Value, Error> {
         match statement {
-            Statement::ExpressionStatement { expr } => self.touch_expression(expr),
-            _ => unimplemented!()
+            Statement::ExpressionStatement { expr } => self.touch_expression(expr)
         }
     }
 
@@ -31,21 +30,28 @@ impl<'a> Interpreter {
     fn touch_expression(&mut self, expr : &Expr<'a>) -> Result<Value, Error> {
         match expr {
             Expr::Literal { value } => self.touch_expression_literal(value),
-            _ => unimplemented!()
+            Expr::Variable { ident } => unimplemented!(),
+            Expr::Unary { operator, right } => unimplemented!(),
+            Expr::Binary { operator, left, right } => unimplemented!(),
+            Expr::Member { left, field } => unimplemented!()
         }
     }
 
     /// Evaluates a literal.
     fn touch_expression_literal(&mut self, token : &Token<'a>) -> Result<Value, Error> {
-        match token.flavour {
+        match match token.flavour {
             TokenType::Integer(literal) => {
                 if let Ok(value) = literal.parse::<i64>() {
                     Ok(Value::Integer(value))
                 } else {
-                    Err(Error::new("Unable to parse integer literal", token.row, token.column))
+                    Err("Unable to parse integer literal")
                 }
             },
-            _ => unimplemented!()
+            TokenType::String(literal) => unimplemented!(),
+            _ => Err("Illegal token")
+        } {
+            Ok(value) => Ok(value),
+            Err(msg) => Err(Error::new(msg, token.row, token.column))
         }
     }
 }
