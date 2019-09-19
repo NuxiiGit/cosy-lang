@@ -19,7 +19,7 @@ impl<'a> Lexer<'a> {
     /// Constructs a new scanner.
     pub fn new(context : &'a str) -> Lexer<'a> {
         Lexer {
-            context : context,
+            context,
             scanner : context
                     .char_indices()
                     .peekable(),
@@ -70,7 +70,7 @@ impl<'a> Lexer<'a> {
     /// Create a new token with the current row and column numbers.
     fn token(&self, flavour : TokenType<'a>) -> Option<Token<'a>> {
         Some(Token {
-            flavour : flavour,
+            flavour,
             row : self.row,
             column : self.column
         })

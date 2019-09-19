@@ -31,7 +31,11 @@ impl Error {
 
     /// Construct a new error instance.
     pub fn new(message : &'static str, row : usize, column : usize) -> Error {
-        Error { message, row, column }
+        Error {
+            message,
+            row,
+            column
+        }
     }
 
     /// Pushes this error onto the error list.

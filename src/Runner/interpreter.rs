@@ -42,7 +42,7 @@ impl<'a> Interpreter {
                 if let Ok(value) = literal.parse::<i64>() {
                     Ok(Value::Integer(value))
                 } else {
-                    Err(Error::new("Unable to parse integer literal", token.row, token.column))
+                    Err("Unable to parse integer literal", token.row, token.column))
                 }
             },
             _ => unimplemented!()
