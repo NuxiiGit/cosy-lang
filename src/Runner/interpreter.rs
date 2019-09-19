@@ -23,7 +23,7 @@ impl<'a> Interpreter {
     fn touch_statement(&mut self, statement : &Statement<'a>) -> Option<Value> {
         match statement {
             Statement::ExpressionStatement { expr } => self.touch_expression(expr),
-            _ => panic!()
+            _ => None
         }
     }
 
@@ -31,11 +31,12 @@ impl<'a> Interpreter {
     fn touch_expression(&mut self, expr : &Expr<'a>) -> Option<Value> {
         match expr {
             Expr::Literal { value } => self.touch_expression_literal(value),
-            /*Expr::Variable { ident } => None,
-            Expr::Unary { operator, right } => None,
-            Expr::Binary { operator, left, right } => None,
-            Expr::Member { left, field } => None,*/
-            _ => panic!()
+            //Expr::Variable { ident } => None,
+            //Expr::Unary { operator, right } => None,
+            Expr::Binary { operator, left, right } => self.touch_expression_binary(
+                    operator, left, right),
+            //Expr::Member { left, field } => None,
+            _ => None
         }
     }
 
@@ -49,8 +50,16 @@ impl<'a> Interpreter {
                     None
                 }
             },
-            _ => panic!()
+            _ => None
         }
+    }
+
+    /// Evaluates a binary operation.
+    fn touch_expression_binary(&mut self,
+            operator : &Token<'a>,
+            left : &Expr<'a>,
+            right : &Expr<'a>) -> Option<Value> {
+        None
     }
 }
 
