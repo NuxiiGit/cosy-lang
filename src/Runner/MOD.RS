@@ -1,3 +1,5 @@
+#[macro_use]
+pub mod macros;
 pub mod essentials;
 pub mod lexer;
 pub mod parser;

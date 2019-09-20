@@ -239,21 +239,14 @@ trait CharExt {
 }
 impl CharExt for char {
     fn is_bracket(&self) -> bool {
-        if let '(' | ')' |
+        matches!(self, 
+                '(' | ')' |
                 '{' | '}' |
-                '[' | ']' = self {
-            true
-        } else {
-            false
-        }
+                '[' | ']')
     }
 
     fn is_quote(&self) -> bool {
-        if let '\'' | '"' | '`' = self {
-            true
-        } else {
-            false
-        }
+        matches!(self, '\'' | '"' | '`')
     }
 
     fn is_symbol(&self) -> bool {

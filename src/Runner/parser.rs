@@ -8,16 +8,6 @@ use super::essentials::{
 
 use std::iter::Peekable;
 
-/// A macro for matching a value with a pattern.
-macro_rules! matches {
-    ($value:expr, $($pattern:tt)*) => ({
-        match $value {
-            $($pattern)* => true,
-            _ => false
-        }
-    });
-}
-
 /// A struct which encapsulates the state of the parser.
 pub struct Parser<'a, I> where
         I : Iterator<Item = Token<'a>> {
