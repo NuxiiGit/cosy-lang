@@ -192,7 +192,7 @@ impl<'a, I> Parser<'a, I> where
 }
 
 /// Implement `into_ast()` methods onto all iterators where their item is `token::Token`.
-pub trait IteratorExt<'a>: Iterator<Item = Token<'a>> {
+pub trait IteratorExt<'a> : Iterator<Item = Token<'a>> {
     /// Consumes this iterator and converts it into a parse tree of tokens.
     fn into_ast(self) -> Option<Statement<'a>>;
 }

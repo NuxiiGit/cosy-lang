@@ -30,16 +30,16 @@ impl<'a> Interpreter {
     fn touch_expression(&mut self, expr : &Expr<'a>) -> Result<Value, Error> {
         match expr {
             Expr::Literal { value } => {
-                match token.flavour {
+                match value.flavour {
                     TokenType::Integer(literal) => {
                         if let Ok(value) = literal.parse::<i64>() {
                             Ok(Value::Integer(value))
                         } else {
-                            Err(Error::new("Unable to parse integer literal", token.row, token.column))
+                            Err(Error::new("Unable to parse integer literal", value.row, value.column))
                         }
                     },
                     TokenType::String(literal) => unimplemented!(),
-                    _ => Err(Error::new("Illegal token", token.row, token.column))
+                    _ => Err(Error::new("Illegal token", value.row, value.column))
                 }
             },
             Expr::Variable { ident } => unimplemented!(),

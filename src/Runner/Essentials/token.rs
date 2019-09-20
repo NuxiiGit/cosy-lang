@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-/// A struct which stores location information about a `TokenType`.
+/// A struct which stores token location data.
 pub struct Token<'a> {
     pub flavour : TokenType<'a>,
     pub row : usize,
