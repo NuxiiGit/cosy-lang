@@ -13,7 +13,7 @@ fn main() {
         // display the syntax tree
         println!("\nTree:\n{:#?}\n", &ast);
         // display the result
-        match Interpreter::new().execute(&ast) {
+        match Interpreter::new().execute(ast) {
             Ok(x) => println!("Result = {:?}", x),
             Err(e) => println!("Runtime Error:\n{}", e)
         }
