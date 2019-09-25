@@ -2,11 +2,18 @@ mod runner;
 
 use runner::parser::*;
 use runner::lexer::*;
+use runner::lexer_improved;
 use runner::interpreter::*;
 use runner::essentials::error::Error;
 use std::time::Instant;
 
 fn main() {
+    for result in lexer_improved::Lexer::new("testing something if (1 + 2)£-> * 3{}") {
+        match result {
+            Ok(token) => println!("{:?}", token),
+            Err(e) => println!("{}", e),
+        }
+    }
     let t = Instant::now();
     // compile
     if let Some(ast) = Lexer::new(r#"12"#).into_ast() {
