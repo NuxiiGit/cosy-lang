@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use super::essentials::{
+use super::collections::{
     token::*,
     error::*
 };

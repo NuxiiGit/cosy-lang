@@ -4,7 +4,7 @@ use runner::parser::*;
 use runner::lexer::*;
 use runner::lexer_improved;
 use runner::interpreter::*;
-use runner::essentials::error::Error;
+use runner::collections::error::Error;
 use std::time::Instant;
 
 fn main() {

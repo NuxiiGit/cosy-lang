@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use super::essentials::token::*;
+use super::collections::token::*;
 
 use std::iter::Peekable;
 use std::str::CharIndices;
