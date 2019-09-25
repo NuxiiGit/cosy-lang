@@ -3,7 +3,8 @@
 use super::essentials::{
     token::*,
     error::*,
-    syntax_tree::*
+    syntax_tree::*,
+    macros::*
 };
 
 /// A struct which encapsulates the state of the evaluator.

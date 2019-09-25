@@ -20,7 +20,7 @@ fn main() {
     }
     // log errors
     if let Some(errors) = Error::log() {
-        println!("\nErrors:");
+        println!("\nCompile Errors:");
         for e in errors {
             println!(" |> {}", e);
         }

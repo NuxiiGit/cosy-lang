@@ -3,7 +3,8 @@
 use super::essentials::{
     token::*,
     error::*,
-    syntax_tree::*
+    syntax_tree::*,
+    macros::*
 };
 
 use std::iter::Peekable;
