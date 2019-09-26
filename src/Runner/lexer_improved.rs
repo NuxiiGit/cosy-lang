@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use super::Result;
 use super::collections::token::*;
 
 use std::iter::Peekable;
@@ -11,7 +12,6 @@ use std::fmt;
 pub struct Lexer<'a> {
     context : &'a str,
     scanner : Peekable<CharIndices<'a>>,
-    cached : Option<LexerResult<'a>>,
     row : usize,
     column : usize
 }
@@ -23,7 +23,6 @@ impl<'a> Lexer<'a> {
             scanner : context
                     .char_indices()
                     .peekable(),
-            cached : None,
             row : 1,
             column : 1
         }
@@ -62,20 +61,16 @@ impl<'a> Lexer<'a> {
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = LexerResult<'a>;
+    type Item = Result<Token<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(result) = self.cached.take() {
-            // return cached result
-            return Some(result);
-        }
         macro_rules! error {
             ($description:expr) => ({
-                Some(Err(LexerError {
+                Some(Err(Box::new(LexerError {
                     description : $description,
                     row : self.row,
                     column : self.column
-                }))
+                })))
             });
         }
         macro_rules! token {
@@ -218,9 +213,6 @@ impl<'a> Iterator for Lexer<'a> {
         }
     }
 }
-
-/// A type which describes the lexer return value.
-pub type LexerResult<'a> = Result<Token<'a>, LexerError>;
 
 /// An error type which represents a lexer error.
 #[derive(Debug)]
