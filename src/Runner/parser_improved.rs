@@ -65,7 +65,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_equality(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_inequality()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.substring(0, 1), "!" | "="))) {
+                matches!(substring(op, 0, 1), "!" | "="))) {
             let right : Expr = self.parse_expr_inequality()?;
             left = Expr::Binary {
                 operator : operator,
@@ -80,7 +80,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_inequality(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_addition()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.substring(0, 1), ">" | "<"))) {
+                matches!(substring(op, 0, 1), ">" | "<"))) {
             let right : Expr = self.parse_expr_addition()?;
             left = Expr::Binary {
                 operator : operator,
@@ -95,7 +95,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_addition(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_multiplication()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.substring(0, 1), "+" | "-"))) {
+                matches!(substring(op, 0, 1), "+" | "-"))) {
             let right : Expr = self.parse_expr_multiplication()?;
             left = Expr::Binary {
                 operator : operator,
@@ -110,7 +110,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_unary()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(op.substring(0, 1), "*" | "/" | "%"))) {
+                matches!(substring(op, 0, 1), "*" | "/" | "%"))) {
             let right : Expr = self.parse_expr_unary()?;
             left = Expr::Binary {
                 operator : operator,
@@ -196,6 +196,15 @@ impl<'a, I> Parser<'a, I> where
             self.column = token.column;
         }
         result
+    }
+
+    /// Throw a parser error.
+    fn make_error(&mut self, description : &'static str) -> Result<()> {
+        Err(Box::new(ParserError {
+            description,
+            row : self.row,
+            column : self.column
+        }))
     }
 }
 
