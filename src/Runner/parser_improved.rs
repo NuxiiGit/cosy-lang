@@ -50,7 +50,7 @@ impl<'a, I> Parser<'a, I> where
     /// Parses an expression.
     fn parse_expr(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_equality()?;
-        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
+        while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..)))? {
             let right : Expr = self.parse_expr_equality()?;
             left = Expr::Binary {
                 operator : operator,
@@ -65,7 +65,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_equality(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_inequality()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(substring(op, 0, 1), "!" | "="))) {
+                matches!(substring(op, 0, 1), "!" | "=")))? {
             let right : Expr = self.parse_expr_inequality()?;
             left = Expr::Binary {
                 operator : operator,
@@ -80,7 +80,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_inequality(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_addition()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(substring(op, 0, 1), ">" | "<"))) {
+                matches!(substring(op, 0, 1), ">" | "<")))? {
             let right : Expr = self.parse_expr_addition()?;
             left = Expr::Binary {
                 operator : operator,
@@ -95,7 +95,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_addition(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_multiplication()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(substring(op, 0, 1), "+" | "-"))) {
+                matches!(substring(op, 0, 1), "+" | "-")))? {
             let right : Expr = self.parse_expr_multiplication()?;
             left = Expr::Binary {
                 operator : operator,
@@ -110,7 +110,7 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>> {
         let mut left : Expr = self.parse_expr_unary()?;
         while let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(substring(op, 0, 1), "*" | "/" | "%"))) {
+                matches!(substring(op, 0, 1), "*" | "/" | "%")))? {
             let right : Expr = self.parse_expr_unary()?;
             left = Expr::Binary {
                 operator : operator,
@@ -123,7 +123,7 @@ impl<'a, I> Parser<'a, I> where
 
     /// Parses any sort of chained unary operators.
     fn parse_expr_unary(&mut self) -> Result<Expr<'a>> {
-        if let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..))) {
+        if let Some(operator) = self.consume_if(|x| matches!(x, TokenType::Operator(..)))? {
             let right : Expr = self.parse_expr_unary()?;
             Ok(Expr::Unary {
                 operator : operator,
@@ -137,7 +137,7 @@ impl<'a, I> Parser<'a, I> where
     /// Parses a chain of identifiers.
     fn parse_expr_member(&mut self) -> Result<Expr<'a>> {
         let mut expr : Expr = self.parse_expr_frontier()?;
-        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Identifier(..))) {
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Identifier(..)))? {
             expr = Expr::Member {
                 left : Box::new(expr),
                 field : ident
@@ -150,13 +150,13 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>> {
         if let Some(literal) = self.consume_if(|x| matches!(x,
                 TokenType::String(..) |
-                TokenType::Integer(..))) {
+                TokenType::Integer(..)))? {
             Ok(Expr::Literal {
                 value : literal
             })
-        } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen)) {
+        } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen))? {
             let expr : Expr = self.parse_expr()?;
-            if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen)) {
+            if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen))? {
                 Ok(expr)
             } else {
                 Err(Box::new(ParserError {
@@ -175,27 +175,20 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Consumes the next token if the closure returns true.
-    fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Option<Token<'a>> {
-        match self.scanner.peek() {
-            Some(Ok(token)) => {
-                if f(&token.flavour) {
-                    self.consume_next()
-                } else {
-                    None
+    fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Result<Option<Token<'a>>> {
+        if let Some(result) = self.scanner.peek() {
+            if let Ok(token) = result {
+                if !f(&token.flavour) {
+                    return Ok(None);
                 }
-            },
-            _ => None
+            }
+            match self.scanner.next().unwrap() {
+                Ok(token) => Ok(Some(token)),
+                Err(e) => Err(e)
+            }
+        } else {
+            Ok(None)
         }
-    }
-
-    /// Consumes the next token.
-    fn consume_next(&mut self) -> Option<Result<Token<'a>>> {
-        let result : Option<Result<Token>> = self.scanner.next();
-        if let Some(Ok(token)) = result {
-            self.row = token.row;
-            self.column = token.column;
-        }
-        result
     }
 
     /// Throw a parser error.
