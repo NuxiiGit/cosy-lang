@@ -56,32 +56,28 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn test() -> bool {
-        true
+    /// Throw a lexer error.
+    fn make_error(&mut self, description : &'static str) -> Result<Token<'a>> {
+        Err(Box::new(LexerError {
+            description,
+            row : self.row,
+            column : self.column
+        }))
+    }
+
+    /// Return a new token.
+    fn make_token(&mut self, flavour : TokenType<'a>) -> Result<Token<'a>> {
+        Ok(Token {
+            flavour,
+            row : self.row,
+            column : self.column
+        })
     }
 }
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        macro_rules! error {
-            ($description:expr) => ({
-                Some(Err(Box::new(LexerError {
-                    description : $description,
-                    row : self.row,
-                    column : self.column
-                })))
-            });
-        }
-        macro_rules! token {
-            ($flavour:expr) => ({
-                Some(Ok(Token {
-                    flavour : $flavour,
-                    row : self.row,
-                    column : self.column
-                }))
-            });
-        }
         macro_rules! valid_operator {
             ($c:expr) => ({
                 if let '!' | '%' | '&' |
@@ -97,7 +93,7 @@ impl<'a> Iterator for Lexer<'a> {
             });
         }
         let mut start = self.char_index();
-        match self.char_next()? {
+        Some(match self.char_next()? {
             // remove whitespace
             x if x.is_whitespace() => {
                 while let Some(x) = self.char_peek() {
@@ -107,7 +103,7 @@ impl<'a> Iterator for Lexer<'a> {
                         break;
                     }
                 }
-                self.next()
+                self.next()?
             },
             // comments
             '\'' => {
@@ -117,11 +113,11 @@ impl<'a> Iterator for Lexer<'a> {
                         if let Some(x) = self.char_next() {
                             if x == '}' {
                                 if let Some('\'') = self.char_next() {
-                                    break;
+                                    break self.next()?;
                                 }
                             }
                         } else {
-                            return error!("Unclosed comment block");
+                            break self.make_error("Unclosed comment block");
                         }
                     }
                 } else {
@@ -131,8 +127,8 @@ impl<'a> Iterator for Lexer<'a> {
                             break;
                         }
                     }
+                    self.next()?
                 }
-                self.next()
             },
             // match string types
             '"' => {
@@ -143,11 +139,11 @@ impl<'a> Iterator for Lexer<'a> {
                         if x == '\\' {
                             self.char_next();
                         } else if x == '"' {
-                            break token!(TokenType::String(
+                            break self.make_token(TokenType::String(
                                     &self.context[start..i]));
                         }
                     } else {
-                        break error!("Unclosed string");
+                        break self.make_error("Unclosed string");
                     }
                 }
             },
@@ -163,7 +159,7 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.char_index();
-                token!(match &self.context[start..end] {
+                self.make_token(match &self.context[start..end] {
                     "var" => TokenType::Var,
                     "if" => TokenType::If,
                     "ifnot" => TokenType::IfNot,
@@ -182,14 +178,14 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.char_index();
-                token!(TokenType::Integer(
+                self.make_token(TokenType::Integer(
                         &self.context[start..end]))
             },
             // match bracket types
-            '(' => token!(TokenType::LeftParen),
-            ')' => token!(TokenType::RightParen),
-            '{' => token!(TokenType::LeftBrace),
-            '}' => token!(TokenType::RightBrace),
+            '(' => self.make_token(TokenType::LeftParen),
+            ')' => self.make_token(TokenType::RightParen),
+            '{' => self.make_token(TokenType::LeftBrace),
+            '}' => self.make_token(TokenType::RightBrace),
             // match symbols and operators
             x if valid_operator!(x) => {
                 while let Some(x) = self.char_peek() {
@@ -202,15 +198,15 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.char_index();
-                token!(match &self.context[start..end] {
+                self.make_token(match &self.context[start..end] {
                     ":" => TokenType::Colon,
                     ";" => TokenType::SemiColon,
                     x => TokenType::Operator(x)
                 })
             },
             // match error
-            _ => error!("Unknown symbol")
-        }
+            _ => self.make_error("Unknown symbol")
+        })
     }
 }
 
