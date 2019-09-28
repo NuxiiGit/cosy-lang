@@ -150,8 +150,9 @@ impl<'a, I> Parser<'a, I> where
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>> {
         if let Some(literal) = self.consume_if(|x| matches!(x,
                 TokenType::String(..) |
-                TokenType::Integer(..)))? {
-            Ok(Expr::Literal {
+                TokenType::Integer(..) |
+                TokenType::Identifier(..)))? {
+            Ok(Expr::Terminal {
                 value : literal
             })
         } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen))? {
@@ -159,18 +160,10 @@ impl<'a, I> Parser<'a, I> where
             if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen))? {
                 Ok(expr)
             } else {
-                Err(Box::new(ParserError {
-                    description : "Expected ending ')' after expression",
-                    row : self.row,
-                    column : self.column
-                }))
+                self.make_error("Expected ending ')' after expression")
             }
         } else {
-            Err(Box::new(ParserError {
-                description : "Malformed expression",
-                row : self.row,
-                column : self.column
-            }))
+            self.make_error("Malformed expression")
         }
     }
 
@@ -183,7 +176,11 @@ impl<'a, I> Parser<'a, I> where
                 }
             }
             match self.scanner.next().unwrap() {
-                Ok(token) => Ok(Some(token)),
+                Ok(token) => {
+                    self.row = token.row;
+                    self.column = token.column;
+                    Ok(Some(token))
+                },
                 Err(e) => Err(e)
             }
         } else {
@@ -192,7 +189,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Throw a parser error.
-    fn make_error(&mut self, description : &'static str) -> Result<()> {
+    fn make_error(&mut self, description : &'static str) -> Result<())> {
         Err(Box::new(ParserError {
             description,
             row : self.row,

@@ -15,21 +15,14 @@ impl<'a> Interpreter {
     }
 
     /// Executes this program and returns a value.
-    pub fn execute(mut self, program : Statement<'a>) -> Result<Value, Error> {
-        self.touch_statement(program)
-    }
-
-    /// Evaluates a statement.
-    fn touch_statement(&mut self, statement : Statement<'a>) -> Result<Value, Error> {
-        match statement {
-            Statement::ExpressionStatement { expr } => self.touch_expression(expr)
-        }
+    pub fn execute(mut self, program : Expr<'a>) -> Result<Value, Error> {
+        self.touch_expression(program)
     }
 
     /// Evaluates an expression.
     fn touch_expression(&mut self, expr : Expr<'a>) -> Result<Value, Error> {
         match expr {
-            Expr::Literal { value } => {
+            Expr::Terminal { value } => {
                 match value.flavour {
                     TokenType::Integer(literal) => {
                         if let Ok(value) = literal.parse::<i64>() {
@@ -42,7 +35,6 @@ impl<'a> Interpreter {
                     _ => Err(Error::new("Illegal token", value.row, value.column))
                 }
             },
-            Expr::Variable { ident } => unimplemented!(),
             Expr::Unary { operator, right } => unimplemented!(),
             Expr::Binary { operator, left, right } => unimplemented!(),
             Expr::Member { left, field } => unimplemented!()

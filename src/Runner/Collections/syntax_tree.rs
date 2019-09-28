@@ -13,11 +13,8 @@ pub enum Statement<'a> {
 /// A recursive enum which stores expression information.
 #[derive(Debug)]
 pub enum Expr<'a> {
-    Literal {
+    Terminal {
         value : Token<'a>
-    },
-    Variable {
-        ident : Token<'a>
     },
     Unary {
         operator : Token<'a>,

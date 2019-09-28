@@ -144,11 +144,11 @@ impl<'a, I> Parser<'a, I> where
 
     /// Parses the frontier of an expression.
     fn parse_expr_frontier(&mut self) -> Option<Expr<'a>> {
-        if let Some(literal) = self.consume_if(|x| matches!(x,
+        if let Some(terminal) = self.consume_if(|x| matches!(x,
                 TokenType::String(..) |
                 TokenType::Integer(..))) {
-            Some(Expr::Literal {
-                value : literal
+            Some(Expr::Terminal {
+                value : terminal
             })
         } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen)) {
             let expr : Expr = self.parse_expr()?;
