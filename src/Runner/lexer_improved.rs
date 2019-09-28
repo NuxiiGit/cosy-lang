@@ -57,21 +57,21 @@ impl<'a> Lexer<'a> {
     }
 
     /// Throw a lexer error.
-    fn make_error(&mut self, description : &'static str) -> Result<Token<'a>> {
-        Err(Box::new(LexerError {
+    fn make_error(&mut self, description : &'static str) -> super::RunnerError {
+        Box::new(LexerError {
             description,
             row : self.row,
             column : self.column
-        }))
+        })
     }
 
     /// Return a new token.
-    fn make_token(&mut self, flavour : TokenType<'a>) -> Result<Token<'a>> {
-        Ok(Token {
+    fn make_token(&mut self, flavour : TokenType<'a>) -> Token<'a> {
+        Token {
             flavour,
             row : self.row,
             column : self.column
-        })
+        }
     }
 }
 impl<'a> Iterator for Lexer<'a> {
@@ -117,7 +117,7 @@ impl<'a> Iterator for Lexer<'a> {
                                 }
                             }
                         } else {
-                            break self.make_error("Unclosed comment block");
+                            break Err(self.make_error("Unclosed comment block"));
                         }
                     }
                 } else {
@@ -139,11 +139,11 @@ impl<'a> Iterator for Lexer<'a> {
                         if x == '\\' {
                             self.char_next();
                         } else if x == '"' {
-                            break self.make_token(TokenType::String(
-                                    &self.context[start..i]));
+                            break Ok(self.make_token(TokenType::String(
+                                    &self.context[start..i])));
                         }
                     } else {
-                        break self.make_error("Unclosed string");
+                        break Err(self.make_error("Unclosed string"));
                     }
                 }
             },
@@ -159,13 +159,13 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.char_index();
-                self.make_token(match &self.context[start..end] {
+                Ok(self.make_token(match &self.context[start..end] {
                     "var" => TokenType::Var,
                     "if" => TokenType::If,
                     "ifnot" => TokenType::IfNot,
                     "else" => TokenType::Else,
                     x => TokenType::Identifier(x)
-                })
+                }))
             },
             // match number types
             '0'..='9' => {
@@ -178,14 +178,14 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.char_index();
-                self.make_token(TokenType::Integer(
-                        &self.context[start..end]))
+                Ok(self.make_token(TokenType::Integer(
+                        &self.context[start..end])))
             },
             // match bracket types
-            '(' => self.make_token(TokenType::LeftParen),
-            ')' => self.make_token(TokenType::RightParen),
-            '{' => self.make_token(TokenType::LeftBrace),
-            '}' => self.make_token(TokenType::RightBrace),
+            '(' => Ok(self.make_token(TokenType::LeftParen)),
+            ')' => Ok(self.make_token(TokenType::RightParen)),
+            '{' => Ok(self.make_token(TokenType::LeftBrace)),
+            '}' => Ok(self.make_token(TokenType::RightBrace)),
             // match symbols and operators
             x if valid_operator!(x) => {
                 while let Some(x) = self.char_peek() {
@@ -198,14 +198,14 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 let end : usize = self.char_index();
-                self.make_token(match &self.context[start..end] {
+                Ok(self.make_token(match &self.context[start..end] {
                     ":" => TokenType::Colon,
                     ";" => TokenType::SemiColon,
                     x => TokenType::Operator(x)
-                })
+                }))
             },
             // match error
-            _ => self.make_error("Unknown symbol")
+            _ => Err(self.make_error("Unknown symbol"))
         })
     }
 }

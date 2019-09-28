@@ -160,10 +160,10 @@ impl<'a, I> Parser<'a, I> where
             if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen))? {
                 Ok(expr)
             } else {
-                self.make_error("Expected ending ')' after expression")
+                Err(self.make_error("Expected ending ')' after expression"))
             }
         } else {
-            self.make_error("Malformed expression")
+            Err(self.make_error("Malformed expression"))
         }
     }
 
@@ -189,12 +189,12 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Throw a parser error.
-    fn make_error(&mut self, description : &'static str) -> Result<())> {
-        Err(Box::new(ParserError {
+    fn make_error(&mut self, description : &'static str) -> super::RunnerError {
+        Box::new(ParserError {
             description,
             row : self.row,
             column : self.column
-        }))
+        })
     }
 }
 

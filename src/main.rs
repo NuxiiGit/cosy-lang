@@ -11,7 +11,7 @@ use std::time::Instant;
 fn main() {
     let t = Instant::now();
     // compile
-    match Parser::new(Lexer::new(r#"1 + 2 *3"#)).parse() {
+    match Parser::new(Lexer::new(r#"1 + 2 * 3"#)).parse() {
         Ok(ast) => {
             // display the syntax tree
             println!("\nTree:\n{:#?}\n", ast);
