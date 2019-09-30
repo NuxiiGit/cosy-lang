@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 
-use super::Result;
-use super::collections::token::*;
+use super::collections::token::{
+    Token,
+    TokenType
+};
 
 use std::iter::Peekable;
 use std::str::CharIndices;
-use std::error;
-use std::fmt;
 
 /// A struct which encapsulates the state of the scanner.
 pub struct Lexer<'a> {
@@ -75,7 +75,7 @@ impl<'a> Lexer<'a> {
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>>;
+    type Item = Result<Token<'a>, LexerError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         macro_rules! valid_operator {
@@ -209,18 +209,3 @@ impl<'a> Iterator for Lexer<'a> {
         })
     }
 }
-
-/// An error type which represents a lexer error.
-#[derive(Debug)]
-pub struct LexerError {
-    pub description : &'static str,
-    pub row : usize,
-    pub column : usize
-}
-impl fmt::Display for LexerError {
-    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Scanner error at (row. {}, col. {}): {}",
-                self.row, self.column, self.description)
-    }
-}
-impl error::Error for LexerError {}

@@ -1,4 +1,4 @@
-mod runner;
+mod compiler;
 
 fn main() {
     

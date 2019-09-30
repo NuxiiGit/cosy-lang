@@ -17,21 +17,18 @@ impl<'a> fmt::Debug for Token<'a> {
 /// An enum which stores the type of `Token`.
 #[derive(Debug)]
 pub enum TokenType<'a> {
-    // literals
-    String(&'a str),
-    Integer(&'a str),
-    // Keywords
-    Identifier(&'a str),
     Var,
     If,
     IfNot,
     Else,
-    // Symbols
-    Operator(&'a str),
     LeftParen,
     RightParen,
     LeftBrace,
     RightBrace,
     Colon,
-    SemiColon
+    SemiColon,
+    String(&'a str),
+    Integer(&'a str),
+    Identifier(&'a str),
+    Operator(&'a str),
 }
