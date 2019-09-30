@@ -1,6 +1,10 @@
 mod runner;
 
-//use runner::parser::*;
+fn main() {
+    
+}
+
+/*//use runner::parser::*;
 //use runner::lexer::*;
 use runner::lexer_improved::*;
 use runner::parser_improved::*;
@@ -33,4 +37,4 @@ fn main() {
     let micro = t.elapsed().as_micros();
     let second : f64 = (micro as f64) / 1000000.0;
     println!("\nCompile Time:\n{} s ({} Ms)", second, micro);
-}
+}*/

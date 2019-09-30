@@ -1,12 +1,12 @@
 #![allow(dead_code)]
 
-use super::collections::{
-    token::*,
-    error::*
-};
+use super::Result;
+use super::collections::token::*;
 
 use std::iter::Peekable;
 use std::str::CharIndices;
+use std::error;
+use std::fmt;
 
 /// A struct which encapsulates the state of the scanner.
 pub struct Lexer<'a> {
@@ -29,234 +29,198 @@ impl<'a> Lexer<'a> {
     }
 
     /// Move to the next character.
-    fn next_char(&mut self) -> Option<char> {
-        let (_, x) : (_, char) = self.next_charindex()?;
-        Some(x)
-    }
-
-    /// Move to the next character-index pair.
-    fn next_charindex(&mut self) -> Option<(usize, char)> {
-        let next : (usize, char) = self.scanner.next()?;
-        if let (_, '\n') = next {
+    fn char_next(&mut self) -> Option<char> {
+        let (_, c) = self.scanner.next()?;
+        if c == '\n' {
+            // move to new line
             self.row += 1;
             self.column = 1;
         } else {
             self.column = 1;
         }
-        Some(next)
+        Some(c)
     }
 
     /// Peek at the next character.
-    fn peek_char(&mut self) -> Option<char> {
-        let (_, x) = self.peek_charindex()?;
-        Some(x)
+    fn char_peek(&mut self) -> Option<char> {
+        let (_, x) = self.scanner.peek()?;
+        Some(*x)
     }
 
     /// Peek at the next index. Returns `context.len()` if the end is reached.
-    fn peek_index(&mut self) -> usize {
-        if let Some((i, _)) = self.peek_charindex() {
-            i
+    fn char_index(&mut self) -> usize {
+        if let Some((i, _)) = self.scanner.peek() {
+            *i
         } else {
             self.context.len()
         }
     }
 
-    /// Peek at the next character-index pair.
-    fn peek_charindex(&mut self) -> Option<(usize, char)> {
-        let peek : &(usize, char) = self.scanner.peek()?;
-        Some(*peek)
-    }
-
-    /// Create a new token with the current row and column numbers.
-    fn token(&self, flavour : TokenType<'a>) -> Option<Token<'a>> {
-        Some(Token {
-            flavour,
+    /// Throw a lexer error.
+    fn make_error(&mut self, description : &'static str) -> super::RunnerError {
+        Box::new(LexerError {
+            description,
             row : self.row,
             column : self.column
         })
     }
 
-    /// Push an error onto the error list.
-    fn error(&mut self, message : &'static str) {
-        Error::new(message, self.row, self.column).throw();
+    /// Return a new token.
+    fn make_token(&mut self, flavour : TokenType<'a>) -> Token<'a> {
+        Token {
+            flavour,
+            row : self.row,
+            column : self.column
+        }
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Token<'a>;
+    type Item = Result<Token<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (mut start, c) = self.next_charindex()?;
-        match c {
-            // leading whitespace
+        macro_rules! valid_operator {
+            ($c:expr) => ({
+                if let '!' | '%' | '&' |
+                        '*' | '+' | '-' |
+                        '.' | '/' | ':' |
+                        ';' | '<' | '=' |
+                        '>' | '?' | '\\' |
+                        '^' | '|' | '~' = $c {
+                    true
+                } else {
+                    false
+                }
+            });
+        }
+        let mut start = self.char_index();
+        Some(match self.char_next()? {
+            // remove whitespace
             x if x.is_whitespace() => {
-                while let Some(x) = self.peek_char() {
+                while let Some(x) = self.char_peek() {
                     if x.is_whitespace() {
-                        self.next_char();
+                        self.char_next();
                     } else {
                         break;
                     }
                 }
-                self.next()
-            }
+                self.next()?
+            },
             // comments
             '\'' => {
-                if let Some('{') = self.peek_char() {
+                if let Some('{') = self.char_peek() {
                     // block comment
                     loop {
-                        if let Some(x) = self.next_char() {
+                        if let Some(x) = self.char_next() {
                             if x == '}' {
-                                if let Some('\'') = self.next_char() {
-                                    break;
+                                if let Some('\'') = self.char_next() {
+                                    break self.next()?;
                                 }
                             }
                         } else {
-                            self.error("Unclosed comment block");
-                            break;
+                            break Err(self.make_error("Unclosed comment block"));
                         }
                     }
                 } else {
                     // line comment
-                    while let Some(x) = self.next_char() {
+                    while let Some(x) = self.char_next() {
                         if x == '\n' {
                             break;
                         }
                     }
+                    self.next()?
                 }
-                self.next()
+            },
+            // match string types
+            '"' => {
+                start = self.char_index();
+                loop {
+                    let i = self.char_index();
+                    if let Some(x) = self.char_next() {
+                        if x == '\\' {
+                            self.char_next();
+                        } else if x == '"' {
+                            break Ok(self.make_token(TokenType::String(
+                                    &self.context[start..i])));
+                        }
+                    } else {
+                        break Err(self.make_error("Unclosed string"));
+                    }
+                }
             },
             // match keywords and identifiers
-            x if x.is_alphabetic() || x == '_' => {
-                while let Some(x) = self.peek_char() {
+            'A'..='Z' | '_' | 'a'..='z' => {
+                while let Some(x) = self.char_peek() {
                     if x.is_alphanumeric() ||
                             x == '_' ||
                             x == '\'' {
-                        self.next_char();
+                        self.char_next();
                     } else {
                         break;
                     }
                 }
-                let end : usize = self.peek_index();
-                self.token(match &self.context[start..end] {
+                let end : usize = self.char_index();
+                Ok(self.make_token(match &self.context[start..end] {
                     "var" => TokenType::Var,
                     "if" => TokenType::If,
                     "ifnot" => TokenType::IfNot,
                     "else" => TokenType::Else,
                     x => TokenType::Identifier(x)
-                })
-            },
-            // match string types
-            x if x.is_quote() => {
-                match x {
-                    '"' => {
-                        start = self.peek_index();
-                        loop {
-                            if let Some((i, x)) = self.next_charindex() {
-                                if x == '\\' {
-                                    self.next_char();
-                                } else if x == '"' {
-                                    break self.token(TokenType::String(
-                                            &self.context[start..i]));
-                                }
-                            } else {
-                                self.error("Unclosed string");
-                                break self.next();
-                            }
-                        }
-                    },
-                    _ => {
-                        self.error("Unknown quote type");
-                        self.next()
-                    }
-                }
+                }))
             },
             // match number types
-            x if x.is_numeric() => {
-                while let Some(x) = self.peek_char() {
+            '0'..='9' => {
+                while let Some(x) = self.char_peek() {
                     if x.is_numeric() ||
                             x == '\'' {
-                        self.next_char();
+                        self.char_next();
                     } else {
                         break;
                     }
                 }
-                let end : usize = self.peek_index();
-                self.token(TokenType::Integer(
-                        &self.context[start..end]))
+                let end : usize = self.char_index();
+                Ok(self.make_token(TokenType::Integer(
+                        &self.context[start..end])))
             },
             // match bracket types
-            x if x.is_bracket() => {
-                if let Some(flavour) = match x {
-                    '(' => Some(TokenType::LeftParen),
-                    ')' => Some(TokenType::RightParen),
-                    '{' => Some(TokenType::LeftBrace),
-                    '}' => Some(TokenType::RightBrace),
-                    _ => None
-                } {
-                    self.token(flavour)
-                } else {
-                    self.error("Unknown bracket type");
-                    self.next()
-                }
-            },
+            '(' => Ok(self.make_token(TokenType::LeftParen)),
+            ')' => Ok(self.make_token(TokenType::RightParen)),
+            '{' => Ok(self.make_token(TokenType::LeftBrace)),
+            '}' => Ok(self.make_token(TokenType::RightBrace)),
             // match symbols and operators
-            x if x.is_symbol() => {
-                while let Some(x) = self.peek_char() {
-                    if x.is_symbol() &&
-                            !x.is_bracket() &&
-                            !x.is_quote() {
-                        self.next_char();
+            x if valid_operator!(x) => {
+                while let Some(x) = self.char_peek() {
+                    if valid_operator!(x) ||
+                            x == '\'' ||
+                            x == '_' {
+                        self.char_next();
                     } else {
                         break;
                     }
                 }
-                let end : usize = self.peek_index();
-                self.token(match &self.context[start..end] {
+                let end : usize = self.char_index();
+                Ok(self.make_token(match &self.context[start..end] {
                     ":" => TokenType::Colon,
                     ";" => TokenType::SemiColon,
                     x => TokenType::Operator(x)
-                })
-            }
-            // match nothing
-            _ => {
-                self.error("Unknown symbol");
-                self.next()
-            }
-        }
+                }))
+            },
+            // match error
+            _ => Err(self.make_error("Unknown symbol"))
+        })
     }
 }
 
-/// Additional methods for `char`
-trait CharExt {
-    /// Returns `true` if this `char` is a bracket.
-    /// These include: `( )`, `{ }`, and `[ ]`.
-    fn is_bracket(&self) -> bool;
-
-    /// Returns `true` if this `char` is a symbol.
-    fn is_quote(&self) -> bool;
-
-    /// Returns `true` if this `char` is a symbol.
-    fn is_symbol(&self) -> bool;
+/// An error type which represents a lexer error.
+#[derive(Debug)]
+pub struct LexerError {
+    pub description : &'static str,
+    pub row : usize,
+    pub column : usize
 }
-impl CharExt for char {
-    fn is_bracket(&self) -> bool {
-        if let '(' | ')' |
-                '{' | '}' |
-                '[' | ']' = self {
-            true
-        } else {
-            false
-        }
-    }
-
-    fn is_quote(&self) -> bool {
-        if let '\'' | '"' | '`' = self {
-            true
-        } else {
-            false
-        }
-    }
-
-    fn is_symbol(&self) -> bool {
-        !(self.is_alphanumeric() || self.is_whitespace())
+impl fmt::Display for LexerError {
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Scanner error at (row. {}, col. {}): {}",
+                self.row, self.column, self.description)
     }
 }
+impl error::Error for LexerError {}
