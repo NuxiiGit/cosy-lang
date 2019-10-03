@@ -201,7 +201,7 @@ impl<'a> Iterator for Lexer<'a> {
             _ => Err("Unknown symbol")
         } {
             Ok(flavour) => Ok(Token { flavour, row, column}),
-            Err(description) => Err(vec![Error {description, row, column}])
+            Err(description) => Err(Error::Only { description, row, column })
         })
     }
 }
