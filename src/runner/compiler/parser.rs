@@ -43,7 +43,21 @@ impl<'a, I> Parser<'a, I> where
 
     /// Parses an expression.
     fn parse_expr(&mut self) -> Result<Expr<'a>> {
-        self.parse_expr_frontier()
+        self.parse_expr_addition()
+    }
+
+    /// Parses a stream of `+` and `-` binary operators.
+    fn parse_expr_addition(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_frontier()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "+" | "-")))? {
+            let right : Expr = self.parse_expr_frontier()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
     }
 
     /// Parses expression literals and groupings.
@@ -88,7 +102,11 @@ impl<'a, I> Parser<'a, I> where
     /// Consumes the next token.
     fn consume(&mut self) -> Result<Option<Token<'a>>> {
         match self.scanner.next() {
-            Some(Ok(token)) => Ok(Some(token)),
+            Some(Ok(token)) => {
+                self.row = token.row;
+                self.column = token.column;
+                Ok(Some(token))
+            },
             Some(Err(e)) => Err(e),
             None => Ok(None)
         }
@@ -108,10 +126,11 @@ impl<'a, I> Builder<'a> for I where
     }
 }
 
-fn substring<'a>(x : &'a str, start : usize, n : usize) -> &'a str {
+/// Returns a substring of this `str`.
+fn substr<'a>(x : &'a str, start : usize, n : usize) -> &'a str {
     let end : usize = if let Some((i, _)) = x
             .char_indices()
-            .take(n + start)
+            .skip(n + start)
             .next() {
         i
     } else {
