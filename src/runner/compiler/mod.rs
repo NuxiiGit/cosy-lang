@@ -20,5 +20,5 @@ impl fmt::Display for Error {
 }
 impl error::Error for Error {}
 
-/// A custom result for compiler errors.
-pub type Result<T> = result::Result<T, Error>;
+/// A custom result for compile errors.
+pub type Result<T> = result::Result<T, Vec<Error>>;

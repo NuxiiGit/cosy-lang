@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
+use super::Error;
+use super::Result;
 use super::super::collections::token::{
     Token,
     TokenType
 };
-use super::Result;
-use super::Error;
 
 use std::iter::Peekable;
 use std::str::CharIndices;
@@ -201,19 +201,19 @@ impl<'a> Iterator for Lexer<'a> {
             _ => Err("Unknown symbol")
         } {
             Ok(flavour) => Ok(Token { flavour, row, column}),
-            Err(description) => Err(Error {description, row, column})
+            Err(description) => Err(vec![Error {description, row, column}])
         })
     }
 }
 
 /// A trait which can be implemented by structs to offer a
 /// way of converting into a `Lexer` type.
-pub trait Tokeniser {
+pub trait Tokeniser<'a> {
     /// Constructs a new scanner.
-    fn tokenise<'a>(&'a self) -> Lexer<'a>;
+    fn tokenise(&'a self) -> Lexer<'a>;
 }
-impl Tokeniser for str {
-    fn tokenise<'a>(&'a self) -> Lexer<'a> {
+impl<'a> Tokeniser<'a> for str {
+    fn tokenise(&'a self) -> Lexer<'a> {
         Lexer::from(self)
     }
 }

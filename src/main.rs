@@ -6,7 +6,11 @@ fn main() {
     for result in "1 `plus` 4 {} if".tokenise() {
         match result {
             Ok(token) => println!("{}", token),
-            Err(e) => println!("{}", e),
+            Err(errors) => {
+                for e in errors {
+                    println!("{}", e);
+                }
+            },
         }
     }
 }
