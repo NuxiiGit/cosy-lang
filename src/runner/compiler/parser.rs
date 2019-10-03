@@ -70,9 +70,37 @@ impl<'a, I> Parser<'a, I> where
 
     /// Parses a stream of `<` and `>` binary operators.
     fn parse_expr_inequality(&mut self) -> Result<Expr<'a>> {
-        let mut left : Expr = self.parse_expr_addition()?;
+        let mut left : Expr = self.parse_expr_disjunction()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "<" | ">")))? {
+            let right : Expr = self.parse_expr_disjunction()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of `|` binary operators.
+    fn parse_expr_disjunction(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_conjunction()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "|")))? {
+            let right : Expr = self.parse_expr_conjunction()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of `&` binary operators.
+    fn parse_expr_conjunction(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_addition()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "&")))? {
             let right : Expr = self.parse_expr_addition()?;
             left = Expr::Call {
                 ident,
