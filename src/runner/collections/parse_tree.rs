@@ -9,8 +9,8 @@ pub enum Expr<'a> {
         value : Token<'a>
     },
     Member {
-        left : Box<Expr<'a>>,
-        field : Token<'a>
+        ident : Token<'a>,
+        expr : Box<Expr<'a>>
     },
     Call {
         ident : Token<'a>,

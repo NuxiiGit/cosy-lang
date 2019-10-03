@@ -43,21 +43,96 @@ impl<'a, I> Parser<'a, I> where
 
     /// Parses an expression.
     fn parse_expr(&mut self) -> Result<Expr<'a>> {
-        self.parse_expr_addition()
-    }
-
-    /// Parses a stream of `+` and `-` binary operators.
-    fn parse_expr_addition(&mut self) -> Result<Expr<'a>> {
-        let mut left : Expr = self.parse_expr_frontier()?;
-        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
-                matches!(substr(op, 0, 1), "+" | "-")))? {
-            let right : Expr = self.parse_expr_frontier()?;
+        let mut left : Expr = self.parse_expr_equality()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(..)))? {
+            let right : Expr = self.parse_expr_equality()?;
             left = Expr::Call {
                 ident,
                 args : vec![left, right]
             }
         }
         Ok(left)
+    }
+
+    /// Parses a stream of `!` and `=` binary operators.
+    fn parse_expr_equality(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_inequality()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "!" | "=")))? {
+            let right : Expr = self.parse_expr_inequality()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of `<` and `>` binary operators.
+    fn parse_expr_inequality(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_addition()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "<" | ">")))? {
+            let right : Expr = self.parse_expr_addition()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of `+` and `-` binary operators.
+    fn parse_expr_addition(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_multiplication()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "+" | "-")))? {
+            let right : Expr = self.parse_expr_multiplication()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of `*`, `/`, and `%` binary operators.
+    fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>> {
+        let mut left : Expr = self.parse_expr_unary()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
+                matches!(substr(op, 0, 1), "*" | "/" | "%")))? {
+            let right : Expr = self.parse_expr_unary()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right]
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of prefix unary operators.
+    fn parse_expr_unary(&mut self) -> Result<Expr<'a>> {
+        if let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(..)))? {
+            let right : Expr = self.parse_expr_unary()?;
+            Ok(Expr::Call {
+                ident,
+                args : vec![right]
+            })
+        } else {
+            self.parse_expr_member()
+        }
+    }
+
+    /// Parses a stream of member accesses.
+    fn parse_expr_member(&mut self) -> Result<Expr<'a>> {
+        let mut expr : Expr = self.parse_expr_frontier()?;
+        while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Identifier(..)))? {
+            expr = Expr::Member {
+                ident,
+                expr : Box::new(expr)
+            }
+        }
+        Ok(expr)
     }
 
     /// Parses expression literals and groupings.
