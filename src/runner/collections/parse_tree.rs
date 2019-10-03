@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use super::token::*;
+use super::token::Token;
 
 /// A recursive enum which stores expression information.
 #[derive(Debug)]
