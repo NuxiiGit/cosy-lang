@@ -9,6 +9,15 @@ use super::super::collections::{
 
 use std::iter::Peekable;
 
+macro_rules! matches {
+    ($value:expr, $($pattern:tt)*) => ({
+        match $value {
+            $($pattern)* => true,
+            _ => false
+        }
+    });
+}
+
 /// A struct which encapsulates the state of the parser.
 pub struct Parser<'a, I> where
         I : Iterator<Item = Result<Token<'a>>> {
@@ -39,14 +48,42 @@ impl<'a, I> Parser<'a, I> where
 
     /// Parses expression literals and groupings.
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>> {
-        Err(Error::Only {
-            description : "not implemented",
-            row : 0,
-            column : 0
-        })
+        match if let Some(value) = self.consume_if(|x| matches!(x,
+                TokenType::String(..) |
+                TokenType::Integer(..) |
+                TokenType::Identifier(..)))? {
+            Ok(Expr::Terminal { value })
+        } else if let Some(_) = self.consume_if(|x| matches!(x, TokenType::LeftParen))? {
+            let expr : Expr = self.parse_expr()?;
+            if let Some(_) = self.consume_if(|x| matches!(x, TokenType::RightParen))? {
+                Ok(expr)
+            } else {
+                Err("Expected ending ')' after expression")
+            }
+        } else {
+            Err("Malformed expression")
+        } {
+            Ok(x) => Ok(x),
+            Err(description) => Err(Error::Only {
+                description,
+                row : self.row,
+                column : self.column
+            })
+        }
     }
 
-    /// Consumes 
+    /// Consumes the next token only if the predicate is satisfied.
+    fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Result<Option<Token<'a>>> {
+        if match self.scanner.peek() {
+            Some(Ok(token)) => f(&token.flavour),
+            Some(Err(_)) => true,
+            None => false
+        } {
+            self.consume()
+        } else {
+            Ok(None)
+        }
+    }
 
     /// Consumes the next token.
     fn consume(&mut self) -> Result<Option<Token<'a>>> {
@@ -69,4 +106,16 @@ impl<'a, I> Builder<'a> for I where
     fn into_ast(self) -> Result<Expr<'a>> {
         Parser::from(self).parse()
     }
+}
+
+fn substring<'a>(x : &'a str, start : usize, n : usize) -> &'a str {
+    let end : usize = if let Some((i, _)) = x
+            .char_indices()
+            .take(n + start)
+            .next() {
+        i
+    } else {
+        x.len()
+    };
+    &x[start..end]
 }

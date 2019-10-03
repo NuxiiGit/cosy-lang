@@ -57,31 +57,6 @@ impl<'a> Lexer<'a> {
         }
         Some(c)
     }
-
-    /// Returns `true` if this character is a valid whitespace symbol.
-    pub fn check_whitespace(x : char) -> bool {
-        x.is_control() || x.is_whitespace()
-    }
-
-    /// Returns `true` if this character is a valid number symbol.
-    pub fn check_number(x : char) -> bool {
-        x.is_ascii_digit()
-    }
-
-    /// Returns `true` if this character is a valid identifier symbol.
-    pub fn check_character(x : char) -> bool {
-        x == '_' || x.is_alphabetic() || Self::check_number(x)
-    }
-
-    /// Returns `true` if this character is a valid operator symbol.
-    pub fn check_operator(x : char) -> bool {
-        if let '`' | '"' | '{' | '}' | '[' | ']' = x {
-            // reserved symbols
-            false
-        } else {
-            !Self::check_character(x) && !Self::check_whitespace(x)
-        }
-    }
 }
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>>;
@@ -92,7 +67,7 @@ impl<'a> Iterator for Lexer<'a> {
         let column : usize = self.column;
         Some(match match self.scanner_next()? {
             // ignore whitespace
-            x if Self::check_whitespace(x) => {
+            x if check_whitespace(x) => {
                 while let Some(x) = self.scanner_peek() {
                     if x.is_whitespace() {
                         self.scanner_next();
@@ -144,10 +119,10 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             },
             // match number literals
-            x if Self::check_number(x) => {
+            x if check_number(x) => {
                 let end : usize = loop {
                     if let Some(&x) = self.scanner_peek() {
-                        if Self::check_number(x) || x == '\'' {
+                        if check_number(x) || x == '\'' {
                             self.scanner_next();
                             continue;
                         }
@@ -157,10 +132,10 @@ impl<'a> Iterator for Lexer<'a> {
                 Ok(TokenType::Integer(&self.context[start..end]))
             },
             // match keywords and identifiers
-            x if Self::check_character(x) => {
+            x if check_character(x) => {
                 let end : usize = loop {
                     if let Some(&x) = self.scanner_peek() {
-                        if Self::check_character(x) || x == '\'' {
+                        if check_character(x) || x == '\'' {
                             self.scanner_next();
                             continue;
                         }
@@ -176,10 +151,10 @@ impl<'a> Iterator for Lexer<'a> {
                 })
             },
             // match symbols and operators
-            x if Self::check_operator(x) => {
+            x if check_operator(x) => {
                 let end : usize = loop {
                     if let Some(&x) = self.scanner_peek() {
-                        if Self::check_operator(x) || x == '\'' {
+                        if check_operator(x) || x == '\'' {
                             self.scanner_next();
                             continue;
                         }
@@ -215,5 +190,30 @@ pub trait Tokeniser<'a> {
 impl<'a> Tokeniser<'a> for str {
     fn tokenise(&'a self) -> Lexer<'a> {
         Lexer::from(self)
+    }
+}
+
+/// Returns `true` if this character is a valid whitespace symbol.
+pub fn check_whitespace(x : char) -> bool {
+    x.is_control() || x.is_whitespace()
+}
+
+/// Returns `true` if this character is a valid number symbol.
+pub fn check_number(x : char) -> bool {
+    x.is_ascii_digit()
+}
+
+/// Returns `true` if this character is a valid identifier symbol.
+pub fn check_character(x : char) -> bool {
+    x == '_' || x.is_alphabetic() || check_number(x)
+}
+
+/// Returns `true` if this character is a valid operator symbol.
+pub fn check_operator(x : char) -> bool {
+    if let '`' | '"' | '{' | '}' | '[' | ']' = x {
+        // reserved symbols
+        false
+    } else {
+        !check_character(x) && !check_whitespace(x)
     }
 }

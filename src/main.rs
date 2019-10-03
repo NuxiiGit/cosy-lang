@@ -1,12 +1,11 @@
 mod runner;
 
 use runner::compiler::scanner::Tokeniser;
+use runner::compiler::parser::Builder;
 
 fn main() {
-    for result in "1 `plus` 4 {} if".tokenise() {
-        match result {
-            Ok(token) => println!("{}", token),
-            Err(e) => println!("{}", e)
-        }
+    match r#""testing""#.tokenise().into_ast() {
+        Ok(ast) => println!("Tree:\n{:#?}", ast),
+        Err(e) => println!("{}", e)
     }
 }
