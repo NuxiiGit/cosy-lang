@@ -7,6 +7,7 @@ use std::result;
 /// An enum which describes the different types of value.
 #[derive(Debug)]
 pub enum Value {
+    None,
     Bool(bool),
     Char(char),
     Integer(i64),
@@ -28,6 +29,3 @@ impl fmt::Display for Error {
     }
 }
 impl error::Error for Error {}
-
-/// A custom result for runtime errors.
-pub type Result = result::Result<Option<Value>, Error>;

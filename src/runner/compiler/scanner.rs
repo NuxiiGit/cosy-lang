@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use super::Error;
-use super::Result;
 use super::super::collections::token::{
     Token,
     TokenType
@@ -59,7 +58,7 @@ impl<'a> Lexer<'a> {
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>>;
+    type Item = Result<Token<'a>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut start : usize = self.scanner_pos();
@@ -176,7 +175,7 @@ impl<'a> Iterator for Lexer<'a> {
             _ => Err("Unknown symbol")
         } {
             Ok(flavour) => Ok(Token { flavour, row, column}),
-            Err(description) => Err(Error::Only { description, row, column })
+            Err(description) => Err(Error { description, row, column })
         })
     }
 }

@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use super::Error;
-use super::Result;
 use super::super::collections::{
     token::{ Token, TokenType },
     parse_tree::*
@@ -20,13 +19,13 @@ macro_rules! matches {
 
 /// A struct which encapsulates the state of the parser.
 pub struct Parser<'a, I> where
-        I : Iterator<Item = Result<Token<'a>>> {
+        I : Iterator<Item = Result<Token<'a>, Error>> {
     scanner : Peekable<I>,
     row : usize,
     column : usize
 }
 impl<'a, I> Parser<'a, I> where
-        I : Iterator<Item = Result<Token<'a>>> {
+        I : Iterator<Item = Result<Token<'a>, Error>> {
     /// Create a new parser using this scanner.
     pub fn from(scanner : I) -> Parser<'a, I> {
         Parser {
@@ -37,12 +36,12 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Expr<'a>> {
+    pub fn parse(mut self) -> Result<Expr<'a>, Error> {
         self.parse_expr()
     }
 
     /// Parses an expression.
-    fn parse_expr(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_equality()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(..)))? {
             let right : Expr = self.parse_expr_equality()?;
@@ -55,7 +54,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of `!` and `=` binary operators.
-    fn parse_expr_equality(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_equality(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_inequality()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "!" | "=")))? {
@@ -69,7 +68,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of `<` and `>` binary operators.
-    fn parse_expr_inequality(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_inequality(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_disjunction()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "<" | ">")))? {
@@ -83,7 +82,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of `|` binary operators.
-    fn parse_expr_disjunction(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_disjunction(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_conjunction()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "|")))? {
@@ -97,7 +96,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of `&` binary operators.
-    fn parse_expr_conjunction(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_conjunction(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_addition()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "&")))? {
@@ -111,7 +110,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of `+` and `-` binary operators.
-    fn parse_expr_addition(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_addition(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_multiplication()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "+" | "-")))? {
@@ -125,7 +124,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of `*`, `/`, and `%` binary operators.
-    fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>, Error> {
         let mut left : Expr = self.parse_expr_unary()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(op) if
                 matches!(substr(op, 0, 1), "*" | "/" | "%")))? {
@@ -139,7 +138,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of prefix unary operators.
-    fn parse_expr_unary(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_unary(&mut self) -> Result<Expr<'a>, Error> {
         if let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Operator(..)))? {
             let right : Expr = self.parse_expr_unary()?;
             Ok(Expr::Call {
@@ -152,7 +151,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses a stream of member accesses.
-    fn parse_expr_member(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error> {
         let mut expr : Expr = self.parse_expr_frontier()?;
         while let Some(ident) = self.consume_if(|x| matches!(x, TokenType::Identifier(..)))? {
             expr = Expr::Member {
@@ -164,7 +163,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Parses expression literals and groupings.
-    fn parse_expr_frontier(&mut self) -> Result<Expr<'a>> {
+    fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error> {
         match if let Some(value) = self.consume_if(|x| matches!(x,
                 TokenType::String(..) |
                 TokenType::Integer(..) |
@@ -181,7 +180,7 @@ impl<'a, I> Parser<'a, I> where
             Err("Malformed expression")
         } {
             Ok(x) => Ok(x),
-            Err(description) => Err(Error::Only {
+            Err(description) => Err(Error {
                 description,
                 row : self.row,
                 column : self.column
@@ -190,7 +189,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Consumes the next token only if the predicate is satisfied.
-    fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Result<Option<Token<'a>>> {
+    fn consume_if(&mut self, f : impl Fn(&TokenType<'a>) -> bool) -> Result<Option<Token<'a>>, Error> {
         if match self.scanner.peek() {
             Some(Ok(token)) => f(&token.flavour),
             Some(Err(_)) => true,
@@ -203,7 +202,7 @@ impl<'a, I> Parser<'a, I> where
     }
 
     /// Consumes the next token.
-    fn consume(&mut self) -> Result<Option<Token<'a>>> {
+    fn consume(&mut self) -> Result<Option<Token<'a>>, Error> {
         match self.scanner.next() {
             Some(Ok(token)) => {
                 self.row = token.row;
@@ -220,11 +219,11 @@ impl<'a, I> Parser<'a, I> where
 /// way of converting into an abstract syntax tree.
 pub trait Builder<'a> {
     /// Constructs a new scanner.
-    fn into_ast(self) -> Result<Expr<'a>>;
+    fn into_ast(self) -> Result<Expr<'a>, Error>;
 }
 impl<'a, I> Builder<'a> for I where
-        I : Iterator<Item = Result<Token<'a>>> {
-    fn into_ast(self) -> Result<Expr<'a>> {
+        I : Iterator<Item = Result<Token<'a>, Error>> {
+    fn into_ast(self) -> Result<Expr<'a>, Error> {
         Parser::from(self).parse()
     }
 }
