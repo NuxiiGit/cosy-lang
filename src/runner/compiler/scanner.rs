@@ -180,6 +180,8 @@ impl<'a> Iterator for Lexer<'a> {
     }
 }
 
+// hello!
+
 /// A trait which can be implemented by structs to offer a
 /// way of converting into a `Lexer` type.
 pub trait Tokeniser<'a> {
