@@ -24,7 +24,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     /// A constant which represents the maximum precedence levels.
     pub const PRECEDENCE_LEVELS : usize = 9;
 
-    /// Create a new parser from this scanner.
+    /// Create a new parser from this string.
     pub fn from(scanner : Lexer<'a>) -> Self {
         let mut precedence = HashMap::new();
         precedence.insert("+", 1);
@@ -123,15 +123,13 @@ impl<'a, 'b> Parser<'a, 'b> {
             Ok(current.unwrap())
         } else {
             // raise error
-            Err(match current {
-                Some(lex) => Error {
-                    description : on_error,
-                    position : lex.position
-                },
-                _ => Error {
-                    description : "Unexpected error",
-                    position : (0, 0)
-                }
+            let position = match current {
+                Some(lex) => lex.position,
+                _ => self.scanner.position()
+            };
+            Err(Error {
+                description : on_error,
+                position
             })
         }
     }
@@ -211,8 +209,7 @@ pub enum Value {
 pub struct Lexer<'a> {
     context : &'a str,
     chars : Peekable<CharIndices<'a>>,
-    row : usize,
-    column : usize
+    position : Position
 }
 impl<'a> Lexer<'a> {
     /// Create a new scanner from this str slice.
@@ -222,9 +219,13 @@ impl<'a> Lexer<'a> {
             chars : context
                     .char_indices()
                     .peekable(),
-            row : 1,
-            column : 1
+            position : (1, 1)
         }
+    }
+
+    /// Returns the position of the lexer.
+    fn position(&self) -> Position {
+        self.position
     }
 
     /// Peek at the next character.
@@ -247,10 +248,10 @@ impl<'a> Lexer<'a> {
         let (.., x) = self.chars.next()?;
         if x == '\n' {
             // move to new line
-            self.row += 1;
-            self.column = 1;
+            self.position.0 += 1;
+            self.position.1 = 1;
         } else {
-            self.column += 1;
+            self.position.1 += 1;
         }
         Some(x)
     }
@@ -260,7 +261,7 @@ impl<'a> Iterator for Lexer<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut start = self.pos();
-        let position = (self.row, self.column);
+        let position = self.position;
         let result = match self.advance()? {
             // ignore whitespace
             x if x.valid_whitespace() => {
