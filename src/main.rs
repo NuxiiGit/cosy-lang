@@ -1,13 +1,19 @@
 mod runner;
 
-use runner::compiler::scanner::Tokeniser;
-use runner::compiler::parser::Builder;
-use runner::evaluator::interpreter::Interpreter;
+use runner::compiler::scanner::Lexer;
 
-use std::time::Instant;
+//use runner::compiler::scanner::Tokeniser;
+//use runner::compiler::parser::Builder;
+//use runner::evaluator::interpreter::Interpreter;
+
+//use std::time::Instant;
 
 fn main() {
-    let t = Instant::now();
+    for ((row, col), result) in Lexer::from("if (nice + 8*`oh no``+`0) { '{ comment }' }") {
+        println!("(row. {}, col. {}) {:?}", row, col, result);
+    }
+
+    /*let t = Instant::now();
     println!("\nCompiling...");
     // compile
     match r#"255"#.tokenise().into_ast() {
@@ -24,5 +30,5 @@ fn main() {
             }
         },
         Err(e) => println!("\n{}", e)
-    }
+    }*/
 }

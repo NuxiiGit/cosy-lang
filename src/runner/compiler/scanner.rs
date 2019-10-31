@@ -1,27 +1,23 @@
 #![allow(dead_code)]
 
-use super::Error;
-use super::super::collections::token::{
-    Token,
-    TokenType
-};
+use super::super::collections::Token;
 
 use std::iter::Peekable;
 use std::str::CharIndices;
 
-/// An iterator over the `compiler::Result<Token>`s of a `str` slice.
+/// An iterator over a string slice, which produces `Token`s.
 pub struct Lexer<'a> {
     context : &'a str,
-    char_indices : Peekable<CharIndices<'a>>,
+    chars : Peekable<CharIndices<'a>>,
     row : usize,
     column : usize
 }
 impl<'a> Lexer<'a> {
-    /// Create a new scanner from this `str` slice.
+    /// Create a new scanner from this str slice.
     pub fn from(context : &'a str) -> Lexer<'a> {
         Lexer {
             context,
-            char_indices : context
+            chars : context
                     .char_indices()
                     .peekable(),
             row : 1,
@@ -30,14 +26,14 @@ impl<'a> Lexer<'a> {
     }
 
     /// Peek at the next character.
-    pub fn scanner_peek(&mut self) -> Option<&char> {
-        let (_, x) = self.char_indices.peek()?;
-        Some(x)
+    fn chr(&mut self) -> Option<char> {
+        let (.., x) = self.chars.peek()?;
+        Some(*x)
     }
 
     /// Peek at the next index. Returns `str.len()` if the end is reached.
-    pub fn scanner_pos(&mut self) -> usize {
-        if let Some((i, _)) = self.char_indices.peek() {
+    fn pos(&mut self) -> usize {
+        if let Some((i, ..)) = self.chars.peek() {
             *i
         } else {
             self.context.len()
@@ -45,176 +41,196 @@ impl<'a> Lexer<'a> {
     }
 
     /// Move to the next character.
-    pub fn scanner_next(&mut self) -> Option<char> {
-        let (_, c) = self.char_indices.next()?;
-        if c == '\n' {
+    fn advance(&mut self) -> Option<char> {
+        let (.., x) = self.chars.next()?;
+        if x == '\n' {
             // move to new line
             self.row += 1;
             self.column = 1;
         } else {
             self.column += 1;
         }
-        Some(c)
+        Some(x)
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>, Error>;
+    type Item = ((usize, usize), Result<Token<'a>, &'static str>);
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut start : usize = self.scanner_pos();
-        let row : usize = self.row;
-        let column : usize = self.column;
-        Some(match match self.scanner_next()? {
+        let mut start = self.pos();
+        let position = (self.row, self.column);
+        let result = match self.advance()? {
             // ignore whitespace
             x if check_whitespace(x) => {
-                while let Some(x) = self.scanner_peek() {
+                while let Some(x) = self.chr() {
                     if x.is_whitespace() {
-                        self.scanner_next();
+                        self.advance();
                     } else {
                         break;
                     }
                 }
                 return self.next();
             },
-            // ignore comments
-            '\'' => {
-                if let Some('{') = self.scanner_peek() {
-                    // block comment
-                    loop {
-                        if let Some(x) = self.scanner_next() {
-                            if x == '}' {
-                                if let Some('\'') = self.scanner_next() {
-                                    return self.next();
+            // match quote types
+            x if check_quote(x) => {
+                match x {
+                    // ignore comments
+                    '\'' => {
+                        if let Some('{') = self.chr() {
+                            // block comment
+                            self.advance();
+                            while let Some(x) = self.advance() {
+                                if x == '}' {
+                                    if let Some('\'') = self.advance() {
+                                        return self.next();
+                                    }
                                 }
                             }
+                            Err("Unclosed comment block")
                         } else {
-                            break Err("Unclosed comment block");
+                            // line comment
+                            while let Some(x) = self.advance() {
+                                if x == '\n' {
+                                    break;
+                                }
+                            }
+                            return self.next();
                         }
-                    }
-                } else {
-                    // line comment
-                    while let Some(x) = self.scanner_next() {
-                        if x == '\n' {
-                            break;
+                    },
+                    // string literal
+                    '"' => {
+                        start = self.pos();
+                        loop {
+                            let end = self.pos();
+                            if let Some(x) = self.advance() {
+                                if x == '\\' {
+                                    self.advance();
+                                } else if x == '"' {
+                                    break Ok(Token::Str(&self.context[start..end]));
+                                }
+                            } else {
+                                break Err("Unclosed string");
+                            }
                         }
-                    }
-                    return self.next();
+                    },
+                    // identifier literal
+                    '`' => {
+                        start = self.pos();
+                        loop {
+                            let end = self.pos();
+                            if let Some(x) = self.advance() {
+                                if x == '`' {
+                                    break Ok(Token::Ident(&self.context[start..end]));
+                                }
+                            } else {
+                                break Err("Unclosed identifier literal");
+                            }
+                        }
+                    },
+                    _ => Err("Unexpected quote symbol")
                 }
             },
-            // match string literals
-            '"' => {
-                start = self.scanner_pos();
-                loop {
-                    let i = self.scanner_pos();
-                    if let Some(x) = self.scanner_next() {
-                        if x == '\\' {
-                            self.scanner_next();
-                        } else if x == '"' {
-                            break Ok(TokenType::String(&self.context[start..i]));
-                        }
-                    } else {
-                        break Err("Unclosed string");
-                    }
+            // match bracket types
+            x if check_bracket(x) => {
+                match x {
+                    '(' => Ok(Token::LeftParen),
+                    ')' => Ok(Token::RightParen),
+                    '{' => Ok(Token::LeftBrace),
+                    '}' => Ok(Token::RightBrace),
+                    _ => Err("Unexpected bracket symbol")
                 }
-            },
-            // match number literals
+            }
+            // match number types
             x if check_number(x) => {
-                let end : usize = loop {
-                    if let Some(&x) = self.scanner_peek() {
-                        if check_number(x) || x == '\'' {
-                            self.scanner_next();
+                let end = loop {
+                    if let Some(x) = self.chr() {
+                        if check_number(x) {
+                            self.advance();
                             continue;
                         }
                     }
-                    break self.scanner_pos();
+                    break self.pos();
                 };
-                Ok(TokenType::Integer(&self.context[start..end]))
+                Ok(Token::Int(&self.context[start..end]))
             },
             // match keywords and identifiers
             x if check_character(x) => {
-                let end : usize = loop {
-                    if let Some(&x) = self.scanner_peek() {
-                        if check_character(x) || x == '\'' {
-                            self.scanner_next();
+                let end = loop {
+                    if let Some(x) = self.chr() {
+                        if check_character(x) {
+                            self.advance();
                             continue;
                         }
                     }
-                    break self.scanner_pos();
+                    break self.pos();
                 };
                 Ok(match &self.context[start..end] {
-                    "var" => TokenType::Var,
-                    "if" => TokenType::If,
-                    "ifnot" => TokenType::IfNot,
-                    "else" => TokenType::Else,
-                    x => TokenType::Identifier(x)
+                    "var" => Token::Var,
+                    "if" => Token::If,
+                    "ifnot" => Token::IfNot,
+                    "else" => Token::Else,
+                    x => Token::Ident(x)
                 })
             },
             // match symbols and operators
             x if check_operator(x) => {
-                let end : usize = loop {
-                    if let Some(&x) = self.scanner_peek() {
-                        if check_operator(x) || x == '\'' {
-                            self.scanner_next();
+                let end = loop {
+                    if let Some(x) = self.chr() {
+                        if check_operator(x) {
+                            self.advance();
                             continue;
                         }
                     }
-                    break self.scanner_pos();
+                    break self.pos();
                 };
                 Ok(match &self.context[start..end] {
-                    ":" => TokenType::Colon,
-                    ";" => TokenType::SemiColon,
-                    x => TokenType::Operator(x)
+                    ":" => Token::Colon,
+                    ";" => Token::SemiColon,
+                    x => Token::Op(x)
                 })
             }
-            // match bracket types
-            '(' => Ok(TokenType::LeftParen),
-            ')' => Ok(TokenType::RightParen),
-            '{' => Ok(TokenType::LeftBrace),
-            '}' => Ok(TokenType::RightBrace),
-            // error case
-            _ => Err("Unknown symbol")
-        } {
-            Ok(flavour) => Ok(Token { flavour, row, column}),
-            Err(description) => Err(Error { description, row, column })
-        })
-    }
-}
-
-// hello!
-
-/// A trait which can be implemented by structs to offer a
-/// way of converting into a `Lexer` type.
-pub trait Tokeniser<'a> {
-    /// Constructs a new scanner.
-    fn tokenise(&'a self) -> Lexer<'a>;
-}
-impl<'a> Tokeniser<'a> for str {
-    fn tokenise(&'a self) -> Lexer<'a> {
-        Lexer::from(self)
+            // what in the god damn
+            _ => Err("Unexpected character")
+        };
+        Some((position, result))
     }
 }
 
 /// Returns `true` if this character is a valid whitespace symbol.
-pub fn check_whitespace(x : char) -> bool {
+fn check_whitespace(x : char) -> bool {
     x.is_control() || x.is_whitespace()
 }
 
 /// Returns `true` if this character is a valid number symbol.
-pub fn check_number(x : char) -> bool {
-    x.is_ascii_digit()
+fn check_number(x : char) -> bool {
+    x == '\'' || x.is_ascii_digit()
 }
 
 /// Returns `true` if this character is a valid identifier symbol.
-pub fn check_character(x : char) -> bool {
+fn check_character(x : char) -> bool {
     x == '_' || x.is_alphabetic() || check_number(x)
 }
 
-/// Returns `true` if this character is a valid operator symbol.
-pub fn check_operator(x : char) -> bool {
-    if let '`' | '"' | '{' | '}' | '[' | ']' = x {
-        // reserved symbols
-        false
+/// Returns `true` if this character is a valid bracket symbol.
+fn check_bracket(x : char) -> bool {
+    if let '{' | '}' | '[' | ']' | '(' | ')' = x {
+        true
     } else {
-        !check_character(x) && !check_whitespace(x)
+        false
     }
+}
+
+/// Returns `true` if this character is a valid bracket symbol.
+fn check_quote(x : char) -> bool {
+    if let '"' | '\'' | '`' = x {
+        true
+    } else {
+        false
+    }
+}
+
+/// Returns `true` if this character is a valid operator symbol.
+fn check_operator(x : char) -> bool {
+    !(check_character(x) || check_whitespace(x) ||
+            check_bracket(x) || check_quote(x))
 }
