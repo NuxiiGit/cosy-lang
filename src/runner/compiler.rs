@@ -27,7 +27,68 @@ impl<'a> Parser<'a> {
 
     /// Consumes the parser and produces an abstract syntax tree.
     pub fn parse(mut self) -> Result<Expr<'a>, Error> {
-        unimplemented!()
+        self.parse_expr()
+    }
+
+    /// Parses an expression.
+    fn parse_expr(&mut self) -> Result<Expr<'a>, Error> {
+        let mut left = self.parse_expr_unary()?;
+        while let Some(Lex { token : Token::Op(ident), position }) =
+                self.consume(|x| matches!(x, Token::Op(..)))? {
+            let right = self.parse_expr_unary()?;
+            left = Expr::Call {
+                ident,
+                args : vec![left, right],
+                position
+            }
+        }
+        Ok(left)
+    }
+
+    /// Parses a stream of prefix unary operators.
+    fn parse_expr_unary(&mut self) -> Result<Expr<'a>, Error> {
+        if let Some(Lex { token : Token::Op(ident), position }) =
+                self.consume(|x| matches!(x, Token::Op(..)))? {
+            let right = self.parse_expr_unary()?;
+            Ok(Expr::Call {
+                ident,
+                args : vec![right],
+                position
+            })
+        } else {
+            self.parse_expr_frontier()
+        }
+    }
+
+    /// Parses expression literals and groupings.
+    fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error> {
+        if let Some(Lex { token, position }) = 
+                self.consume(|x| matches!(x,
+                        Token::Str(..) |
+                        Token::Int(..)))? {
+            let result = match token {
+                Token::Int(literal) => {
+                    if let Ok(n) = literal.parse::<i64>() {
+                        Ok(Value::Int(n))
+                    } else {
+                        Err("Unable to parse integer literal")
+                    }
+                },
+                _ => Err("Unknown literal")
+            };
+            match result {
+                Ok(value) => Ok(Expr::Literal { value, position }),
+                Err(description) => Err(Error { description, position })
+            }
+        } else if let Some(Lex { token : Token::Ident(ident), position }) = 
+                self.consume(|x| matches!(x, Token::Ident(..)))? {
+            Ok(Expr::Variable { ident, position })
+        } else {
+            self.expects(|x| matches!(x, Token::LeftParen), "Malformed expression")?;
+            let expr = self.parse_expr()?;
+            self.expects(|x| matches!(x, Token::RightParen), "Expected closing ')' after expression")?;
+            Ok(expr)
+        }
     }
 
     /// Consumes the next token *only* if the predicate holds. Returns an error otherwise.
