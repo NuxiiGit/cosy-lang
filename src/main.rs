@@ -9,7 +9,7 @@ fn main() {
     let t = Instant::now();
     println!("\nCompiling...");
     // compile
-    match Parser::from(Lexer::from(r#"20 + 3 * (23 - "nice") # okay"#)).parse() {
+    match Parser::from(Lexer::from(r#"1 ! 2 £ 3 $ 4 % 5 & 6 # 7 ~ 8 @ 9 . 10"#)).parse() {
         Ok(ast) => {
             // record time
             let dt = t.elapsed();

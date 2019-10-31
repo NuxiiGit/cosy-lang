@@ -4,6 +4,7 @@ use std::fmt;
 use std::error;
 use std::iter::Peekable;
 use std::str::CharIndices;
+use std::collections::hash_map::HashMap;
 
 macro_rules! matches {
     ($value:expr, $($pattern:tt)*) => ({
@@ -14,35 +15,58 @@ macro_rules! matches {
     });
 }
 
-pub struct Parser<'a> {
-    scanner : Peekable<Lexer<'a>>
+pub struct Parser<'a, 'b> {
+    scanner : Lexer<'a>,
+    current : Option<Lex<'a>>,
+    precedence : HashMap<&'b str, usize>
 }
-impl<'a> Parser<'a> {
+impl<'a, 'b> Parser<'a, 'b> {
+    /// A constant which represents the maximum precedence levels.
+    pub const PRECEDENCE_LEVELS : usize = 9;
+
     /// Create a new parser from this scanner.
-    pub fn from(scanner : Lexer<'a>) -> Parser<'a> {
+    pub fn from(scanner : Lexer<'a>) -> Self {
+        let mut precedence = HashMap::new();
+        precedence.insert("+", 1);
+        precedence.insert("*", 2);
         Parser {
-            scanner : scanner.peekable()
+            scanner : scanner,
+            current : None,
+            precedence
         }
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
     pub fn parse(mut self) -> Result<Expr<'a>, Error> {
+        self.advance()?;
         self.parse_expr()
+    }
+    
+    /// Parses an expression.
+    fn parse_expr(&mut self) -> Result<Expr<'a>, Error> {
+        self.parse_expr_binary(0)
     }
 
     /// Parses an expression.
-    fn parse_expr(&mut self) -> Result<Expr<'a>, Error> {
-        let mut left = self.parse_expr_unary()?;
-        while let Some(Lex { token : Token::Op(ident), position }) =
-                self.consume(|x| matches!(x, Token::Op(..)))? {
-            let right = self.parse_expr_unary()?;
-            left = Expr::Call {
-                ident,
-                args : vec![left, right],
-                position
+    fn parse_expr_binary(&mut self, p : usize) -> Result<Expr<'a>, Error> {
+        if p <= Self::PRECEDENCE_LEVELS {
+            let mut top = self.parse_expr_binary(p + 1)?;
+            while let Some(Lex { token : Token::Op(ident), position }) = self.current {
+                if self.precedence.get(ident).unwrap_or(&Self::PRECEDENCE_LEVELS) != &p {
+                    break;
+                }
+                self.advance()?;
+                let bottom = self.parse_expr_binary(p + 1)?;
+                top = Expr::Call {
+                    ident,
+                    args : vec![top, bottom],
+                    position
+                }
             }
+            Ok(top)
+        } else {
+            self.parse_expr_unary()
         }
-        Ok(left)
     }
 
     /// Parses a stream of prefix unary operators.
@@ -93,40 +117,59 @@ impl<'a> Parser<'a> {
 
     /// Consumes the next token *only* if the predicate holds. Returns an error otherwise.
     fn expects(&mut self, pred : impl Fn(&Token<'a>) -> bool, on_error : &'static str) -> Result<Lex<'a>, Error> {
-        let next = self.consume(pred)?;
-        match next {
-            Some(lex) => Ok(lex),
-            None => {
-                // raise error
-                Err(match self.scanner.next() {
-                    Some(Ok(lex)) => Error {
-                        description : on_error,
-                        position : lex.position
-                    },
-                    _ => Error {
-                        description : "Unexpected error",
-                        position : (0, 0)
-                    }
-                })
-            }
+        let holds = self.holds(pred);
+        let current = self.advance()?;
+        if holds {
+            Ok(current.unwrap())
+        } else {
+            // raise error
+            Err(match current {
+                Some(lex) => Error {
+                    description : on_error,
+                    position : lex.position
+                },
+                _ => Error {
+                    description : "Unexpected error",
+                    position : (0, 0)
+                }
+            })
         }
     }
 
     /// Consumes the next token if the predicate holds.
     fn consume(&mut self, pred : impl Fn(&Token<'a>) -> bool) -> Result<Option<Lex<'a>>, Error> {
-        let consume = if let Some(x) = self.scanner.peek() {
-            match &x {
-                Ok(Lex { token, .. }) => pred(token),
-                Err(..) => true
-            }
-        } else {
-            false
-        };
-        if consume {
-            let lex = self.scanner.next().unwrap()?;
-            Ok(Some(lex))
+        if self.holds(pred) {
+            self.advance()
         } else {
             Ok(None)
+        }
+    }
+
+    /// Checks whether the current token has this property.
+    fn holds(&self, pred : impl Fn(&Token<'a>) -> bool) -> bool {
+        if let Some(Lex { token, .. }) = &self.current {
+            pred(token)
+        } else {
+            false
+        }
+    }
+
+    /// Advances the parser.
+    fn advance(&mut self) -> Result<Option<Lex<'a>>, Error> {
+        let previous = self.current.take();
+        match self.scanner.next() {
+            Some(Ok(lex)) => {
+                self.current = Some(lex);
+                Ok(previous)
+            },
+            Some(Err(e)) => {
+                self.current = None;
+                Err(e)
+            },
+            None => {
+                self.current = None;
+                Ok(previous)
+            }
         }
     }
 }
