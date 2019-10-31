@@ -1,9 +1,21 @@
 #![allow(dead_code)]
 
-use super::super::collections::Token;
-
 use std::iter::Peekable;
 use std::str::CharIndices;
+
+macro_rules! matches {
+    ($value:expr, $($pattern:tt)*) => ({
+        match $value {
+            $($pattern)* => true,
+            _ => false
+        }
+    });
+}
+
+pub struct Parser<'a> {
+    scanner : Lexer<'a>,
+    
+}
 
 /// An iterator over a string slice, which produces `Token`s.
 pub struct Lexer<'a> {
@@ -54,14 +66,15 @@ impl<'a> Lexer<'a> {
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = ((usize, usize), Result<Token<'a>, &'static str>);
+    type Item = Lex<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut start = self.pos();
-        let position = (self.row, self.column);
+        let row = self.row;
+        let column = self.column;
         let result = match self.advance()? {
             // ignore whitespace
-            x if check_whitespace(x) => {
+            x if x.valid_whitespace() => {
                 while let Some(x) = self.chr() {
                     if x.is_whitespace() {
                         self.advance();
@@ -72,7 +85,7 @@ impl<'a> Iterator for Lexer<'a> {
                 return self.next();
             },
             // match quote types
-            x if check_quote(x) => {
+            x if x.valid_quote() => {
                 match x {
                     // ignore comments
                     '\'' => {
@@ -131,7 +144,7 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             },
             // match bracket types
-            x if check_bracket(x) => {
+            x if x.valid_bracket() => {
                 match x {
                     '(' => Ok(Token::LeftParen),
                     ')' => Ok(Token::RightParen),
@@ -141,10 +154,10 @@ impl<'a> Iterator for Lexer<'a> {
                 }
             }
             // match number types
-            x if check_number(x) => {
+            x if x.valid_number() => {
                 let end = loop {
                     if let Some(x) = self.chr() {
-                        if check_number(x) {
+                        if x.valid_number() {
                             self.advance();
                             continue;
                         }
@@ -154,10 +167,10 @@ impl<'a> Iterator for Lexer<'a> {
                 Ok(Token::Int(&self.context[start..end]))
             },
             // match keywords and identifiers
-            x if check_character(x) => {
+            x if x.valid_character() => {
                 let end = loop {
                     if let Some(x) = self.chr() {
-                        if check_character(x) {
+                        if x.valid_character() {
                             self.advance();
                             continue;
                         }
@@ -173,10 +186,10 @@ impl<'a> Iterator for Lexer<'a> {
                 })
             },
             // match symbols and operators
-            x if check_operator(x) => {
+            x if x.valid_operator() => {
                 let end = loop {
                     if let Some(x) = self.chr() {
-                        if check_operator(x) {
+                        if x.valid_operator() {
                             self.advance();
                             continue;
                         }
@@ -192,45 +205,88 @@ impl<'a> Iterator for Lexer<'a> {
             // what in the god damn
             _ => Err("Unexpected character")
         };
-        Some((position, result))
+        Some(Lex { result, row, column })
     }
 }
 
-/// Returns `true` if this character is a valid whitespace symbol.
-fn check_whitespace(x : char) -> bool {
-    x.is_control() || x.is_whitespace()
+/// A struct which stores either a `Token` or a message `&str` depending on whether the lex failed or not.
+/// Additionally, stores the row and column of the token/error.
+pub struct Lex<'a> {
+    pub result : Result<Token<'a>, &'static str>,
+    pub row : usize,
+    pub column : usize
 }
 
-/// Returns `true` if this character is a valid number symbol.
-fn check_number(x : char) -> bool {
-    x == '\'' || x.is_ascii_digit()
+/// An enum which describes available token types.
+#[derive(Debug)]
+pub enum Token<'a> {
+    Var,
+    If,
+    IfNot,
+    Else,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    Colon,
+    SemiColon,
+    Str(&'a str),
+    Int(&'a str),
+    Ident(&'a str),
+    Op(&'a str)
 }
 
-/// Returns `true` if this character is a valid identifier symbol.
-fn check_character(x : char) -> bool {
-    x == '_' || x.is_alphabetic() || check_number(x)
-}
+/// Extension functions for `char`.
+trait CharExt {
+    /// Returns `true` if this character is a valid whitespace symbol.
+    fn valid_whitespace(&self) -> bool;
 
-/// Returns `true` if this character is a valid bracket symbol.
-fn check_bracket(x : char) -> bool {
-    if let '{' | '}' | '[' | ']' | '(' | ')' = x {
-        true
-    } else {
-        false
+    /// Returns `true` if this character is a valid number symbol.
+    fn valid_number(&self) -> bool;
+
+    /// Returns `true` if this character is a valid identifier symbol.
+    fn valid_character(&self) -> bool;
+
+    /// Returns `true` if this character is a valid bracket symbol.
+    fn valid_bracket(&self) -> bool;
+
+    /// Returns `true` if this character is a valid quote symbol.
+    fn valid_quote(&self) -> bool;
+
+    /// Returns `true` if this character is a valid operator symbol.
+    fn valid_operator(&self) -> bool;
+}
+impl CharExt for char {
+    fn valid_whitespace(&self) -> bool {
+        self.is_control() || self.is_whitespace()
     }
-}
 
-/// Returns `true` if this character is a valid bracket symbol.
-fn check_quote(x : char) -> bool {
-    if let '"' | '\'' | '`' = x {
-        true
-    } else {
-        false
+    fn valid_number(&self) -> bool {
+        *self == '\'' || self.is_ascii_digit()
     }
-}
 
-/// Returns `true` if this character is a valid operator symbol.
-fn check_operator(x : char) -> bool {
-    !(check_character(x) || check_whitespace(x) ||
-            check_bracket(x) || check_quote(x))
+    fn valid_character(&self) -> bool {
+        *self == '_' || self.is_alphabetic() || self.valid_number()
+    }
+
+    fn valid_bracket(&self) -> bool {
+        if let '{' | '}' | '[' | ']' | '(' | ')' = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn valid_quote(&self) -> bool {
+        if let '"' | '\'' | '`' = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    fn valid_operator(&self) -> bool {
+        !(self.valid_character() || self.valid_whitespace() ||
+                self.valid_bracket() || self.valid_quote())
+    }
 }

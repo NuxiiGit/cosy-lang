@@ -1,6 +1,6 @@
 mod runner;
 
-use runner::compiler::scanner::Lexer;
+use runner::compiler::*;
 
 //use runner::compiler::scanner::Tokeniser;
 //use runner::compiler::parser::Builder;
@@ -9,8 +9,9 @@ use runner::compiler::scanner::Lexer;
 //use std::time::Instant;
 
 fn main() {
-    for ((row, col), result) in Lexer::from("if (nice + 8*`oh no``+`0) { '{ comment }' }") {
-        println!("(row. {}, col. {}) {:?}", row, col, result);
+    for Lex { row, column, result } in Lexer::from("if (nice + 8*`oh no``+`0) { '
+    { comment }") {
+        println!("(row. {}, col. {}) {:?}", row, column, result);
     }
 
     /*let t = Instant::now();
