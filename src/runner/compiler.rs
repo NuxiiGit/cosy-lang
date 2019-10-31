@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use std::fmt;
+use std::error;
 use std::iter::Peekable;
 use std::str::CharIndices;
 
@@ -13,8 +15,92 @@ macro_rules! matches {
 }
 
 pub struct Parser<'a> {
-    scanner : Lexer<'a>,
-    
+    scanner : Peekable<Lexer<'a>>
+}
+impl<'a> Parser<'a> {
+    /// Create a new parser from this scanner.
+    pub fn from(scanner : Lexer<'a>) -> Parser<'a> {
+        Parser {
+            scanner : scanner.peekable()
+        }
+    }
+
+    /// Consumes the parser and produces an abstract syntax tree.
+    pub fn parse(mut self) -> Result<Expr<'a>, Error> {
+        unimplemented!()
+    }
+
+    /// Consumes the next token *only* if the predicate holds. Returns an error otherwise.
+    fn expects(&mut self, pred : impl Fn(&Token<'a>) -> bool, on_error : &'static str) -> Result<Lex<'a>, Error> {
+        let next = self.consume(pred)?;
+        match next {
+            Some(lex) => Ok(lex),
+            None => {
+                // raise error
+                Err(match self.scanner.next() {
+                    Some(Ok(lex)) => Error {
+                        description : on_error,
+                        position : lex.position
+                    },
+                    _ => Error {
+                        description : "Unexpected error",
+                        position : (0, 0)
+                    }
+                })
+            }
+        }
+    }
+
+    /// Consumes the next token if the predicate holds.
+    fn consume(&mut self, pred : impl Fn(&Token<'a>) -> bool) -> Result<Option<Lex<'a>>, Error> {
+        let consume = if let Some(x) = self.scanner.peek() {
+            match &x {
+                Ok(Lex { token, .. }) => pred(token),
+                Err(..) => true
+            }
+        } else {
+            false
+        };
+        if consume {
+            let lex = self.scanner.next().unwrap()?;
+            Ok(Some(lex))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+/// A recursive enum which stores expression information.
+#[derive(Debug)]
+pub enum Expr<'a> {
+    Variable {
+        ident : &'a str,
+        position : Position
+    },
+    Literal {
+        value : Value,
+        position : Position
+    },
+    Member {
+        ident : &'a str,
+        expr : Box<Expr<'a>>,
+        position : Position
+    },
+    Call {
+        ident : &'a str,
+        args : Vec<Expr<'a>>,
+        position : Position
+    }
+}
+
+/// An enum which stores data type values.
+#[derive(Debug)]
+pub enum Value {
+    Empty,
+    Bool(bool),
+    Char(char),
+    Int(i64),
+    Float(f64)
 }
 
 /// An iterator over a string slice, which produces `Token`s.
@@ -66,12 +152,11 @@ impl<'a> Lexer<'a> {
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Lex<'a>;
+    type Item = Result<Lex<'a>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut start = self.pos();
-        let row = self.row;
-        let column = self.column;
+        let position = (self.row, self.column);
         let result = match self.advance()? {
             // ignore whitespace
             x if x.valid_whitespace() => {
@@ -205,17 +290,36 @@ impl<'a> Iterator for Lexer<'a> {
             // what in the god damn
             _ => Err("Unexpected character")
         };
-        Some(Lex { result, row, column })
+        Some(match result {
+            Ok(token) => Ok(Lex { token, position }),
+            Err(description) => Err(Error { description, position })
+        })
     }
 }
 
-/// A struct which stores either a `Token` or a message `&str` depending on whether the lex failed or not.
-/// Additionally, stores the row and column of the token/error.
+/// A struct which stores a `Token` with the row and column it occured on.
 pub struct Lex<'a> {
-    pub result : Result<Token<'a>, &'static str>,
-    pub row : usize,
-    pub column : usize
+    pub token : Token<'a>,
+    pub position : Position
 }
+
+/// A struct which stores a compiler error with the row and column it occured on.
+#[derive(Debug)]
+pub struct Error {
+    pub description : &'static str,
+    pub position : Position
+}
+impl fmt::Display for Error {
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        let (row, column) = self.position;
+        write!(f, "Compile error at (row. {}, col. {}): {}",
+                row, column, self.description)
+    }
+}
+impl error::Error for Error {}
+
+/// A type alias for script locations. Read as `(row, column)`.
+pub type Position = (usize, usize);
 
 /// An enum which describes available token types.
 #[derive(Debug)]

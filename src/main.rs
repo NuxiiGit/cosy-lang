@@ -9,9 +9,12 @@ use runner::compiler::*;
 //use std::time::Instant;
 
 fn main() {
-    for Lex { row, column, result } in Lexer::from("if (nice + 8*`oh no``+`0) { '
+    for result in Lexer::from("if (nice + 8*`oh no``+`0) { '
     { comment }") {
-        println!("(row. {}, col. {}) {:?}", row, column, result);
+        match result {
+            Ok(Lex { token, position : (row, column)}) => println!("(row. {}, col. {}): {:?}", row, column, token),
+            Err(Error { description, position : (row, column)}) => println!("Error at (row. {}, col. {}): {:?}", row, column, description),
+        }
     }
 
     /*let t = Instant::now();
