@@ -1,7 +1,11 @@
 #![allow(dead_code)]
 
-use std::fmt;
-use std::error;
+use super::data::{
+    Position,
+    error::*,
+    syntax_tree::*
+};
+
 use std::iter::Peekable;
 use std::str::CharIndices;
 use std::collections::hash_map::HashMap;
@@ -24,7 +28,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     /// A constant which represents the maximum precedence levels.
     pub const PRECEDENCE_LEVELS : usize = 9;
 
-    /// Create a new parser from this string.
+    /// Creates a new parser from this string.
     pub fn from(scanner : Lexer<'a>) -> Self {
         let mut precedence = HashMap::new();
         precedence.insert("+", 1);
@@ -58,9 +62,8 @@ impl<'a, 'b> Parser<'a, 'b> {
                 self.advance()?;
                 let bottom = self.parse_expr_binary(p + 1)?;
                 top = Expr::Call {
-                    ident,
-                    args : vec![top, bottom],
-                    position
+                    ident : Ident { ident, position },
+                    args : vec![top, bottom]
                 }
             }
             Ok(top)
@@ -75,13 +78,25 @@ impl<'a, 'b> Parser<'a, 'b> {
                 self.consume(|x| matches!(x, Token::Op(..)))? {
             let right = self.parse_expr_unary()?;
             Ok(Expr::Call {
-                ident,
-                args : vec![right],
-                position
+                ident : Ident { ident, position },
+                args : vec![right]
             })
         } else {
-            self.parse_expr_frontier()
+            self.parse_expr_member()
         }
+    }
+
+    /// Parses a stream of member accesses.
+    fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error> {
+        let mut expr = self.parse_expr_frontier()?;
+        while let Some(Lex { token : Token::Ident(ident), position }) =
+                self.consume(|x| matches!(x, Token::Ident(..)))? {
+            expr = Expr::Member {
+                ident : Ident { ident, position },
+                expr : Box::new(expr)
+            }
+        }
+        Ok(expr)
     }
 
     /// Parses expression literals and groupings.
@@ -101,12 +116,12 @@ impl<'a, 'b> Parser<'a, 'b> {
                 _ => Err("Unknown literal")
             };
             match result {
-                Ok(value) => Ok(Expr::Literal { value, position }),
+                Ok(value) => Ok(Expr::Literal { literal : Literal { value, position } }),
                 Err(description) => Err(Error { description, position })
             }
         } else if let Some(Lex { token : Token::Ident(ident), position }) = 
                 self.consume(|x| matches!(x, Token::Ident(..)))? {
-            Ok(Expr::Variable { ident, position })
+            Ok(Expr::Variable { ident : Ident { ident, position } })
         } else {
             self.expects(|x| matches!(x, Token::LeftParen), "Malformed expression")?;
             let expr = self.parse_expr()?;
@@ -170,39 +185,6 @@ impl<'a, 'b> Parser<'a, 'b> {
             }
         }
     }
-}
-
-/// A recursive enum which stores expression information.
-#[derive(Debug)]
-pub enum Expr<'a> {
-    Variable {
-        ident : &'a str,
-        position : Position
-    },
-    Literal {
-        value : Value,
-        position : Position
-    },
-    Member {
-        ident : &'a str,
-        expr : Box<Expr<'a>>,
-        position : Position
-    },
-    Call {
-        ident : &'a str,
-        args : Vec<Expr<'a>>,
-        position : Position
-    }
-}
-
-/// An enum which stores data type values.
-#[derive(Debug)]
-pub enum Value {
-    Empty,
-    Bool(bool),
-    Char(char),
-    Int(i64),
-    Float(f64)
 }
 
 /// An iterator over a string slice, which produces `Token`s.
@@ -407,24 +389,6 @@ pub struct Lex<'a> {
     pub token : Token<'a>,
     pub position : Position
 }
-
-/// A struct which stores a compiler error with the row and column it occured on.
-#[derive(Debug)]
-pub struct Error {
-    pub description : &'static str,
-    pub position : Position
-}
-impl fmt::Display for Error {
-    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
-        let (row, column) = self.position;
-        write!(f, "Compile error at (row. {}, col. {}): {}",
-                row, column, self.description)
-    }
-}
-impl error::Error for Error {}
-
-/// A type alias for script locations. Read as `(row, column)`.
-pub type Position = (usize, usize);
 
 /// An enum which describes available token types.
 #[derive(Debug)]
