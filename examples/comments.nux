@@ -1,0 +1,7 @@
+' normal comment
+
+''' documentation comment
+
+'{
+    block comment
+}'

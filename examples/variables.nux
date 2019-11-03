@@ -1,0 +1,3 @@
+var a : Int = 3;
+
+const b : Float = 3.0;
