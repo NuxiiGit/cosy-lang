@@ -1,7 +1,15 @@
 [package]
-name = "new-lang"
-version = "0.1.0"
+name = "nux-lang"
+version = "0.0.1"
 authors = ["Nuxii <nuxii09@gmail.com>"]
 edition = "2018"
+
+[[bin]]
+name = "nux"
+path = "app/main.rs"
+
+[lib]
+name = "nuxc"
+path = "src/lib.rs"
 
 [dependencies]

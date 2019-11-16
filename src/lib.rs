@@ -1,0 +1,1 @@
+pub const NICE : &'static str = "Okay!";
