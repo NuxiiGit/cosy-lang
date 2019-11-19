@@ -1,15 +1,15 @@
 [package]
-name = "nux-lang"
+name = "fluxii-lang"
 version = "0.0.1"
 authors = ["Nuxii <nuxii09@gmail.com>"]
 edition = "2018"
 
 [[bin]]
-name = "nux"
+name = "fluxii"
 path = "app/main.rs"
 
 [lib]
-name = "nuxc"
+name = "fluxc"
 path = "src/lib.rs"
 
 [dependencies]

@@ -1,3 +1,3 @@
 fn main() {
-    println!("Nice {}", nuxc::NICE);
+    println!("Nice {}", fluxc::NICE);
 }
