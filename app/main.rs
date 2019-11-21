@@ -1,3 +1,3 @@
 fn main() {
-    println!("Nice {}", fluxc::NICE);
+    println!("Nice");
 }
