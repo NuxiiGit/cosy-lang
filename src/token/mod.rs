@@ -20,9 +20,17 @@ pub enum TokenKind {
     RightBrace,
     Colon,
     SemiColon,
-    Identifier,
+    Identifier(IdentifierKind),
     Literal(LiteralKind),
     Eof
+}
+
+/// An enum which describes available identifier types.
+#[derive(PartialEq, Debug)]
+pub enum IdentifierKind {
+    Alphanumeric,
+    Literal,
+    Symbol
 }
 
 /// An enum which describes available literal types.
