@@ -1,9 +1,0 @@
-'' normal comment
-
-''' documentation comment
-
-'| block comment |'
-
-'| nested block comment
- | '| nice |'
- |'

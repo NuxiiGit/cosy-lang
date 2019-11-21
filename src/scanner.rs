@@ -16,5 +16,5 @@ pub struct Lexer<'a> {
     column : usize
 }
 impl<'a> Lexer<'a> {
-    
+
 }

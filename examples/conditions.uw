@@ -1,19 +1,19 @@
-'' if statement
+:: if statement
 if condition {
     stuff();
 }
 
-'' inline condition
+:: inline condition
 if condition then stuff();
 
-'' else clause
+:: else clause
 if condition {
     stuff();
 } else {
     other_stuff();
 }
 
-'' ifnot statement
+:: ifnot statement
 ifnot condition {
     stuff();
 } else if otherwise {
@@ -22,7 +22,7 @@ ifnot condition {
     more_stuff();
 }
 
-'' case condition
+:: case condition
 switch state {
 case 0:
     stuff();
@@ -32,7 +32,7 @@ default:
     more_stuff();
 }
 
-'' conditional case condition
+:: conditional case condition
 switch state {
 case is < 2:
     stuff();
