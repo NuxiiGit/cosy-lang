@@ -3,8 +3,8 @@ use super::source_pos::Span;
 /// Stores a token and its location in the source file.
 #[derive(Debug)]
 pub struct Token<'a> {
-    kind : TokenKind,
-    span : Span<'a>
+    pub kind : TokenKind,
+    pub span : Span<'a>
 }
 
 /// An enum which describes available token types.
@@ -21,8 +21,7 @@ pub enum TokenKind {
     Colon,
     SemiColon,
     Identifier(IdentifierKind),
-    Literal(LiteralKind),
-    Eof
+    Literal(LiteralKind)
 }
 
 /// An enum which describes available identifier types.
