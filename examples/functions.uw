@@ -1,4 +1,4 @@
-:: function definition
+' function definition
 function max(a : Int, b : Int) : Int {
     if a > b {
         return a;
@@ -7,5 +7,5 @@ function max(a : Int, b : Int) : Int {
     }
 }
 
-:: a new function with the first argument of `max` automatically applied
+' a new function with the first argument of `max` automatically applied
 var clamp_positive : Int -> Int = max?(0);

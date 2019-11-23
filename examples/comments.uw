@@ -1,7 +1,7 @@
-:: normal comment
+' normal comment
 
-:| block comment |:
+'| block comment |'
 
-:| nested block comment
- | :| nice |:
- |:
+'| nested block comment
+ | '| nice |'
+ |'
