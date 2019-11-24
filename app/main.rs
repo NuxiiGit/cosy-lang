@@ -1,8 +1,10 @@
-use uwooc::source_pos::Span;
-use uwooc::token::Token;
-use uwooc::scanner::{
-    Lexer,
-    StrScanner
+use cosyc::{
+    source_pos::Span,
+    token::Token,
+    scanner::{
+        Lexer,
+        StrScanner
+    }
 };
 
 fn main() {
