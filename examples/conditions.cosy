@@ -3,9 +3,6 @@ if condition {
     stuff();
 }
 
--- inline condition
-if condition then stuff();
-
 -- else clause
 if condition {
     stuff();
@@ -13,14 +10,19 @@ if condition {
     other_stuff();
 }
 
--- ifnot statement
-ifnot condition {
+-- if not (unless) statement
+unless condition {
     stuff();
 } else if otherwise {
     other_stuff();
 } else {
     more_stuff();
 }
+
+-- inline condition
+if condition then stuff();
+
+unless condition then other_stuff();
 
 -- case condition
 switch state {
