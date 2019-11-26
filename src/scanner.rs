@@ -23,7 +23,7 @@ impl<'a> Lexer<'a> {
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
-        self.scanner.clear();
+        self.scanner.start();
         let row = self.scanner.row();
         let column = self.scanner.column();
         let result = match self.scanner.advance()? {
@@ -41,28 +41,6 @@ impl<'a> Iterator for Lexer<'a> {
             // match quote types
             x if valid_quote(x) => {
                 match x {
-                    // ignore comments
-                    '\'' => {
-                        if let Some('|') = self.scanner.chr() {
-                            // block comment
-                            while let Some(x) = self.scanner.advance() {
-                                if x == '|' {
-                                    if let Some('\'') = self.scanner.advance() {
-                                        return self.next();
-                                    }
-                                }
-                            }
-                            Err("unclosed block comment")
-                        } else {
-                            // line comment
-                            while let Some(x) = self.scanner.advance() {
-                                if x == '\n' {
-                                    break;
-                                }
-                            }
-                            return self.next();
-                        }
-                    },
                     _ => Err("unexpected quote type")
                 }
             },
@@ -148,7 +126,9 @@ pub struct StrScanner<'a> {
     chars : Peekable<CharIndices<'a>>,
     row : usize,
     column : usize,
-    index : usize,
+    slice_start : usize,
+    slice_end : usize,
+    slice_grow : bool
 }
 impl<'a> StrScanner<'a> {
     /// Create a new scanner from this string slice.
@@ -160,7 +140,9 @@ impl<'a> StrScanner<'a> {
                     .peekable(),
             row : 1,
             column : 0,
-            index : 0,
+            slice_start : 0,
+            slice_end : 0,
+            slice_grow : true
         }
     }
 
@@ -176,12 +158,19 @@ impl<'a> StrScanner<'a> {
 
     /// Peeks at the current substring.
     pub fn substr(&mut self) -> &'a str {
-        &self.context[self.index..self.pos()]
+        &self.context[self.slice_start..self.slice_end]
     }
 
-    /// End the substring.
-    pub fn clear(&mut self) {
-        self.index = self.pos();
+    /// Start the substring
+    pub fn start(&mut self) {
+        self.slice_start = self.pos();
+        self.slice_end = self.slice_start;
+        self.slice_grow = true;
+    }
+
+    /// End the substring
+    pub fn end(&mut self) {
+        self.slice_grow = false;
     }
 
     /// Peek at the next character.
@@ -201,7 +190,11 @@ impl<'a> StrScanner<'a> {
 
     /// Move to the next character.
     pub fn advance(&mut self) -> Option<char> {
-        let (_, x) = self.chars.next()?;
+        let next = self.chars.next();
+        if self.slice_grow {
+            self.slice_end = self.pos();
+        }
+        let (_, x) = next?;
         if x == '\n' {
             // move to new line
             self.row += 1;
