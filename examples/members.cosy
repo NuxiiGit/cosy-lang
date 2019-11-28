@@ -4,8 +4,7 @@ object Vec2 {
     y : Float = 0.0
 }
 
--| Finds the dot product of two vectors.
- |-
+-- Finds the dot product of two vectors.
 function <.> (a : Vec2) (b : Vec2) : Float {
     return a.x * b.x + a.y * b.y;
 }
