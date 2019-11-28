@@ -7,7 +7,12 @@ use cosyc::{
 };
 
 fn main() {
-    for result in Lexer::lex(StrScanner::from(r#"123 "stringed" alright5 a"#)) {
+    for result in Lexer::lex(StrScanner::from(r#"
+    123
+    {- "str{-inged" -}-}{--}
+  alright5
+     a
+    "#)) {
         match result {
             Ok(Token { kind, span }) => println!("{}: {:?}", span, kind),
             Err(e) => println!("{}", e)

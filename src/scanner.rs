@@ -22,7 +22,7 @@ impl<'a> Lexer<'a> {
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
-        self.scanner.erase();
+        self.scanner.ignore();
         let row = self.scanner.row();
         let column = self.scanner.column();
         let result = match self.scanner.advance()? {
@@ -36,15 +36,35 @@ impl<'a> Iterator for Lexer<'a> {
                 }
                 return self.next();
             },
-            // match number types
-            x if x.is_ascii_digit() => {
-                while let Some(x) = self.scanner.chr() {
-                    if !(x.is_ascii_digit() || x == '_') {
+            // ignore line comments
+            '-' if Some('-') == self.scanner.chr() => {
+                while let Some(x) = self.scanner.advance() {
+                    if x == '\n' {
                         break;
                     }
-                    self.scanner.advance();
                 }
-                Ok(TokenKind::Literal(LiteralKind::Integer))
+                return self.next();
+            },
+            // ignore block comments
+            '{' if Some('-') == self.scanner.chr() => {
+                let mut nests = 1;
+                while let Some(x) = self.scanner.advance() {
+                    match x {
+                        '-' if Some('}') == self.scanner.chr() => {
+                            if nests == 1 {
+                                self.scanner.advance();
+                                return self.next();
+                            } else {
+                                nests -= 1;
+                            }
+                        },
+                        '{' if Some('-') == self.scanner.chr() => {
+                            nests += 1;
+                        },
+                        _ => continue
+                    }
+                }
+                Err("unterminated block comment")
             },
             // match keywords and identifiers
             x if x.is_alphabetic() => {
@@ -61,7 +81,17 @@ impl<'a> Iterator for Lexer<'a> {
                     "else" => TokenKind::Else,
                     _ => TokenKind::Identifier(IdentifierKind::Alphanumeric)
                 })
-            }
+            },
+            // match number types
+            x if x.is_ascii_digit() => {
+                while let Some(x) = self.scanner.chr() {
+                    if !(x.is_ascii_digit() || x == '_') {
+                        break;
+                    }
+                    self.scanner.advance();
+                }
+                Ok(TokenKind::Literal(LiteralKind::Integer))
+            },
             // unknown lex
             _ => Err("unexpected symbol")
         };
@@ -121,7 +151,7 @@ impl<'a> StrScanner<'a> {
     }
 
     /// Erases the current substring.
-    pub fn erase(&mut self) {
+    pub fn ignore(&mut self) {
         self.span_begin = self.span_end;
     }
 
