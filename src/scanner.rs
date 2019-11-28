@@ -7,7 +7,6 @@ use super::token::{
     LiteralKind
 };
 
-use std::iter::Peekable;
 use std::str::CharIndices;
 
 /// An iterator over a string slice, which produces `Token`s.
@@ -28,26 +27,19 @@ impl<'a> Iterator for Lexer<'a> {
         let column = self.scanner.column();
         let result = match self.scanner.advance()? {
             // ignore whitespace
-            x if valid_whitespace(x) => {
+            x if x.is_whitespace() => {
                 while let Some(x) = self.scanner.chr() {
-                    if valid_whitespace(x) {
-                        self.scanner.advance();
-                    } else {
+                    if !x.is_whitespace() {
                         break;
                     }
+                    self.scanner.advance();
                 }
                 return self.next();
             },
-            // match quote types
-            x if valid_quote(x) => {
-                match x {
-                    _ => Err("unexpected quote type")
-                }
-            },
             // match number types
-            x if valid_number(x) => {
+            x if x.is_ascii_digit() => {
                 while let Some(x) = self.scanner.chr() {
-                    if !valid_number(x) {
+                    if !(x.is_ascii_digit() || x == '_') {
                         break;
                     }
                     self.scanner.advance();
@@ -55,9 +47,9 @@ impl<'a> Iterator for Lexer<'a> {
                 Ok(TokenKind::Literal(LiteralKind::Integer))
             },
             // match keywords and identifiers
-            x if valid_character(x) => {
+            x if x.is_alphabetic() => {
                 while let Some(x) = self.scanner.chr() {
-                    if !valid_character(x) {
+                    if !(x.is_alphanumeric() || x == '_' || x == '\'') {
                         break;
                     }
                     self.scanner.advance();
@@ -81,49 +73,11 @@ impl<'a> Iterator for Lexer<'a> {
     }
 }
 
-/// Returns `true` if this character is a valid whitespace symbol.
-fn valid_whitespace(x : char) -> bool {
-    x.is_control() || x.is_whitespace()
-}
-
-/// Returns `true` if this character is a valid number symbol.
-fn valid_number(x : char) -> bool {
-    x == '\'' || x.is_ascii_digit()
-}
-
-/// Returns `true` if this character is a valid identifier symbol.
-fn valid_character(x : char) -> bool {
-    x == '_' || x.is_alphabetic() || valid_number(x)
-}
-
-/// Returns `true` if this character is a valid bracket symbol.
-fn valid_bracket(x : char) -> bool {
-    if let '{' | '}' | '[' | ']' | '(' | ')' = x {
-        true
-    } else {
-        false
-    }
-}
-
-/// Returns `true` if this character is a valid quote symbol.
-fn valid_quote(x : char) -> bool {
-    if let '"' | '\'' | '`' = x {
-        true
-    } else {
-        false
-    }
-}
-
-/// Returns `true` if this character is a valid operator symbol.
-fn valid_operator(x : char) -> bool {
-    !(valid_character(x) || valid_whitespace(x) ||
-            valid_bracket(x) || valid_quote(x))
-}
-
 /// A structure over a string slice which produces individual `Span`s of tokens.
 pub struct StrScanner<'a> {
     context : &'a str,
-    chars : Peekable<CharIndices<'a>>,
+    chars : CharIndices<'a>,
+    peeked : Option<char>,
     row : usize,
     column : usize,
     span_begin : usize,
@@ -132,13 +86,20 @@ pub struct StrScanner<'a> {
 impl<'a> StrScanner<'a> {
     /// Create a new scanner from this string slice.
     pub fn from(context : &'a str) -> StrScanner<'a> {
+        let mut chars = context.char_indices();
+        let peeked = if let Some((_, x)) = chars.next() {
+            // get the first character
+            // this allows for the string scanner to have an immutable `chr` method
+            Some(x)
+        } else {
+            None
+        };
         StrScanner {
             context,
-            chars : context
-                    .char_indices()
-                    .peekable(),
+            chars,
+            peeked,
             row : 1,
-            column : 0,
+            column : 1,
             span_begin : 0,
             span_end : 0,
         }
@@ -165,27 +126,29 @@ impl<'a> StrScanner<'a> {
     }
 
     /// Peek at the next character.
-    pub fn chr(&mut self) -> Option<char> {
-        let (_, x) = self.chars.peek()?;
-        Some(*x)
+    pub fn chr(&self) -> Option<char> {
+        self.peeked
     }
 
     /// Move to the next character.
     pub fn advance(&mut self) -> Option<char> {
-        let (_, x) = self.chars.next()?;
-        // move to new line
-        if x == '\n' {
-            self.row += 1;
-            self.column = 1;
+        let previous = self.chr();
+        self.peeked = if let Some((i, x)) = self.chars.next() {
+            // update span
+            self.span_end = i;
+            // move to new line
+            if x == '\n' {
+                self.row += 1;
+                self.column = 1;
+            } else {
+                self.column += 1;
+            }
+            Some(x)
         } else {
-            self.column += 1;
-        }
-        // update span
-        self.span_end = if let Some((i, _)) = self.chars.peek() {
-            *i
-        } else {
-            self.context.len()
+            // end of file
+            self.span_end = self.context.len();
+            None
         };
-        Some(x)
+        previous
     }
 }

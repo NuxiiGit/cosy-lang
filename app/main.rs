@@ -1,5 +1,4 @@
 use cosyc::{
-    source_pos::Span,
     token::Token,
     scanner::{
         Lexer,
