@@ -30,7 +30,7 @@ case 0:
     stuff();
 case 1:
     other_stuff();
-default:
+case else:
     more_stuff();
 }
 
@@ -40,6 +40,6 @@ case is < 2:
     stuff();
 case is >= 12:
     other_stuff();
-default:
+case else:
     more_stuff();
 }
