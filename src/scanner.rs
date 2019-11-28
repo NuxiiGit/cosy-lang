@@ -23,7 +23,7 @@ impl<'a> Lexer<'a> {
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
-        self.scanner.start();
+        self.scanner.erase();
         let row = self.scanner.row();
         let column = self.scanner.column();
         let result = match self.scanner.advance()? {
@@ -126,9 +126,8 @@ pub struct StrScanner<'a> {
     chars : Peekable<CharIndices<'a>>,
     row : usize,
     column : usize,
-    slice_start : usize,
-    slice_end : usize,
-    slice_grow : bool
+    span_begin : usize,
+    span_end : usize
 }
 impl<'a> StrScanner<'a> {
     /// Create a new scanner from this string slice.
@@ -140,9 +139,8 @@ impl<'a> StrScanner<'a> {
                     .peekable(),
             row : 1,
             column : 0,
-            slice_start : 0,
-            slice_end : 0,
-            slice_grow : true
+            span_begin : 0,
+            span_end : 0,
         }
     }
 
@@ -158,19 +156,12 @@ impl<'a> StrScanner<'a> {
 
     /// Peeks at the current substring.
     pub fn substr(&mut self) -> &'a str {
-        &self.context[self.slice_start..self.slice_end]
+        &self.context[self.span_begin..self.span_end]
     }
 
-    /// Start the substring
-    pub fn start(&mut self) {
-        self.slice_start = self.pos();
-        self.slice_end = self.slice_start;
-        self.slice_grow = true;
-    }
-
-    /// End the substring
-    pub fn end(&mut self) {
-        self.slice_grow = false;
+    /// Erases the current substring.
+    pub fn erase(&mut self) {
+        self.span_begin = self.span_end;
     }
 
     /// Peek at the next character.
@@ -179,29 +170,22 @@ impl<'a> StrScanner<'a> {
         Some(*x)
     }
 
-    /// Returns the position of the current character.
-    pub fn pos(&mut self) -> usize {
-        if let Some((i, _)) = self.chars.peek() {
-            *i
-        } else {
-            self.context.len()
-        }
-    }
-
     /// Move to the next character.
     pub fn advance(&mut self) -> Option<char> {
-        let next = self.chars.next();
-        if self.slice_grow {
-            self.slice_end = self.pos();
-        }
-        let (_, x) = next?;
+        let (_, x) = self.chars.next()?;
+        // move to new line
         if x == '\n' {
-            // move to new line
             self.row += 1;
             self.column = 1;
         } else {
             self.column += 1;
         }
+        // update span
+        self.span_end = if let Some((i, _)) = self.chars.peek() {
+            *i
+        } else {
+            self.context.len()
+        };
         Some(x)
     }
 }
