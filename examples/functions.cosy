@@ -1,0 +1,21 @@
+-- function definition
+function max (a : Int) (b : Int) : Int {
+    if a > b {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+-- function application
+var greatest = max 3 4;
+
+-- currying
+var positive : Int -> Int = max 1;
+
+-- procedural style functions
+function izard(a : String, b : String) : String {
+    return a ++ " fo' " ++ b ++ "izard";
+}
+
+var message = izard("bash", "sh");

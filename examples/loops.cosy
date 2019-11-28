@@ -1,30 +1,30 @@
-' while loop
+-- while loop
 while condition {
     stuff();
 }
 
-' until loop
+-- until loop
 until conditoin {
     stuff();
 }
 
-' repeat loop
+-- repeat loop
 repeat n {
-    ' repeat n-many times
+    -- repeat n-many times
     stuff();
 }
 
-' infinite loops
+-- infinite loops
 repeat {
     stuff();
 }
 
-' while clause
+-- while clause
 repeat n {
     stuff();
 } while condition;
 
-' until clause
+-- until clause
 repeat n {
     stuff();
 } until condition;
