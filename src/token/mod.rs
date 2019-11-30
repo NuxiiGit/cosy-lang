@@ -39,6 +39,7 @@ pub enum TokenKind {
     SemiColon,
     Arrow,
     Assign,
+    Documentation,
     Identifier(IdentifierKind),
     Literal(LiteralKind)
 }

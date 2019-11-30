@@ -8,6 +8,9 @@ use cosyc::{
 
 fn main() {
     for result in Lexer::lex(StrScanner::from(r#"
+//| documentation comment
+//| docs can be continued to new lines like so
+
 // if not (unless) statement
 unless condition {
     stuff();

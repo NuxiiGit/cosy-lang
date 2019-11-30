@@ -38,12 +38,19 @@ impl<'a> Iterator for Lexer<'a> {
             },
             // ignore line comment
             '/' if Some('/') == self.scanner.chr() => {
-                while let Some(x) = self.scanner.advance() {
+                self.scanner.advance();
+                let documentation = Some('|') == self.scanner.chr();
+                while let Some(x) = self.scanner.chr() {
                     if x == '\n' {
                         break;
                     }
+                    self.scanner.advance();
                 }
-                return self.next()
+                if documentation {
+                    Ok(TokenKind::Documentation)
+                } else {
+                    return self.next();
+                }
             },
             // ignore block comments
             '/' if Some('*') == self.scanner.chr() => {
@@ -84,7 +91,7 @@ impl<'a> Iterator for Lexer<'a> {
                     ']' => Ok(TokenKind::RightBox),
                     '.' => Ok(TokenKind::Dot),
                     ',' => Ok(TokenKind::Comma),
-                    ':' => Ok(TokenKind::Comma),
+                    ':' => Ok(TokenKind::Colon),
                     ';' => Ok(TokenKind::SemiColon),
                     '"' => {
                         // get string literal
