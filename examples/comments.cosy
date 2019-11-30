@@ -1,6 +1,10 @@
 // normal comment
 
 //| documentation comment
+  |
+  | docs can be continued to new lines like so
+
+//| this starts a new documentation comment
 
 /* block comment */
 

@@ -22,54 +22,128 @@ impl<'a> Lexer<'a> {
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
+        while let Some(x) = self.scanner.chr() {
+            // strip whitespace
+            if valid_whitespace(x) {
+                self.scanner.advance();
+            } else {
+                break;
+            }
+        }
         self.scanner.ignore();
         let row = self.scanner.row();
         let column = self.scanner.column();
         let result = match self.scanner.advance()? {
-            // ignore whitespace
-            x if x.is_whitespace() => {
+            // match special symbols
+            x if valid_symbol(x) => {
+                match x {
+                    '(' => Ok(TokenKind::LeftParen),
+                    ')' => Ok(TokenKind::RightParen),
+                    '{' => Ok(TokenKind::LeftBrace),
+                    '}' => Ok(TokenKind::RightBrace),
+                    '[' => Ok(TokenKind::LeftBox),
+                    ']' => Ok(TokenKind::RightBox),
+                    ',' => Ok(TokenKind::Comma),
+                    ';' => Ok(TokenKind::SemiColon),
+                    '"' => {
+                        // get string literal
+                        loop {
+                            if let Some(x) = self.scanner.advance() {
+                                if x == '\\' {
+                                    self.scanner.advance();
+                                } else if x == '"' {
+                                    break Ok(TokenKind::Literal(LiteralKind::String));
+                                }
+                            } else {
+                                break Err("unterminated string literal");
+                            }
+                        }
+                    },
+                    '\'' => {
+                        // get char literal
+                        loop {
+                            if let Some(x) = self.scanner.advance() {
+                                if x == '\\' {
+                                    self.scanner.advance();
+                                } else if x == '\'' {
+                                    break Ok(TokenKind::Literal(LiteralKind::Character));
+                                }
+                            } else {
+                                break Err("unterminated character literal");
+                            }
+                        }
+                    },
+                    '`' => {
+                        // get identifier literal
+                        loop {
+                            if let Some(x) = self.scanner.advance() {
+                                if x == '`' {
+                                    break Ok(TokenKind::Identifier(IdentifierKind::Literal));
+                                }
+                            } else {
+                                break Err("unterminated identifier literal");
+                            }
+                        }
+                    },
+                    _ => Err("unknown reserved symbol")
+                }
+            },
+            // match operators
+            x if valid_operator(x) => {
                 while let Some(x) = self.scanner.chr() {
-                    if !x.is_whitespace() {
+                    if !valid_operator(x) {
                         break;
                     }
                     self.scanner.advance();
                 }
-                return self.next();
+                match self.scanner.substr() {
+                    "//" => {
+                        // ignore line comment
+                        while let Some(x) = self.scanner.advance() {
+                            if x == '\n' {
+                                break;
+                            }
+                        }
+                        return self.next()
+                    },
+                    "/*" => {
+                        // ignore block comments
+                        let mut nests = 1;
+                        while let Some(x) = self.scanner.advance() {
+                            match x {
+                                '*' if Some('/') == self.scanner.chr() => {
+                                    if nests == 1 {
+                                        self.scanner.advance();
+                                        return self.next();
+                                    } else {
+                                        nests -= 1;
+                                    }
+                                },
+                                '/' if Some('*') == self.scanner.chr() => {
+                                    nests += 1;
+                                },
+                                _ => continue
+                            }
+                        }
+                        Err("unterminated block comment")
+                    },
+                    _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
+                }
             },
-            // ignore line comments
-            '/' if Some('/') == self.scanner.chr() => {
-                while let Some(x) = self.scanner.advance() {
-                    if x == '\n' {
+            // match number literals
+            x if valid_digit(x) => {
+                while let Some(x) = self.scanner.chr() {
+                    if !valid_digit(x) {
                         break;
                     }
+                    self.scanner.advance();
                 }
-                return self.next();
-            },
-            // ignore block comments
-            '/' if Some('*') == self.scanner.chr() => {
-                let mut nests = 1;
-                while let Some(x) = self.scanner.advance() {
-                    match x {
-                        '*' if Some('/') == self.scanner.chr() => {
-                            if nests == 1 {
-                                self.scanner.advance();
-                                return self.next();
-                            } else {
-                                nests -= 1;
-                            }
-                        },
-                        '/' if Some('*') == self.scanner.chr() => {
-                            nests += 1;
-                        },
-                        _ => continue
-                    }
-                }
-                Err("unterminated block comment")
+                Ok(TokenKind::Literal(LiteralKind::Integer))
             },
             // match keywords and identifiers
-            x if x.is_alphabetic() => {
+            x if valid_graphic(x) => {
                 while let Some(x) = self.scanner.chr() {
-                    if !(x.is_alphanumeric() || x == '_' || x == '\'') {
+                    if !valid_graphic(x) {
                         break;
                     }
                     self.scanner.advance();
@@ -82,67 +156,8 @@ impl<'a> Iterator for Lexer<'a> {
                     _ => TokenKind::Identifier(IdentifierKind::Alphanumeric)
                 })
             },
-            // match number literals
-            x if x.is_ascii_digit() => {
-                while let Some(x) = self.scanner.chr() {
-                    if !(x.is_ascii_digit() || x == '_') {
-                        break;
-                    }
-                    self.scanner.advance();
-                }
-                Ok(TokenKind::Literal(LiteralKind::Integer))
-            },
-            // match string literals
-            '"' => {
-                loop {
-                    if let Some(x) = self.scanner.advance() {
-                        if x == '\\' {
-                            self.scanner.advance();
-                        } else if x == '"' {
-                            break Ok(TokenKind::Literal(LiteralKind::String));
-                        }
-                    } else {
-                        break Err("unterminated string literal");
-                    }
-                }
-            },
-            // match char literals
-            '\'' => {
-                loop {
-                    if let Some(x) = self.scanner.advance() {
-                        if x == '\\' {
-                            self.scanner.advance();
-                        } else if x == '\'' {
-                            break Ok(TokenKind::Literal(LiteralKind::Character));
-                        }
-                    } else {
-                        break Err("unterminated character literal");
-                    }
-                }
-            },
-            // match identifier literals
-            '`' => {
-                loop {
-                    if let Some(x) = self.scanner.advance() {
-                        if x == '`' {
-                            break Ok(TokenKind::Identifier(IdentifierKind::Literal));
-                        }
-                    } else {
-                        break Err("unterminated identifier literal");
-                    }
-                }
-            },
-            // special characters
-            '(' => Ok(TokenKind::LeftParen),
-            ')' => Ok(TokenKind::RightParen),
-            '{' => Ok(TokenKind::LeftBrace),
-            '}' => Ok(TokenKind::RightBrace),
-            '[' => Ok(TokenKind::LeftBox),
-            ']' => Ok(TokenKind::RightBox),
-            ',' => Ok(TokenKind::Comma),
-            ';' => Ok(TokenKind::SemiColon),
             // unknown lex
-            _ => Err("unexpected symbol")
+            _ => Err("unknown character")
         };
         let span = Span { content : self.scanner.substr(), row, column };
         Some(match result {
@@ -150,6 +165,37 @@ impl<'a> Iterator for Lexer<'a> {
             Err(reason) => Err(Error { reason, span })
         })
     }
+}
+
+/// A function which returns whether this character is a valid operator character.
+pub fn valid_operator(x : char) -> bool {
+    !(valid_symbol(x) || valid_whitespace(x) || valid_graphic(x))
+}
+
+/// A function which returns whether this character is a valid symbol character.
+pub fn valid_symbol(x : char) -> bool {
+    if let '(' | ')' | '{' | '}' | '[' | ']' |
+            '.' | ',' | ':' | ';' |
+            '\'' | '"' | '`' = x {
+        true
+    } else {
+        false
+    }
+}
+
+/// A function which returns whether this character is a valid whitespace character.
+pub fn valid_whitespace(x : char) -> bool {
+    x.is_whitespace()
+}
+
+/// A function which returns whether this character is a valid identifier character.
+pub fn valid_graphic(x : char) -> bool {
+    x == '\'' || x == '_' || x.is_alphanumeric()
+}
+
+/// A function which returns whether this character is a valid number character.
+pub fn valid_digit(x : char) -> bool {
+    x.is_ascii_digit()
 }
 
 /// A structure over a string slice which produces individual `Span`s of tokens.

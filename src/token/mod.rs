@@ -31,8 +31,8 @@ pub enum TokenKind {
 #[derive(PartialEq, Debug)]
 pub enum IdentifierKind {
     Alphanumeric,
-    Literal,
-    Symbol
+    Operator,
+    Literal
 }
 
 /// An enum which describes available literal types.
