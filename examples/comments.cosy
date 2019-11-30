@@ -1,9 +1,9 @@
--- normal comment
+// normal comment
 
---| documentation comment
+//| documentation comment
 
-{- block comment -}
+/* block comment */
 
-{- nested block comment
- - {- nice -}
- -}
+/* nested block comment
+ * /* nice */
+ */

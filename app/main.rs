@@ -9,7 +9,7 @@ use cosyc::{
 fn main() {
     for result in Lexer::lex(StrScanner::from(r#"
     123
-    {- "str{-inged" -}-}{--}
+    // "bleh"
   alright5
      a
     "#)) {

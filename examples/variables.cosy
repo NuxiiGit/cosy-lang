@@ -1,8 +1,8 @@
--- variable
+// variable
 var a = 3;
 
--- constant
+// constant
 const b = 3.0;
 
--- character
+// character
 var ch = 'a';

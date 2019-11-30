@@ -37,7 +37,7 @@ impl<'a> Iterator for Lexer<'a> {
                 return self.next();
             },
             // ignore line comments
-            '-' if Some('-') == self.scanner.chr() => {
+            '/' if Some('/') == self.scanner.chr() => {
                 while let Some(x) = self.scanner.advance() {
                     if x == '\n' {
                         break;
@@ -46,11 +46,11 @@ impl<'a> Iterator for Lexer<'a> {
                 return self.next();
             },
             // ignore block comments
-            '{' if Some('-') == self.scanner.chr() => {
+            '/' if Some('*') == self.scanner.chr() => {
                 let mut nests = 1;
                 while let Some(x) = self.scanner.advance() {
                     match x {
-                        '-' if Some('}') == self.scanner.chr() => {
+                        '*' if Some('/') == self.scanner.chr() => {
                             if nests == 1 {
                                 self.scanner.advance();
                                 return self.next();
@@ -58,7 +58,7 @@ impl<'a> Iterator for Lexer<'a> {
                                 nests -= 1;
                             }
                         },
-                        '{' if Some('-') == self.scanner.chr() => {
+                        '/' if Some('*') == self.scanner.chr() => {
                             nests += 1;
                         },
                         _ => continue
