@@ -20,6 +20,7 @@ pub enum TokenKind {
     RightBrace,
     LeftBox,
     RightBox,
+    Comma,
     Colon,
     SemiColon,
     Identifier(IdentifierKind),

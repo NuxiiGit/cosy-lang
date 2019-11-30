@@ -82,7 +82,7 @@ impl<'a> Iterator for Lexer<'a> {
                     _ => TokenKind::Identifier(IdentifierKind::Alphanumeric)
                 })
             },
-            // match number types
+            // match number literals
             x if x.is_ascii_digit() => {
                 while let Some(x) = self.scanner.chr() {
                     if !(x.is_ascii_digit() || x == '_') {
@@ -92,6 +92,46 @@ impl<'a> Iterator for Lexer<'a> {
                 }
                 Ok(TokenKind::Literal(LiteralKind::Integer))
             },
+            // match string literals
+            '"' => {
+                loop {
+                    if let Some(x) = self.scanner.advance() {
+                        if x == '\\' {
+                            self.scanner.advance();
+                        } else if x == '"' {
+                            break Ok(TokenKind::Literal(LiteralKind::String));
+                        }
+                    } else {
+                        break Err("unterminated string literal");
+                    }
+                }
+            },
+            // match char literals
+            '\'' => {
+                loop {
+                    if let Some(x) = self.scanner.advance() {
+                        if x == '\\' {
+                            self.scanner.advance();
+                        } else if x == '\'' {
+                            break Ok(TokenKind::Literal(LiteralKind::Character));
+                        }
+                    } else {
+                        break Err("unterminated character literal");
+                    }
+                }
+            },
+            // match identifier literals
+            '`' => {
+                loop {
+                    if let Some(x) = self.scanner.advance() {
+                        if x == '`' {
+                            break Ok(TokenKind::Identifier(IdentifierKind::Literal));
+                        }
+                    } else {
+                        break Err("unterminated identifier literal");
+                    }
+                }
+            },
             // special characters
             '(' => Ok(TokenKind::LeftParen),
             ')' => Ok(TokenKind::RightParen),
@@ -99,6 +139,8 @@ impl<'a> Iterator for Lexer<'a> {
             '}' => Ok(TokenKind::RightBrace),
             '[' => Ok(TokenKind::LeftBox),
             ']' => Ok(TokenKind::RightBox),
+            ',' => Ok(TokenKind::Comma),
+            ';' => Ok(TokenKind::SemiColon),
             // unknown lex
             _ => Err("unexpected symbol")
         };

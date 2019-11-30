@@ -8,10 +8,11 @@ use cosyc::{
 
 fn main() {
     for result in Lexer::lex(StrScanner::from(r#"
-    123
-    // "bleh"
+    123;
+    if (`something is cool`) {}
+    "bleh"
   alright5
-     a
+     a'
     "#)) {
         match result {
             Ok(Token { kind, span }) => println!("{}: {:?}", span, kind),
