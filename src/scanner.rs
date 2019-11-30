@@ -69,7 +69,14 @@ impl<'a> Iterator for Lexer<'a> {
             // match special symbols
             x if valid_symbol(x) => {
                 match x {
-                    '(' => Ok(TokenKind::LeftParen),
+                    '(' => {
+                        if let Some(')') = self.scanner.chr() {
+                            self.scanner.advance();
+                            Ok(TokenKind::Empty)
+                        } else {
+                            Ok(TokenKind::LeftParen)
+                        }
+                    },
                     ')' => Ok(TokenKind::RightParen),
                     '{' => Ok(TokenKind::LeftBrace),
                     '}' => Ok(TokenKind::RightBrace),
@@ -156,9 +163,20 @@ impl<'a> Iterator for Lexer<'a> {
                 }
                 match self.scanner.substr() {
                     "var" => Ok(TokenKind::Var),
+                    "const" => Ok(TokenKind::Const),
                     "if" => Ok(TokenKind::If),
-                    "ifnot" => Ok(TokenKind::IfNot),
+                    "unless" => Ok(TokenKind::Unless),
                     "else" => Ok(TokenKind::Else),
+                    "then" => Ok(TokenKind::Then),
+                    "switch" => Ok(TokenKind::Switch),
+                    "case" => Ok(TokenKind::Case),
+                    "while" => Ok(TokenKind::While),
+                    "until" => Ok(TokenKind::Until),
+                    "repeat" => Ok(TokenKind::Repeat),
+                    "function" => Ok(TokenKind::Function),
+                    "object" => Ok(TokenKind::Object),
+                    "instance" => Ok(TokenKind::Instance),
+                    "new" => Ok(TokenKind::New),
                     _ => Ok(TokenKind::Identifier(IdentifierKind::Alphanumeric))
                 }
             },

@@ -10,10 +10,22 @@ pub struct Token<'a> {
 /// An enum which describes available token types.
 #[derive(PartialEq, Debug)]
 pub enum TokenKind {
+    Empty,
     Var,
+    Const,
     If,
-    IfNot,
+    Unless,
     Else,
+    Then,
+    Switch,
+    Case,
+    While,
+    Until,
+    Repeat,
+    Function,
+    Object,
+    Instance,
+    New,
     LeftParen,
     RightParen,
     LeftBrace,

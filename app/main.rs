@@ -8,12 +8,15 @@ use cosyc::{
 
 fn main() {
     for result in Lexer::lex(StrScanner::from(r#"
-if (nice) {
-    // a comment
-    ok;
-    /**perhaps? /**/
-    */yeah?
-}"#)) {
+// if not (unless) statement
+unless condition {
+    stuff();
+} else if otherwise {
+    other_stuff();
+} else {
+    more_stuff();
+}
+"#)) {
         match result {
             Ok(Token { kind, span }) => println!("{}: {:?}", span, kind),
             Err(e) => println!("{}", e)
