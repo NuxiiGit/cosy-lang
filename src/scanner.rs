@@ -92,6 +92,13 @@ impl<'a> Iterator for Lexer<'a> {
                 }
                 Ok(TokenKind::Literal(LiteralKind::Integer))
             },
+            // special characters
+            '(' => Ok(TokenKind::LeftParen),
+            ')' => Ok(TokenKind::RightParen),
+            '{' => Ok(TokenKind::LeftBrace),
+            '}' => Ok(TokenKind::RightBrace),
+            '[' => Ok(TokenKind::LeftBox),
+            ']' => Ok(TokenKind::RightBox),
             // unknown lex
             _ => Err("unexpected symbol")
         };

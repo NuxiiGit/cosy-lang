@@ -18,6 +18,8 @@ pub enum TokenKind {
     RightParen,
     LeftBrace,
     RightBrace,
+    LeftBox,
+    RightBox,
     Colon,
     SemiColon,
     Identifier(IdentifierKind),
