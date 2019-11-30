@@ -20,9 +20,12 @@ pub enum TokenKind {
     RightBrace,
     LeftBox,
     RightBox,
+    Dot,
     Comma,
     Colon,
     SemiColon,
+    Arrow,
+    Assign,
     Identifier(IdentifierKind),
     Literal(LiteralKind)
 }

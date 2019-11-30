@@ -22,18 +22,50 @@ impl<'a> Lexer<'a> {
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(x) = self.scanner.chr() {
-            // strip whitespace
-            if valid_whitespace(x) {
-                self.scanner.advance();
-            } else {
-                break;
-            }
-        }
         self.scanner.ignore();
         let row = self.scanner.row();
         let column = self.scanner.column();
         let result = match self.scanner.advance()? {
+            // ignore whitespace
+            x if valid_whitespace(x) => {
+                while let Some(x) = self.scanner.chr() {
+                    if !valid_whitespace(x) {
+                        break;
+                    }
+                    self.scanner.advance();
+                }
+                return self.next();
+            },
+            // ignore line comment
+            '/' if Some('/') == self.scanner.chr() => {
+                while let Some(x) = self.scanner.advance() {
+                    if x == '\n' {
+                        break;
+                    }
+                }
+                return self.next()
+            },
+            // ignore block comments
+            '/' if Some('*') == self.scanner.chr() => {
+                let mut nests = 1;
+                while let Some(x) = self.scanner.advance() {
+                    match x {
+                        '*' if Some('/') == self.scanner.chr() => {
+                            if nests == 1 {
+                                self.scanner.advance();
+                                return self.next();
+                            } else {
+                                nests -= 1;
+                            }
+                        },
+                        '/' if Some('*') == self.scanner.chr() => {
+                            nests += 1;
+                        },
+                        _ => continue
+                    }
+                }
+                Err("unterminated block comment")
+            }
             // match special symbols
             x if valid_symbol(x) => {
                 match x {
@@ -43,7 +75,9 @@ impl<'a> Iterator for Lexer<'a> {
                     '}' => Ok(TokenKind::RightBrace),
                     '[' => Ok(TokenKind::LeftBox),
                     ']' => Ok(TokenKind::RightBox),
+                    '.' => Ok(TokenKind::Dot),
                     ',' => Ok(TokenKind::Comma),
+                    ':' => Ok(TokenKind::Comma),
                     ';' => Ok(TokenKind::SemiColon),
                     '"' => {
                         // get string literal
@@ -97,36 +131,8 @@ impl<'a> Iterator for Lexer<'a> {
                     self.scanner.advance();
                 }
                 match self.scanner.substr() {
-                    "//" => {
-                        // ignore line comment
-                        while let Some(x) = self.scanner.advance() {
-                            if x == '\n' {
-                                break;
-                            }
-                        }
-                        return self.next()
-                    },
-                    "/*" => {
-                        // ignore block comments
-                        let mut nests = 1;
-                        while let Some(x) = self.scanner.advance() {
-                            match x {
-                                '*' if Some('/') == self.scanner.chr() => {
-                                    if nests == 1 {
-                                        self.scanner.advance();
-                                        return self.next();
-                                    } else {
-                                        nests -= 1;
-                                    }
-                                },
-                                '/' if Some('*') == self.scanner.chr() => {
-                                    nests += 1;
-                                },
-                                _ => continue
-                            }
-                        }
-                        Err("unterminated block comment")
-                    },
+                    "->" => Ok(TokenKind::Arrow),
+                    "=" => Ok(TokenKind::Assign),
                     _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
                 }
             },
@@ -148,13 +154,13 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                     self.scanner.advance();
                 }
-                Ok(match self.scanner.substr() {
-                    "var" => TokenKind::Var,
-                    "if" => TokenKind::If,
-                    "ifnot" => TokenKind::IfNot,
-                    "else" => TokenKind::Else,
-                    _ => TokenKind::Identifier(IdentifierKind::Alphanumeric)
-                })
+                match self.scanner.substr() {
+                    "var" => Ok(TokenKind::Var),
+                    "if" => Ok(TokenKind::If),
+                    "ifnot" => Ok(TokenKind::IfNot),
+                    "else" => Ok(TokenKind::Else),
+                    _ => Ok(TokenKind::Identifier(IdentifierKind::Alphanumeric))
+                }
             },
             // unknown lex
             _ => Err("unknown character")

@@ -11,8 +11,8 @@ fn main() {
 if (nice) {
     // a comment
     ok;
-    /* perhaps? /**/
-    */yeah
+    /**perhaps? /**/
+    */yeah?
 }"#)) {
         match result {
             Ok(Token { kind, span }) => println!("{}: {:?}", span, kind),
