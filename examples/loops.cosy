@@ -10,7 +10,7 @@ until conditoin {
 
 // repeat loop
 repeat n {
-    -- repeat n-many times
+    // repeat n-many times
     stuff();
 }
 
