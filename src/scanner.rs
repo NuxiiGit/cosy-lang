@@ -148,13 +148,24 @@ impl<'a> Iterator for Lexer<'a> {
             },
             // match number literals
             x if valid_digit(x) => {
+                let mut is_real = false;
                 while let Some(x) = self.scanner.chr() {
-                    if !valid_digit(x) {
+                    if x == '.' {
+                        if is_real {
+                            break;
+                        } else {
+                            is_real = true;
+                        }
+                    } else if !valid_digit(x) {
                         break;
                     }
                     self.scanner.advance();
                 }
-                Ok(TokenKind::Literal(LiteralKind::Integer))
+                Ok(TokenKind::Literal(if is_real {
+                    LiteralKind::Real
+                } else {
+                    LiteralKind::Integer
+                }))
             },
             // match keywords and identifiers
             x if valid_graphic(x) => {
