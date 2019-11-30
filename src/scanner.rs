@@ -175,8 +175,9 @@ impl<'a> Iterator for Lexer<'a> {
                     "repeat" => Ok(TokenKind::Repeat),
                     "function" => Ok(TokenKind::Function),
                     "object" => Ok(TokenKind::Object),
-                    "instance" => Ok(TokenKind::Instance),
                     "new" => Ok(TokenKind::New),
+                    "trait" => Ok(TokenKind::Trait),
+                    "instance" => Ok(TokenKind::Instance),
                     _ => Ok(TokenKind::Identifier(IdentifierKind::Alphanumeric))
                 }
             },
