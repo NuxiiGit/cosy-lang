@@ -4,8 +4,8 @@ object Vec2 {
     y : Float = 0.0
 }
 
-// Finds the dot product of two vectors.
-function <.> (a : Vec2) (b : Vec2) : Float {
+//| Finds the dot product of two vectors.
+function ∙ (a : Vec2) (b : Vec2) : Float {
     return a.x * b.x + a.y * b.y;
 }
 
@@ -20,4 +20,4 @@ a.x = 5.0;
 var y = a.y;
 
 // taking the dot product of two vectors
-var dot = a <.> b;
+var dot = a ∙ b;

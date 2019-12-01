@@ -87,6 +87,17 @@ impl<'a> Iterator for Lexer<'a> {
             '}' => Ok(TokenKind::RightBrace),
             '[' => Ok(TokenKind::LeftBox),
             ']' => Ok(TokenKind::RightBox),
+            '.' => Ok(TokenKind::Dot),
+            ',' => Ok(TokenKind::Comma),
+            ':' => {
+                if let Some(':') = self.scanner.chr() {
+                    self.scanner.advance();
+                    Ok(TokenKind::ColonColon)
+                } else {
+                    Ok(TokenKind::Colon)
+                }
+            },
+            ';' => Ok(TokenKind::SemiColon),
             '"' => {
                 // get string literal
                 loop {
@@ -138,11 +149,6 @@ impl<'a> Iterator for Lexer<'a> {
                 match self.scanner.substr() {
                     "->" => Ok(TokenKind::Arrow),
                     "=" => Ok(TokenKind::Assign),
-                    "." => Ok(TokenKind::Dot),
-                    "," => Ok(TokenKind::Comma),
-                    ":" => Ok(TokenKind::Colon),
-                    "::" => Ok(TokenKind::ColonColon),
-                    ";" => Ok(TokenKind::SemiColon),
                     _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
                 }
             },
@@ -211,11 +217,14 @@ impl<'a> Iterator for Lexer<'a> {
 
 /// A function which returns whether this character is a valid operator character.
 pub fn valid_operator(x : char) -> bool {
-    if let '(' | ')' | '{' | '}' | '[' | ']' |
-            '\'' | '"' | '`' = x {
-        false
+    if let '!' | '?' |
+            '@' | '$' | '&' |
+            '+' | '-' | '*' | '/' | '\\' | '%' | '^' |
+            '<' | '=' | '>' |
+            '|' | '~' = x {
+        true
     } else {
-        !(valid_whitespace(x) || valid_graphic(x))
+        !(x.is_ascii() || x.is_alphabetic())
     }
 }
 
