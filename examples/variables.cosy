@@ -6,3 +6,7 @@ const b = 3.0;
 
 // character
 var ch = 'a';
+
+// string
+var str = "abc";
+var str' = ['a', 'b', 'c'];
