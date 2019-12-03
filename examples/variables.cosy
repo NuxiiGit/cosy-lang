@@ -2,7 +2,7 @@
 var a = 3;
 
 // constant
-const b = 3.0;
+let b = 3.0;
 
 // character
 var ch = 'a';
@@ -10,3 +10,7 @@ var ch = 'a';
 // string
 var str = "abc";
 var str' = ['a', 'b', 'c'];
+
+// delayed variable instantiation
+var i : Int;
+i = 1;
