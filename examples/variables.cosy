@@ -2,7 +2,7 @@
 var a = 3;
 
 // constant
-let b = 3.0;
+const b = 3.0;
 
 // character
 var ch = 'a';

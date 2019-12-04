@@ -4,19 +4,8 @@ object Vec2 {
     y : Float = 0.0
 }
 
-// type classes
-class Eq T {
-    == (a : T) (b : T) : Bool = not (a <> b),
-    <> (a : T) (b : T) : Bool = not (a == b)
-}
-
-// type instances
-instance Eq Vec2 {
-    == a b = a.x == b.x && a.y == b.y
-}
-
 //| Finds the dot product of two vectors.
-let ∙ (a : Vec2) (b : Vec2) = a.x * b.x + a.y * b.y;
+function ∙ (a : Vec2) (b : Vec2) = a.x * b.x + a.y * b.y;
 
 // object construction
 var a = new Vec2 { x = 2.0, y = 4.2 };

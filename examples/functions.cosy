@@ -1,5 +1,5 @@
 // function definition
-let max (a : Int) (b : Int) : Int {
+function max (a : Int) (b : Int) : Int {
     if a > b {
         return a;
     } else {
@@ -10,15 +10,23 @@ let max (a : Int) (b : Int) : Int {
 // function application
 var greatest = max 3 4;
 
+// lambda function
+var lambda : Int -> Int = \x -> x * 2;
+
+// block lambda function
+var lambda' : Int -> Int = \x -> {
+    return x + x;
+};
+
 // delayed function definition
-let max' : Int -> Int -> Int;
-max' a b = max a b;
+var max' : Int -> Int -> Int;
+max' = \a -> \b -> max a b;
 
 // currying
-let positive : Int -> Int = max 1;
+var positive : Int -> Int = max 1;
 
 // procedural style functions
-let izard(a : String, b : String) : String {
+function izard(a : String, b : String) : String {
     return a ++ " fo' " ++ b ++ "izard";
 }
 
