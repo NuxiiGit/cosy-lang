@@ -1,11 +1,6 @@
 use super::source_pos::Span;
 use super::error::Error;
-use super::syntax::token::{
-    Token,
-    TokenKind,
-    IdentifierKind,
-    LiteralKind
-};
+use super::syntax::token::*;
 
 use std::str::CharIndices;
 
@@ -15,16 +10,21 @@ pub struct Lexer<'a> {
 }
 impl<'a> Lexer<'a> {
     /// Create a new lexer.
-    pub fn lex(scanner : StrScanner<'a>) -> Lexer<'a> {
+    pub fn lex(scanner : StrScanner<'a>) -> Self {
         Lexer { scanner }
+    }
+
+    /// Return the curent span.
+    pub fn get_span(&self) -> Span<'a> {
+        let row = self.scanner.row();
+        let column = self.scanner.column();
+        Span { content : self.scanner.substr(), row, column }
     }
 }
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
         self.scanner.ignore();
-        let row = self.scanner.row();
-        let column = self.scanner.column();
         let result = match self.scanner.advance()? {
             // ignore whitespace
             x if valid_whitespace(x) => {
@@ -206,7 +206,7 @@ impl<'a> Iterator for Lexer<'a> {
             // unknown lex
             _ => Err("unknown symbol")
         };
-        let span = Span { content : self.scanner.substr(), row, column };
+        let span = self.get_span();
         Some(match result {
             Ok(kind) => Ok(Token { kind, span }),
             Err(reason) => Err(Error { reason, span })
@@ -285,7 +285,7 @@ impl<'a> StrScanner<'a> {
     }
 
     /// Peeks at the current substring.
-    pub fn substr(&mut self) -> &'a str {
+    pub fn substr(&self) -> &'a str {
         &self.context[self.span_begin..self.span_end]
     }
 
