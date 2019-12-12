@@ -199,8 +199,6 @@ impl<'a> Iterator for Lexer<'a> {
                     "function" => Ok(TokenKind::Function),
                     "object" => Ok(TokenKind::Object),
                     "new" => Ok(TokenKind::New),
-                    "trait" => Ok(TokenKind::Trait),
-                    "instance" => Ok(TokenKind::Instance),
                     _ => Ok(TokenKind::Identifier(IdentifierKind::Alphanumeric))
                 }
             },
@@ -218,13 +216,13 @@ impl<'a> Iterator for Lexer<'a> {
 /// A function which returns whether this character is a valid operator character.
 pub fn valid_operator(x : char) -> bool {
     if let '!' | '?' |
-            '@' | '$' | '&' |
+            '@' | '$' | '&' | '#' |
             '+' | '-' | '*' | '/' | '\\' | '%' | '^' |
             '<' | '=' | '>' |
             '|' | '~' = x {
         true
     } else {
-        !(x.is_ascii() || x.is_alphabetic())
+        !(x.is_ascii() || valid_graphic(x) || valid_whitespace(x))
     }
 }
 

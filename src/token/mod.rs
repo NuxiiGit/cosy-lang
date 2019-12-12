@@ -28,8 +28,6 @@ pub enum TokenKind {
     Function,
     Object,
     New,
-    Trait,
-    Instance,
     LeftParen,
     RightParen,
     LeftBrace,

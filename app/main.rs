@@ -6,53 +6,36 @@ use cosyc::{
     }
 };
 
+use std::fs;
+use std::io::{
+    Read,
+    Write
+};
+
 fn main() {
-    for result in Lexer::lex(StrScanner::from(r#"
-// object definition
-object Vec2 {
-    x : Float = 0.0,
-    y : Float = 0.0
-}
-
-// trait definition
-trait Eq T {
-    //| Returns whether two instances of type T are equal.
-    function == (a : T) (b : T) : Bool;
-
-    //| Returns whether two instances of type T are not equal.
-    function <> (a : T) (b : T) : Bool {
-        return not (a == b);
-    }
-}
-
-// instance of trait
-instance Eq Vec2 {
-    function == (a : T) (b : T) : Bool {
-        return a.x == b.x && a.y == b.y;
-    }
-}
-
-//| Finds the dot product of two vectors.
-function ∙ (a : Vec2) (b : Vec2) : Float {
-    return a.x * b.x + a.y * b.y;
-}
-
-// object construction
-var a = new Vec2 { x = 2.0, y = 4.2 };
-var b = new Vec2 { x = 12.3 };
-
-// setting an object member
-a.x = 5.0;
-
-// getting an object member
-var y = a.y;
-
-// taking the dot product of two vectors
-var dot = a ∙ b;
-"#)) {
-        match result {
-            Ok(Token { kind, span }) => println!("Token! {}: {:?}", span, kind),
-            Err(e) => println!("Error! {}", e)
-        }
+    let inp = "examples/members.cosy";
+    let mut inp = fs::OpenOptions::new()
+            .read(true)
+            .open(inp)
+            .expect("unable to open file for reading");
+    let out = "temp/log.txt";
+    fs::remove_file(out)
+            .expect("unable to delete log file");
+    let mut out = fs::OpenOptions::new()
+            .create(true)
+            .write(true)
+            .append(true)
+            .open(out)
+            .expect("unable to open file for writing");
+    let mut source = String::new();
+    inp.read_to_string(&mut source)
+            .expect("unable to read from file");
+    for result in Lexer::lex(StrScanner::from(&source)) {
+        let s = match result {
+            Ok(Token { kind, span }) => format!("Token! {}: {:?}\n", span, kind),
+            Err(e) => format!("Error! {}\n", e)
+        };
+        out.write(s.as_bytes())
+                .expect("unable to write to file");
     }
 }
