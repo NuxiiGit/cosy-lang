@@ -19,8 +19,7 @@ fn main() {
             .open(inp)
             .expect("unable to open file for reading");
     let out = "temp/log.txt";
-    fs::remove_file(out)
-            .expect("unable to delete log file");
+    let _ = fs::remove_file(out);
     let mut out = fs::OpenOptions::new()
             .create(true)
             .write(true)

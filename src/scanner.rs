@@ -41,10 +41,11 @@ impl<'a> Iterator for Lexer<'a> {
                 self.scanner.advance();
                 let documentation = Some('|') == self.scanner.chr();
                 while let Some(x) = self.scanner.chr() {
-                    if x == '\n' {
+                    if let '\n' | '\r' = x {
                         break;
+                    } else {
+                        self.scanner.advance();
                     }
-                    self.scanner.advance();
                 }
                 if documentation {
                     Ok(TokenKind::Documentation)
