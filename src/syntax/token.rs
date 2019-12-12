@@ -1,4 +1,4 @@
-use super::source_pos::Span;
+use super::super::source_pos::Span;
 
 /// Stores a token and its location in the source file.
 #[derive(Debug)]

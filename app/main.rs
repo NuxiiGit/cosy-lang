@@ -1,5 +1,5 @@
 use cosyc::{
-    token::Token,
+    syntax::token::Token,
     scanner::{
         Lexer,
         StrScanner

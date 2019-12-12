@@ -1,6 +1,6 @@
 use super::source_pos::Span;
 use super::error::Error;
-use super::token::{
+use super::syntax::token::{
     Token,
     TokenKind,
     IdentifierKind,
