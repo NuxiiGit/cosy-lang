@@ -1,5 +1,4 @@
 use super::source_pos::Span;
-use super::error::Error;
 use super::syntax::token::*;
 
 use std::str::CharIndices;
@@ -13,19 +12,12 @@ impl<'a> Lexer<'a> {
     pub fn lex(scanner : StrScanner<'a>) -> Self {
         Lexer { scanner }
     }
-
-    /// Return the curent span.
-    pub fn get_span(&self) -> Span<'a> {
-        let row = self.scanner.row();
-        let column = self.scanner.column();
-        Span { content : self.scanner.substr(), row, column }
-    }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>, Error<'a>>;
+    type Item = Token<'a>;
     fn next(&mut self) -> Option<Self::Item> {
         self.scanner.ignore();
-        let result = match self.scanner.advance()? {
+        let kind = match self.scanner.advance()? {
             // ignore whitespace
             x if valid_whitespace(x) => {
                 while let Some(x) = self.scanner.chr() {
@@ -48,7 +40,7 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 if documentation {
-                    Ok(TokenKind::Documentation)
+                    TokenKind::Documentation
                 } else {
                     return self.next();
                 }
@@ -72,33 +64,33 @@ impl<'a> Iterator for Lexer<'a> {
                         _ => continue
                     }
                 }
-                Err("unterminated block comment")
+                TokenKind::Err("unterminated block comment")
             }
             // match special symbols
             '(' => {
                 if let Some(')') = self.scanner.chr() {
                     self.scanner.advance();
-                    Ok(TokenKind::Empty)
+                    TokenKind::Empty
                 } else {
-                    Ok(TokenKind::LeftParen)
+                    TokenKind::LeftParen
                 }
             },
-            ')' => Ok(TokenKind::RightParen),
-            '{' => Ok(TokenKind::LeftBrace),
-            '}' => Ok(TokenKind::RightBrace),
-            '[' => Ok(TokenKind::LeftBox),
-            ']' => Ok(TokenKind::RightBox),
-            '.' => Ok(TokenKind::Dot),
-            ',' => Ok(TokenKind::Comma),
+            ')' => TokenKind::RightParen,
+            '{' => TokenKind::LeftBrace,
+            '}' => TokenKind::RightBrace,
+            '[' => TokenKind::LeftBox,
+            ']' => TokenKind::RightBox,
+            '.' => TokenKind::Dot,
+            ',' => TokenKind::Comma,
             ':' => {
                 if let Some(':') = self.scanner.chr() {
                     self.scanner.advance();
-                    Ok(TokenKind::ColonColon)
+                    TokenKind::ColonColon
                 } else {
-                    Ok(TokenKind::Colon)
+                    TokenKind::Colon
                 }
             },
-            ';' => Ok(TokenKind::SemiColon),
+            ';' => TokenKind::SemiColon,
             '"' => {
                 // get string literal
                 loop {
@@ -106,10 +98,10 @@ impl<'a> Iterator for Lexer<'a> {
                         if x == '\\' {
                             self.scanner.advance();
                         } else if x == '"' {
-                            break Ok(TokenKind::Literal(LiteralKind::String));
+                            break TokenKind::Literal(LiteralKind::String);
                         }
                     } else {
-                        break Err("unterminated string literal");
+                        break TokenKind::Err("unterminated string literal");
                     }
                 }
             },
@@ -120,10 +112,10 @@ impl<'a> Iterator for Lexer<'a> {
                         if x == '\\' {
                             self.scanner.advance();
                         } else if x == '\'' {
-                            break Ok(TokenKind::Literal(LiteralKind::Character));
+                            break TokenKind::Literal(LiteralKind::Character);
                         }
                     } else {
-                        break Err("unterminated character literal");
+                        break TokenKind::Err("unterminated character literal");
                     }
                 }
             },
@@ -132,10 +124,10 @@ impl<'a> Iterator for Lexer<'a> {
                 loop {
                     if let Some(x) = self.scanner.advance() {
                         if x == '`' {
-                            break Ok(TokenKind::Identifier(IdentifierKind::Literal));
+                            break TokenKind::Identifier(IdentifierKind::Literal);
                         }
                     } else {
-                        break Err("unterminated identifier literal");
+                        break TokenKind::Err("unterminated identifier literal");
                     }
                 }
             },
@@ -148,9 +140,9 @@ impl<'a> Iterator for Lexer<'a> {
                     self.scanner.advance();
                 }
                 match self.scanner.substr() {
-                    "->" => Ok(TokenKind::Arrow),
-                    "=" => Ok(TokenKind::Assign),
-                    _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
+                    "->" => TokenKind::Arrow,
+                    "=" => TokenKind::Assign,
+                    _ => TokenKind::Identifier(IdentifierKind::Operator)
                 }
             },
             // match number literals
@@ -168,11 +160,11 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                     self.scanner.advance();
                 }
-                Ok(TokenKind::Literal(if is_real {
+                TokenKind::Literal(if is_real {
                     LiteralKind::Real
                 } else {
                     LiteralKind::Integer
-                }))
+                })
             },
             // match keywords and identifiers
             x if valid_graphic(x) => {
@@ -183,34 +175,31 @@ impl<'a> Iterator for Lexer<'a> {
                     self.scanner.advance();
                 }
                 match self.scanner.substr() {
-                    "var" => Ok(TokenKind::Var),
-                    "const" => Ok(TokenKind::Const),
-                    "if" => Ok(TokenKind::If),
-                    "unless" => Ok(TokenKind::Unless),
-                    "else" => Ok(TokenKind::Else),
-                    "then" => Ok(TokenKind::Then),
-                    "switch" => Ok(TokenKind::Switch),
-                    "case" => Ok(TokenKind::Case),
-                    "is" => Ok(TokenKind::Is),
-                    "while" => Ok(TokenKind::While),
-                    "until" => Ok(TokenKind::Until),
-                    "repeat" => Ok(TokenKind::Repeat),
-                    "for" => Ok(TokenKind::For),
-                    "in" => Ok(TokenKind::In),
-                    "function" => Ok(TokenKind::Function),
-                    "object" => Ok(TokenKind::Object),
-                    "new" => Ok(TokenKind::New),
-                    _ => Ok(TokenKind::Identifier(IdentifierKind::Alphanumeric))
+                    "var" => TokenKind::Var,
+                    "const" => TokenKind::Const,
+                    "if" => TokenKind::If,
+                    "unless" => TokenKind::Unless,
+                    "else" => TokenKind::Else,
+                    "then" => TokenKind::Then,
+                    "switch" => TokenKind::Switch,
+                    "case" => TokenKind::Case,
+                    "is" => TokenKind::Is,
+                    "while" => TokenKind::While,
+                    "until" => TokenKind::Until,
+                    "repeat" => TokenKind::Repeat,
+                    "for" => TokenKind::For,
+                    "in" => TokenKind::In,
+                    "function" => TokenKind::Function,
+                    "object" => TokenKind::Object,
+                    "new" => TokenKind::New,
+                    _ => TokenKind::Identifier(IdentifierKind::Alphanumeric)
                 }
             },
             // unknown lex
-            _ => Err("unknown symbol")
+            _ => TokenKind::Err("unknown symbol")
         };
-        let span = self.get_span();
-        Some(match result {
-            Ok(kind) => Ok(Token { kind, span }),
-            Err(reason) => Err(Error { reason, span })
-        })
+        let span = self.scanner.span();
+        Some(Token { kind, span })
     }
 }
 
@@ -319,5 +308,14 @@ impl<'a> StrScanner<'a> {
             None
         };
         previous
+    }
+
+    /// Return the curent span.
+    pub fn span(&self) -> Span<'a> {
+        Span {
+            content : self.substr(),
+            row : self.row,
+            column : self.column
+        }
     }
 }

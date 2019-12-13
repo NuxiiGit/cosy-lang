@@ -43,7 +43,8 @@ pub enum TokenKind {
     Assign,
     Documentation,
     Identifier(IdentifierKind),
-    Literal(LiteralKind)
+    Literal(LiteralKind),
+    Err(&'static str)
 }
 
 /// An enum which describes available identifier types.

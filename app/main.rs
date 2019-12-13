@@ -29,11 +29,9 @@ fn main() {
     let mut source = String::new();
     inp.read_to_string(&mut source)
             .expect("unable to read from file");
-    for result in Lexer::lex(StrScanner::from(&source)) {
-        let s = match result {
-            Ok(Token { kind, span }) => format!("Token! {}: {:?}\n", span, kind),
-            Err(e) => format!("Error! {}\n", e)
-        };
+    for token in Lexer::lex(StrScanner::from(&source)) {
+        let Token { kind, span } = token;
+        let s = format!("{}: {:?}\n", span, kind);
         out.write(s.as_bytes())
                 .expect("unable to write to file");
     }
