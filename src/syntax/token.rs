@@ -53,6 +53,20 @@ pub enum TokenKind {
     EoF,
     Unknown
 }
+impl TokenKind {
+    /// Returns true if this token begins an expression.
+    pub fn starts_expr(&self) -> bool {
+        if let TokenKind::Literal(..) |
+                TokenKind::Identifier(IdentifierKind::Alphanumeric) |
+                TokenKind::Identifier(IdentifierKind::Literal) |
+                TokenKind::LeftParen |
+                TokenKind::LeftBox = self {
+            true
+        } else {
+            false
+        }
+    }
+}
 
 /// An enum which describes available identifier types.
 #[derive(PartialEq, Debug)]

@@ -35,11 +35,23 @@ impl<'a> Parser<'a> {
 
     /// Parses any expression.
     fn parse_expr(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        self.parse_member()
+        self.parse_expr_call()
+    }
+
+    fn parse_expr_call(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_member()?;
+        while self.holds(|x| x.starts_expr()) {
+            let arg = self.parse_expr_member()?;
+            expr = Expr::Call {
+                func : Box::new(expr),
+                arg : Box::new(arg)
+            }
+        }
+        Ok(expr)
     }
 
     /// Parses a stream of member accesses.
-    fn parse_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_frontier()?;
         while self.holds(|x| matches!(x, TokenKind::Dot)) {
             self.token();
