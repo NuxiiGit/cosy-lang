@@ -5,12 +5,12 @@ use std::str::CharIndices;
 
 /// An iterator over a string slice, which produces `Token`s.
 pub struct Lexer<'a> {
-    scanner : StrScanner<'a>,
+    scanner : StringScanner<'a>,
     eof : bool
 }
 impl<'a> Lexer<'a> {
-    /// Create a new lexer.
-    pub fn lex(scanner : StrScanner<'a>) -> Self {
+    /// Creates a new lexer from this string scanner.
+    pub fn from(scanner : StringScanner<'a>) -> Self {
         Lexer {
             scanner,
             eof : false
@@ -238,7 +238,7 @@ pub fn valid_digit(x : char) -> bool {
 }
 
 /// A structure over a string slice which produces individual `Span`s of tokens.
-pub struct StrScanner<'a> {
+pub struct StringScanner<'a> {
     context : &'a str,
     chars : CharIndices<'a>,
     peeked : Option<char>,
@@ -247,9 +247,9 @@ pub struct StrScanner<'a> {
     span_begin : usize,
     span_end : usize
 }
-impl<'a> StrScanner<'a> {
+impl<'a> StringScanner<'a> {
     /// Create a new scanner from this string slice.
-    pub fn from(context : &'a str) -> StrScanner<'a> {
+    pub fn from(context : &'a str) -> StringScanner<'a> {
         let mut chars = context.char_indices();
         let peeked = if let Some((_, x)) = chars.next() {
             // get the first character
@@ -258,7 +258,7 @@ impl<'a> StrScanner<'a> {
         } else {
             None
         };
-        StrScanner {
+        StringScanner {
             context,
             chars,
             peeked,

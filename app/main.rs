@@ -26,8 +26,8 @@ fn main() {
     let mut source = String::new();
     inp.read_to_string(&mut source)
             .expect("unable to read from file");
-    let scanner = StrScanner::from(&source);
-    let lexer = Lexer::lex(scanner);
+    let scanner = StringScanner::from(&source);
+    let lexer = Lexer::from(scanner);
     let parser = Parser::from(lexer);
     let result = parser.parse();
     let s = match result {
