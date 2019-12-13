@@ -67,9 +67,10 @@ impl<'a> Parser<'a> {
 
     /// Parses expression literals and identifiers.
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        if self.holds(|x| matches!(x, TokenKind::Literal(..))) {
+        if self.holds(|x| matches!(x,
+                TokenKind::Literal(..) | TokenKind::Empty)) {
             let value = self.token();
-            Ok(Expr::Literal { value })
+            Ok(Expr::Constant { value })
         } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
             let ident = self.token();
             Ok(Expr::Variable { ident })

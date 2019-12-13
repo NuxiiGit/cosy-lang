@@ -3,7 +3,7 @@ use crate::syntax::token::*;
 /// A recursive enum which stores expression information.
 #[derive(Debug)]
 pub enum Expr<'a> {
-    Literal {
+    Constant {
         value : Token<'a>
     },
     Variable {
