@@ -212,7 +212,10 @@ impl<'a> Iterator for Lexer<'a> {
         let span = self.scanner.span();
         Some(match result {
             Ok(kind) => Ok(Token { kind, span }),
-            Err((kind, reason)) => Err(Error { kind, reason, span })
+            Err((kind, reason)) => {
+                let token = Token { kind : TokenKind::Unknown, span };
+                Err(Error { kind, reason, token })
+            }
         })
     }
 }

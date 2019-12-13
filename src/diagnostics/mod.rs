@@ -1,3 +1,5 @@
+use crate::syntax::token::Token;
+
 use std::fmt;
 use std::error;
 
@@ -6,12 +8,12 @@ use std::error;
 pub struct Error<'a> {
     pub kind : ErrorKind,
     pub reason : &'static str,
-    pub span : Span<'a>
+    pub token : Token<'a>
 }
 impl fmt::Display for Error<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "{:?}! {}: {}",
-                self.kind, self.span, self.reason)
+                self.kind, self.token.span, self.reason)
     }
 }
 impl error::Error for Error<'_> {}

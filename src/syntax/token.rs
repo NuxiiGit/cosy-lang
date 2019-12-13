@@ -44,7 +44,8 @@ pub enum TokenKind {
     Documentation,
     Identifier(IdentifierKind),
     Literal(LiteralKind),
-    EoF
+    EoF,
+    Unknown
 }
 
 /// An enum which describes available identifier types.
