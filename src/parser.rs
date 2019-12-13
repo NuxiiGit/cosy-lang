@@ -1,4 +1,4 @@
-use crate::diagnostics::span::Span;
+use crate::diagnostics::Span;
 use crate::scanner::Lexer;
 use crate::syntax::{
     token::*,

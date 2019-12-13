@@ -1,23 +1,27 @@
-use crate::diagnostics::span::Span;
+use crate::diagnostics::*;
 use crate::syntax::token::*;
 
 use std::str::CharIndices;
 
 /// An iterator over a string slice, which produces `Token`s.
 pub struct Lexer<'a> {
-    scanner : StrScanner<'a>
+    scanner : StrScanner<'a>,
+    eof : bool
 }
 impl<'a> Lexer<'a> {
     /// Create a new lexer.
     pub fn lex(scanner : StrScanner<'a>) -> Self {
-        Lexer { scanner }
+        Lexer {
+            scanner,
+            eof : false
+        }
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Token<'a>;
+    type Item = Result<Token<'a>, Error<'a>>;
     fn next(&mut self) -> Option<Self::Item> {
         self.scanner.ignore();
-        let kind = match self.scanner.advance()? {
+        let result = match self.scanner.advance()? {
             // ignore whitespace
             x if valid_whitespace(x) => {
                 while let Some(x) = self.scanner.chr() {
@@ -40,7 +44,7 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 }
                 if documentation {
-                    TokenKind::Documentation
+                    Ok(TokenKind::Documentation)
                 } else {
                     return self.next();
                 }
@@ -64,33 +68,33 @@ impl<'a> Iterator for Lexer<'a> {
                         _ => continue
                     }
                 }
-                TokenKind::Err("unterminated block comment")
+                Err((ErrorKind::Warning, "unterminated block comment"))
             }
             // match special symbols
             '(' => {
                 if let Some(')') = self.scanner.chr() {
                     self.scanner.advance();
-                    TokenKind::Empty
+                    Ok(TokenKind::Empty)
                 } else {
-                    TokenKind::LeftParen
+                    Ok(TokenKind::LeftParen)
                 }
             },
-            ')' => TokenKind::RightParen,
-            '{' => TokenKind::LeftBrace,
-            '}' => TokenKind::RightBrace,
-            '[' => TokenKind::LeftBox,
-            ']' => TokenKind::RightBox,
-            '.' => TokenKind::Dot,
-            ',' => TokenKind::Comma,
+            ')' => Ok(TokenKind::RightParen),
+            '{' => Ok(TokenKind::LeftBrace),
+            '}' => Ok(TokenKind::RightBrace),
+            '[' => Ok(TokenKind::LeftBox),
+            ']' => Ok(TokenKind::RightBox),
+            '.' => Ok(TokenKind::Dot),
+            ',' => Ok(TokenKind::Comma),
             ':' => {
                 if let Some(':') = self.scanner.chr() {
                     self.scanner.advance();
-                    TokenKind::ColonColon
+                    Ok(TokenKind::ColonColon)
                 } else {
-                    TokenKind::Colon
+                    Ok(TokenKind::Colon)
                 }
             },
-            ';' => TokenKind::SemiColon,
+            ';' => Ok(TokenKind::SemiColon),
             '"' => {
                 // get string literal
                 loop {
@@ -98,10 +102,10 @@ impl<'a> Iterator for Lexer<'a> {
                         if x == '\\' {
                             self.scanner.advance();
                         } else if x == '"' {
-                            break TokenKind::Literal(LiteralKind::String);
+                            break Ok(TokenKind::Literal(LiteralKind::String));
                         }
                     } else {
-                        break TokenKind::Err("unterminated string literal");
+                        break Err((ErrorKind::Fatal, "unterminated string literal"));
                     }
                 }
             },
@@ -112,10 +116,10 @@ impl<'a> Iterator for Lexer<'a> {
                         if x == '\\' {
                             self.scanner.advance();
                         } else if x == '\'' {
-                            break TokenKind::Literal(LiteralKind::Character);
+                            break Ok(TokenKind::Literal(LiteralKind::Character));
                         }
                     } else {
-                        break TokenKind::Err("unterminated character literal");
+                        break Err((ErrorKind::Fatal, "unterminated character literal"));
                     }
                 }
             },
@@ -124,10 +128,10 @@ impl<'a> Iterator for Lexer<'a> {
                 loop {
                     if let Some(x) = self.scanner.advance() {
                         if x == '`' {
-                            break TokenKind::Identifier(IdentifierKind::Literal);
+                            break Ok(TokenKind::Identifier(IdentifierKind::Literal));
                         }
                     } else {
-                        break TokenKind::Err("unterminated identifier literal");
+                        break Err((ErrorKind::Fatal, "unterminated identifier literal"));
                     }
                 }
             },
@@ -140,9 +144,9 @@ impl<'a> Iterator for Lexer<'a> {
                     self.scanner.advance();
                 }
                 match self.scanner.substr() {
-                    "->" => TokenKind::Arrow,
-                    "=" => TokenKind::Assign,
-                    _ => TokenKind::Identifier(IdentifierKind::Operator)
+                    "->" => Ok(TokenKind::Arrow),
+                    "=" => Ok(TokenKind::Assign),
+                    _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
                 }
             },
             // match number literals
@@ -160,11 +164,11 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                     self.scanner.advance();
                 }
-                TokenKind::Literal(if is_real {
+                Ok(TokenKind::Literal(if is_real {
                     LiteralKind::Real
                 } else {
                     LiteralKind::Integer
-                })
+                }))
             },
             // match keywords and identifiers
             x if valid_graphic(x) => {
@@ -175,31 +179,34 @@ impl<'a> Iterator for Lexer<'a> {
                     self.scanner.advance();
                 }
                 match self.scanner.substr() {
-                    "var" => TokenKind::Var,
-                    "const" => TokenKind::Const,
-                    "if" => TokenKind::If,
-                    "unless" => TokenKind::Unless,
-                    "else" => TokenKind::Else,
-                    "then" => TokenKind::Then,
-                    "switch" => TokenKind::Switch,
-                    "case" => TokenKind::Case,
-                    "is" => TokenKind::Is,
-                    "while" => TokenKind::While,
-                    "until" => TokenKind::Until,
-                    "repeat" => TokenKind::Repeat,
-                    "for" => TokenKind::For,
-                    "in" => TokenKind::In,
-                    "function" => TokenKind::Function,
-                    "object" => TokenKind::Object,
-                    "new" => TokenKind::New,
-                    _ => TokenKind::Identifier(IdentifierKind::Alphanumeric)
+                    "var" => Ok(TokenKind::Var),
+                    "const" => Ok(TokenKind::Const),
+                    "if" => Ok(TokenKind::If),
+                    "unless" => Ok(TokenKind::Unless),
+                    "else" => Ok(TokenKind::Else),
+                    "then" => Ok(TokenKind::Then),
+                    "switch" => Ok(TokenKind::Switch),
+                    "case" => Ok(TokenKind::Case),
+                    "is" => Ok(TokenKind::Is),
+                    "while" => Ok(TokenKind::While),
+                    "until" => Ok(TokenKind::Until),
+                    "repeat" => Ok(TokenKind::Repeat),
+                    "for" => Ok(TokenKind::For),
+                    "in" => Ok(TokenKind::In),
+                    "function" => Ok(TokenKind::Function),
+                    "object" => Ok(TokenKind::Object),
+                    "new" => Ok(TokenKind::New),
+                    _ => Ok(TokenKind::Identifier(IdentifierKind::Alphanumeric))
                 }
             },
             // unknown lex
-            _ => TokenKind::Err("unknown symbol")
+            _ => Err((ErrorKind::Fatal, "unknown symbol"))
         };
         let span = self.scanner.span();
-        Some(Token { kind, span })
+        Some(match result {
+            Ok(kind) => Ok(Token { kind, span }),
+            Err((kind, reason)) => Err(Error { kind, reason, span })
+        })
     }
 }
 

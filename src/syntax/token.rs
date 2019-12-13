@@ -1,4 +1,4 @@
-use crate::diagnostics::span::Span;
+use crate::diagnostics::Span;
 
 /// Stores a token and its location in the source file.
 #[derive(Debug)]
@@ -43,8 +43,8 @@ pub enum TokenKind {
     Assign,
     Documentation,
     Identifier(IdentifierKind),
-    Literal(LiteralKind),
-    Err(&'static str)
+    Literal(LiteralKind)
+    
 }
 
 /// An enum which describes available identifier types.

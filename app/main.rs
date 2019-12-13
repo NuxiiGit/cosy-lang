@@ -1,9 +1,6 @@
 use cosyc::{
     syntax::token::Token,
-    scanner::{
-        Lexer,
-        StrScanner
-    }
+    lexer::*
 };
 
 use std::fs;
@@ -29,9 +26,11 @@ fn main() {
     let mut source = String::new();
     inp.read_to_string(&mut source)
             .expect("unable to read from file");
-    for token in Lexer::lex(StrScanner::from(&source)) {
-        let Token { kind, span } = token;
-        let s = format!("{}: {:?}\n", span, kind);
+    for result in Lexer::lex(StrScanner::from(&source)) {
+        let s = match result {
+            Ok(Token { kind, span }) => format!("{}: {:?}\n", span, kind),
+            Err(e) => format!("{}", e)
+        };
         out.write(s.as_bytes())
                 .expect("unable to write to file");
     }
