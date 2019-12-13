@@ -30,24 +30,41 @@ impl<'a> Parser<'a> {
 
     /// Consumes the parser and produces an abstract syntax tree.
     pub fn parse(mut self) -> Result<Expr<'a>, Error<'a>> {
-        self.parse_expr_frontier()
+        self.parse_expr()
     }
 
+    /// Parses any expression.
+    fn parse_expr(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        self.parse_member()
+    }
+
+    /// Parses a stream of member accesses.
+    fn parse_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_frontier()?;
+        while self.holds(|x| matches!(x, TokenKind::Dot)) {
+            self.token();
+            let ident = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
+            expr = Expr::Member {
+                expr : Box::new(expr),
+                ident
+            }
+        }
+        Ok(expr)
+    }
+
+    /// Parses expression literals and groupings.
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
         if self.holds(|x| matches!(x, TokenKind::Literal(..))) {
-            let value = self.advance().unwrap();
+            let value = self.token();
             Ok(Expr::Literal { value })
         } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
-            let ident = self.advance().unwrap();
+            let ident = self.token();
             Ok(Expr::Variable { ident })
         } else {
-            // malformed expression
-            let token = self.advance()?;
-            Err(Error {
-                reason : "malformed expression",
-                kind : ErrorKind::Fatal,
-                token
-            })
+            self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
+            let expr = self.parse_expr()?;
+            self.expects(|x| matches!(x, TokenKind::RightParen), "expected closing ')' after expression")?;
+            Ok(expr)
         }
     }
 
@@ -72,6 +89,13 @@ impl<'a> Parser<'a> {
         } else {
             false
         }
+    }
+
+    /// Advances the parser and returns the next token.
+    /// # Panics
+    /// Panics when there is an unhandled error.
+    fn token(&mut self) -> Token<'a> {
+        self.advance().unwrap()
     }
 
     /// Advances the parser.
