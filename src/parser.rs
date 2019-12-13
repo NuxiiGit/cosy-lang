@@ -1,5 +1,5 @@
-use crate::diagnostics::Span;
-use crate::scanner::Lexer;
+use crate::diagnostics::*;
+use crate::lexer::Lexer;
 use crate::syntax::{
     token::*,
     ast::*
@@ -12,74 +12,41 @@ use std::error;
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
-    eof : bool
 }
 impl<'a> Parser<'a> {
     /// Creates a new parser from this scanner.
     pub fn from(lexer : Lexer<'a>) -> Self {
         Parser {
-            lexer : lexer.peekable(),
-            eof : false
+            lexer : lexer.peekable()
         }
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Expr<'a>, ParseError<'a>> {
+    pub fn parse(mut self) -> Result<Expr<'a>, Error<'a>> {
         unimplemented!()
     }
 
     /// Only advances the parser if the condition is met.
-    fn matches(&mut self, kind : TokenKind) -> Result<Option<Token<'a>>, ParseError<'a>> {
-        if let Some(token) = self.lexer.peek() {
-            if if let TokenKind::Err(..) = token.kind {
-                true
-            } else {
-                token.kind == kind
-            } {
-                Ok(Some(self.advance()?))
-            } else {
-                Ok(None)
-            }
+    fn matches(&mut self, kind : TokenKind) -> Result<Option<Token<'a>>, Error<'a>> {
+        let consume = match self.lexer.peek() {
+            Some(Ok(token)) => token.kind == kind,
+            Some(Err(..)) => true,
+            _ => unreachable!()
+        };
+        if consume {
+            let token = self.advance()?;
+            Ok(Some(token))
         } else {
             Ok(None)
         }
     }
 
     /// Advances the parser.
-    fn advance(&mut self) -> Result<Token<'a>, ParseError<'a>> {
-        if let Some(token) = self.lexer.next() {
-            let Token { kind, .. } = &token;
-            if let TokenKind::Err(msg) = kind {
-                Err(ParseError {
-                    reason : msg,
-                    token : Some(token)
-                })
-            } else {
-                Ok(token)
-            }
-        } else {
-            self.eof = true;
-            Err(ParseError {
-                reason : "unexpected end of file",
-                token : None
-            })
+    fn advance(&mut self) -> Result<Token<'a>, Error<'a>> {
+        match self.lexer.next() {
+            Some(Ok(token)) => Ok(token),
+            Some(Err(e)) => Err(e),
+            _ => unreachable!()
         }
     }
 }
-
-/// A struct which stores error information.
-#[derive(Debug)]
-pub struct ParseError<'a> {
-    pub reason : &'static str,
-    pub token : Option<Token<'a>>
-}
-impl fmt::Display for ParseError<'_> {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        if let Some(Token { span, .. }) = &self.token {
-            write!(out, "ParseError! {}: {}", span, self.reason)
-        } else {
-            write!(out, "ParseError! {}", self.reason)
-        }
-    }
-}
-impl error::Error for ParseError<'_> {}
