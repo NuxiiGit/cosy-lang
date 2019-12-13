@@ -1,6 +1,6 @@
-use super::source_pos::Span;
-use super::scanner::Lexer;
-use super::syntax::{
+use crate::diagnostics::span::Span;
+use crate::scanner::Lexer;
+use crate::syntax::{
     token::*,
     ast::*
 };

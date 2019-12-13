@@ -1,5 +1,5 @@
-use super::source_pos::Span;
-use super::syntax::token::*;
+use crate::diagnostics::span::Span;
+use crate::syntax::token::*;
 
 use std::str::CharIndices;
 

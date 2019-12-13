@@ -1,4 +1,4 @@
-use super::super::source_pos::Span;
+use crate::diagnostics::span::Span;
 
 /// Stores a token and its location in the source file.
 #[derive(Debug)]

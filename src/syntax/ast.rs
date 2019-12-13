@@ -1,4 +1,4 @@
-use super::token::*;
+use crate::syntax::token::*;
 
 /// A recursive enum which stores expression information.
 #[derive(Debug)]
