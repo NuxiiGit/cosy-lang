@@ -7,7 +7,7 @@ object Vec2 {
 //| Finds the dot product of two vectors.
 //| Bleh.
 function ∙ (a : Vec2) (b : Vec2) = a.x * b.x + a.y * b.y;
-/*
+
 // object construction
 var a = new Vec2 { x = 2.0, y = 4.2 };
 var b = new Vec2 { x = 12.3 };

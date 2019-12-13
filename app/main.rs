@@ -29,7 +29,7 @@ fn main() {
     for result in Lexer::lex(StrScanner::from(&source)) {
         let s = match result {
             Ok(Token { kind, span }) => format!("{}: {:?}\n", span, kind),
-            Err(e) => format!("{}", e)
+            Err(e) => format!("{}\n", e)
         };
         out.write(s.as_bytes())
                 .expect("unable to write to file");
