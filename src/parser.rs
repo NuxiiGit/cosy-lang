@@ -28,29 +28,41 @@ impl<'a> Parser<'a> {
         unimplemented!()
     }
 
-
+    /// Only advances the parser if the condition is met.
+    fn matches(&mut self, kind : TokenKind) -> Result<Option<Token<'a>>, ParseError<'a>> {
+        if let Some(token) = self.lexer.peek() {
+            if if let TokenKind::Err(..) = token.kind {
+                true
+            } else {
+                token.kind == kind
+            } {
+                Ok(Some(self.advance()?))
+            } else {
+                Ok(None)
+            }
+        } else {
+            Ok(None)
+        }
+    }
 
     /// Advances the parser.
     fn advance(&mut self) -> Result<Token<'a>, ParseError<'a>> {
-        match self.lexer.next() {
-            Some(token) => {
-                let Token { kind, .. } = &token;
-                if let TokenKind::Err(msg) = kind {
-                    Err(ParseError {
-                        reason : msg,
-                        token : Some(token)
-                    })
-                } else {
-                    Ok(token)
-                }
-            },
-            None => {
-                self.eof = true;
+        if let Some(token) = self.lexer.next() {
+            let Token { kind, .. } = &token;
+            if let TokenKind::Err(msg) = kind {
                 Err(ParseError {
-                    reason : "unexpected end of file",
-                    token : None
+                    reason : msg,
+                    token : Some(token)
                 })
+            } else {
+                Ok(token)
             }
+        } else {
+            self.eof = true;
+            Err(ParseError {
+                reason : "unexpected end of file",
+                token : None
+            })
         }
     }
 }
