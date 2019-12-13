@@ -16,5 +16,8 @@ pub enum Expr<'a> {
     Call {
         func : Box<Expr<'a>>,
         arg : Box<Expr<'a>>
+    },
+    Tuple {
+        exprs : Vec<Expr<'a>>
     }
 }

@@ -38,6 +38,7 @@ impl<'a> Parser<'a> {
         self.parse_expr_call()
     }
 
+    /// Parses a stream of function calls.
     fn parse_expr_call(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_member()?;
         while self.holds(|x| x.starts_expr()) {
@@ -64,7 +65,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    /// Parses expression literals and groupings.
+    /// Parses expression literals and identifiers.
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
         if self.holds(|x| matches!(x, TokenKind::Literal(..))) {
             let value = self.token();
@@ -73,10 +74,27 @@ impl<'a> Parser<'a> {
             let ident = self.token();
             Ok(Expr::Variable { ident })
         } else {
-            self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
+            self.parse_expr_tuple()
+        }
+    }
+
+    /// Parses a tuple.
+    fn parse_expr_tuple(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
+        let mut exprs = vec![self.parse_expr()?];
+        while self.holds(|x| matches!(x, TokenKind::Comma)) {
+            self.token();
             let expr = self.parse_expr()?;
-            self.expects(|x| matches!(x, TokenKind::RightParen), "expected closing ')' after expression")?;
-            Ok(expr)
+            exprs.push(expr);
+        }
+        self.expects(|x| matches!(x, TokenKind::RightParen), "expected closing ')' after expression")?;
+        if exprs.len() == 1 {
+            // singleton grouping
+            Ok(exprs.pop().unwrap())
+        } else {
+            Ok(Expr::Tuple {
+                exprs
+            })
         }
     }
 
