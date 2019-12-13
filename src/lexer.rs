@@ -96,6 +96,7 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 },
                 ';' => Ok(TokenKind::SemiColon),
+                '`' => Ok(TokenKind::Backtick),
                 '"' => {
                     // get string literal
                     loop {
@@ -121,18 +122,6 @@ impl<'a> Iterator for Lexer<'a> {
                             }
                         } else {
                             break Err((ErrorKind::Fatal, "unterminated character literal"));
-                        }
-                    }
-                },
-                '`' => {
-                    // get identifier literal
-                    loop {
-                        if let Some(x) = self.scanner.advance() {
-                            if x == '`' {
-                                break Ok(TokenKind::Identifier(IdentifierKind::Literal));
-                            }
-                        } else {
-                            break Err((ErrorKind::Fatal, "unterminated identifier literal"));
                         }
                     }
                 },

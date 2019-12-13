@@ -47,10 +47,11 @@ pub enum TokenKind {
     SemiColon,
     Arrow,
     Assign,
-    Documentation,
+    Backtick,
     Identifier(IdentifierKind),
     Literal(LiteralKind),
     EoF,
+    Documentation,
     Unknown
 }
 impl TokenKind {
@@ -58,7 +59,6 @@ impl TokenKind {
     pub fn starts_expr(&self) -> bool {
         if let TokenKind::Literal(..) |
                 TokenKind::Identifier(IdentifierKind::Alphanumeric) |
-                TokenKind::Identifier(IdentifierKind::Literal) |
                 TokenKind::LeftParen |
                 TokenKind::LeftBox = self {
             true
@@ -72,8 +72,7 @@ impl TokenKind {
 #[derive(PartialEq, Debug)]
 pub enum IdentifierKind {
     Alphanumeric,
-    Operator,
-    Literal
+    Operator
 }
 
 /// An enum which describes available literal types.
