@@ -1,6 +1,6 @@
 use cosyc::{
-    syntax::token::Token,
-    lexer::*
+    lexer::*,
+    parser::*
 };
 
 use std::fs;
@@ -10,7 +10,7 @@ use std::io::{
 };
 
 fn main() {
-    let inp = "examples/members.cosy";
+    let inp = "examples/test.cosy";
     let mut inp = fs::OpenOptions::new()
             .read(true)
             .open(inp)
@@ -26,12 +26,14 @@ fn main() {
     let mut source = String::new();
     inp.read_to_string(&mut source)
             .expect("unable to read from file");
-    for result in Lexer::lex(StrScanner::from(&source)) {
-        let s = match result {
-            Ok(Token { kind, span }) => format!("{}: {:?}\n", span, kind),
-            Err(e) => format!("{}\n", e)
-        };
-        out.write(s.as_bytes())
-                .expect("unable to write to file");
-    }
+    let scanner = StrScanner::from(&source);
+    let lexer = Lexer::lex(scanner);
+    let parser = Parser::from(lexer);
+    let result = parser.parse();
+    let s = match result {
+        Ok(expr) => format!("{:#?}\n", expr),
+        Err(e) => format!("{}\n", e)
+    };
+    out.write(s.as_bytes())
+            .expect("unable to write to file");
 }

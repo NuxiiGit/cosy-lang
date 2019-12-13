@@ -6,8 +6,15 @@ use crate::syntax::{
 };
 
 use std::iter::Peekable;
-use std::fmt;
-use std::error;
+
+macro_rules! matches {
+    ($value:expr, $($pattern:tt)*) => ({
+        match $value {
+            $($pattern)* => true,
+            _ => false
+        }
+    });
+}
 
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
@@ -23,25 +30,53 @@ impl<'a> Parser<'a> {
 
     /// Consumes the parser and produces an abstract syntax tree.
     pub fn parse(mut self) -> Result<Expr<'a>, Error<'a>> {
-        unimplemented!()
+        self.parse_expr_frontier()
     }
 
-    /// Only advances the parser if the condition is met.
-    fn matches(&mut self, kind : TokenKind) -> Result<Option<Token<'a>>, Error<'a>> {
-        let consume = match self.lexer.peek() {
-            Some(Ok(token)) => token.kind == kind,
-            Some(Err(..)) => true,
-            _ => unreachable!()
-        };
-        if consume {
-            let token = self.advance()?;
-            Ok(Some(token))
+    fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        if self.holds(|x| matches!(x, TokenKind::Literal(..))) {
+            let value = self.advance().unwrap();
+            Ok(Expr::Literal { value })
+        } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
+            let ident = self.advance().unwrap();
+            Ok(Expr::Variable { ident })
         } else {
-            Ok(None)
+            // malformed expression
+            let token = self.advance()?;
+            Err(Error {
+                reason : "malformed expression",
+                kind : ErrorKind::Fatal,
+                token
+            })
+        }
+    }
+
+    /// Advances the parser, but returns an error if some predicate isn't held.
+    fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Result<Token<'a>, Error<'a>> {
+        if self.holds(p) {
+            self.advance()
+        } else {
+            let token = self.advance()?;
+            Err(Error {
+                reason : on_err,
+                kind : ErrorKind::Fatal,
+                token
+            })
+        }
+    }
+
+    /// Returns `true` if the next token satisfies some predicate.
+    fn holds(&mut self, p : fn(&TokenKind) -> bool) -> bool {
+        if let Some(Ok(token)) = self.lexer.peek() {
+            p(&token.kind)
+        } else {
+            false
         }
     }
 
     /// Advances the parser.
+    /// # Panics
+    /// Panics when there is an unexpected end to the lexer.
     fn advance(&mut self) -> Result<Token<'a>, Error<'a>> {
         match self.lexer.next() {
             Some(Ok(token)) => Ok(token),
