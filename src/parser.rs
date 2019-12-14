@@ -29,8 +29,18 @@ impl<'a> Parser<'a> {
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Statement<'a>, Error<'a>> {
-        self.parse_stmt()
+    pub fn parse(mut self) -> Result<Program<'a>, Error<'a>> {
+        self.parse_program()
+    }
+
+    /// Parses a program.
+    fn parse_program(&mut self) -> Result<Program<'a>, Error<'a>> {
+        let mut program = Vec::new();
+        while !self.holds(|x| matches!(x, TokenKind::EoF)) {
+            let stmt = self.parse_stmt()?;
+            program.push(stmt);
+        }
+        Ok(program)
     }
 
     /// Parses any statement.

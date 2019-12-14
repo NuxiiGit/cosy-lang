@@ -1,5 +1,8 @@
 use crate::syntax::token::*;
 
+/// A type alias for a vector of statements.
+pub type Program<'a> = Vec<Statement<'a>>;
+
 /// A recursive enum which stores statement information.
 #[derive(Debug)]
 pub enum Statement<'a> {
