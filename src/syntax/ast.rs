@@ -1,5 +1,13 @@
 use crate::syntax::token::*;
 
+/// A recursive enum which stores statement information.
+#[derive(Debug)]
+pub enum Statement<'a> {
+    ExprStmt {
+        expr : Expr<'a>
+    }
+}
+
 /// A recursive enum which stores expression information.
 #[derive(Debug)]
 pub enum Expr<'a> {

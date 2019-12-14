@@ -9,6 +9,6 @@
 
 // a `x.y.+` b
 
-//a * x $ b
+a * x `a.x` b;
 
-a * x `$` b
+a * x $ b;

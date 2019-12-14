@@ -29,8 +29,20 @@ impl<'a> Parser<'a> {
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Expr<'a>, Error<'a>> {
-        self.parse_expr()
+    pub fn parse(mut self) -> Result<Statement<'a>, Error<'a>> {
+        self.parse_stmt()
+    }
+
+    /// Parses any statement.
+    fn parse_stmt(&mut self) -> Result<Statement<'a>, Error<'a>> {
+        self.parse_stmt_expr()
+    }
+
+    /// Parses an expression statement.
+    fn parse_stmt_expr(&mut self) -> Result<Statement<'a>, Error<'a>> {
+        let expr = self.parse_expr()?;
+        self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after expression statement")?;
+        Ok(Statement::ExprStmt { expr })
     }
 
     /// Parses any expression.
@@ -169,9 +181,7 @@ impl<'a> Parser<'a> {
             // singleton grouping
             Ok(exprs.pop().unwrap())
         } else {
-            Ok(Expr::Tuple {
-                exprs
-            })
+            Ok(Expr::Tuple { exprs })
         }
     }
 
