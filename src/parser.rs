@@ -65,9 +65,20 @@ impl<'a> Parser<'a> {
 
     /// Parses a stream of `*`, `/`, and `%` binary operators.
     fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        let mut expr = self.parse_expr_call()?;
+        let mut expr = self.parse_expr_ops()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "*" | "/" | "%")) {
+            let ident = self.consume();
+            let right = self.parse_expr_ops()?;
+            expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
+        }
+        Ok(expr)
+    }
+
+    /// Parses a stream of arbitrary operators.
+    fn parse_expr_ops(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_call()?;
+        while self.holds(|x| matches!(x, TokenKind::Identifier(IdentifierKind::Operator))) {
             let ident = self.consume();
             let right = self.parse_expr_call()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
