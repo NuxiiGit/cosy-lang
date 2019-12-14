@@ -41,7 +41,11 @@ impl<'a> Parser<'a> {
     /// Parses a stream of function calls.
     fn parse_expr_call(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_member()?;
-        while self.holds(|x| x.starts_expr()) {
+        while self.holds(|x| matches!(x,
+                TokenKind::Literal(..) |
+                TokenKind::Identifier(IdentifierKind::Alphanumeric) |
+                TokenKind::LeftParen |
+                TokenKind::LeftBox)) {
             let arg = self.parse_expr_member()?;
             expr = Expr::Call {
                 func : Box::new(expr),
