@@ -23,10 +23,10 @@ pub enum Expr<'a> {
 }
 impl<'a> Expr<'a> {
     /// Generates a new binary application from two arguments.
-    pub fn binary_call(op : Token<'a>, left : Expr<'a>, right : Expr<'a>) -> Self {
+    pub fn binary_call(op : Expr<'a>, left : Expr<'a>, right : Expr<'a>) -> Self {
         Expr::Call {
             func : Box::new(Expr::Call {
-                func : Box::new(Expr::Variable { ident : op }),
+                func : Box::new(op),
                 arg : Box::new(left)
             }),
             arg : Box::new(right)
