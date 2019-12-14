@@ -40,9 +40,21 @@ impl<'a> Parser<'a> {
 
     /// Parses a stream of `+` and `-` binary operators.
     fn parse_expr_addition(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        let mut expr = self.parse_expr_call()?;
+        let mut expr = self.parse_expr_multiplication()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "+" | "-")) {
+            let op = self.consume();
+            let right = self.parse_expr_multiplication()?;
+            expr = Expr::binary_call(op, expr, right);
+        }
+        Ok(expr)
+    }
+
+    /// Parses a stream of `*`, `/`, and `%` binary operators.
+    fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_call()?;
+        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
+                matches!(substr(s, 0, 1), "*" | "/" | "%")) {
             let op = self.consume();
             let right = self.parse_expr_call()?;
             expr = Expr::binary_call(op, expr, right);
