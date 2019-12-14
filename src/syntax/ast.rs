@@ -21,3 +21,15 @@ pub enum Expr<'a> {
         exprs : Vec<Expr<'a>>
     }
 }
+impl<'a> Expr<'a> {
+    /// Generates a new binary application from two arguments.
+    pub fn binary_call(op : Token<'a>, left : Expr<'a>, right : Expr<'a>) -> Self {
+        Expr::Call {
+            func : Box::new(Expr::Call {
+                func : Box::new(Expr::Variable { ident : op }),
+                arg : Box::new(left)
+            }),
+            arg : Box::new(right)
+        }
+    }
+}

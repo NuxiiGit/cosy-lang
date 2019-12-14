@@ -45,13 +45,7 @@ impl<'a> Parser<'a> {
                 matches!(substr(s, 0, 1), "+" | "-")) {
             let op = self.consume();
             let right = self.parse_expr_call()?;
-            expr = Expr::Call {
-                func : Box::new(Expr::Call {
-                    func : Box::new(Expr::Variable { ident : op }),
-                    arg : Box::new(expr)
-                }),
-                arg : Box::new(right)
-            }
+            expr = Expr::binary_call(op, expr, right);
         }
         Ok(expr)
     }
