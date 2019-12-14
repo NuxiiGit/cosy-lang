@@ -35,7 +35,25 @@ impl<'a> Parser<'a> {
 
     /// Parses any expression.
     fn parse_expr(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        self.parse_expr_call()
+        self.parse_expr_addition()
+    }
+
+    /// Parses a stream of `+` and `-` binary operators.
+    fn parse_expr_addition(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_call()?;
+        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
+                matches!(substr(s, 0, 1), "+" | "-")) {
+            let op = self.consume();
+            let right = self.parse_expr_call()?;
+            expr = Expr::Call {
+                func : Box::new(Expr::Call {
+                    func : Box::new(Expr::Variable { ident : op }),
+                    arg : Box::new(expr)
+                }),
+                arg : Box::new(right)
+            }
+        }
+        Ok(expr)
     }
 
     /// Parses a stream of function calls.
@@ -59,7 +77,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_frontier()?;
         while self.holds(|x| matches!(x, TokenKind::Dot)) {
-            self.skip();
+            self.consume();
             let ident = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
             expr = Expr::Member {
                 expr : Box::new(expr),
@@ -73,10 +91,10 @@ impl<'a> Parser<'a> {
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
         if self.holds(|x| matches!(x,
                 TokenKind::Literal(..) | TokenKind::Empty)) {
-            let value = self.skip();
+            let value = self.consume();
             Ok(Expr::Constant { value })
         } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
-            let ident = self.skip();
+            let ident = self.consume();
             Ok(Expr::Variable { ident })
         } else {
             self.parse_expr_tuple()
@@ -88,7 +106,7 @@ impl<'a> Parser<'a> {
         self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
         let mut exprs = vec![self.parse_expr()?];
         while self.holds(|x| matches!(x, TokenKind::Comma)) {
-            self.skip();
+            self.consume();
             let expr = self.parse_expr()?;
             exprs.push(expr);
         }
@@ -138,7 +156,7 @@ impl<'a> Parser<'a> {
     /// Advances the parser and returns the next token.
     /// # Panics
     /// Panics when there is an unhandled error.
-    fn skip(&mut self) -> Token<'a> {
+    fn consume(&mut self) -> Token<'a> {
         self.advance().unwrap()
     }
 
@@ -152,4 +170,17 @@ impl<'a> Parser<'a> {
             _ => unreachable!()
         }
     }
+}
+
+/// Returns a substring of this `str`.
+fn substr<'a>(x : &'a str, start : usize, n : usize) -> &'a str {
+    let end = if let Some((i, _)) = x
+            .char_indices()
+            .skip(n + start)
+            .next() {
+        i
+    } else {
+        x.len()
+    };
+    &x[start..end]
 }
