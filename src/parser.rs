@@ -41,7 +41,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of function calls.
     fn parse_expr_call(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_member()?;
-        while self.holds(|x| matches!(x,
+        while self.holds_kind(|x| matches!(x,
                 TokenKind::Literal(..) |
                 TokenKind::Identifier(IdentifierKind::Alphanumeric) |
                 TokenKind::LeftParen |
@@ -58,8 +58,8 @@ impl<'a> Parser<'a> {
     /// Parses a stream of member accesses.
     fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_frontier()?;
-        while self.holds(|x| matches!(x, TokenKind::Dot)) {
-            self.token();
+        while self.holds_kind(|x| matches!(x, TokenKind::Dot)) {
+            self.skip();
             let ident = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
             expr = Expr::Member {
                 expr : Box::new(expr),
@@ -71,12 +71,12 @@ impl<'a> Parser<'a> {
 
     /// Parses expression literals and identifiers.
     fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        if self.holds(|x| matches!(x,
+        if self.holds_kind(|x| matches!(x,
                 TokenKind::Literal(..) | TokenKind::Empty)) {
-            let value = self.token();
+            let value = self.skip();
             Ok(Expr::Constant { value })
-        } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
-            let ident = self.token();
+        } else if self.holds_kind(|x| matches!(x, TokenKind::Identifier(..))) {
+            let ident = self.skip();
             Ok(Expr::Variable { ident })
         } else {
             self.parse_expr_tuple()
@@ -87,8 +87,8 @@ impl<'a> Parser<'a> {
     fn parse_expr_tuple(&mut self) -> Result<Expr<'a>, Error<'a>> {
         self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
         let mut exprs = vec![self.parse_expr()?];
-        while self.holds(|x| matches!(x, TokenKind::Comma)) {
-            self.token();
+        while self.holds_kind(|x| matches!(x, TokenKind::Comma)) {
+            self.skip();
             let expr = self.parse_expr()?;
             exprs.push(expr);
         }
@@ -105,7 +105,7 @@ impl<'a> Parser<'a> {
 
     /// Advances the parser, but returns an error if some predicate isn't held.
     fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Result<Token<'a>, Error<'a>> {
-        if self.holds(p) {
+        if self.holds_kind(p) {
             self.advance()
         } else {
             let token = self.advance()?;
@@ -118,9 +118,18 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns `true` if the next token satisfies some predicate.
-    fn holds(&mut self, p : fn(&TokenKind) -> bool) -> bool {
+    fn holds_kind(&mut self, p : fn(&TokenKind) -> bool) -> bool {
         if let Some(Ok(token)) = self.lexer.peek() {
             p(&token.kind)
+        } else {
+            false
+        }
+    }
+
+    /// Returns `true` if the next token satisfies some predicate.
+    fn holds_content(&mut self, p : fn(&str) -> bool) -> bool {
+        if let Some(Ok(token)) = self.lexer.peek() {
+            p(&token.span.content)
         } else {
             false
         }
@@ -129,7 +138,7 @@ impl<'a> Parser<'a> {
     /// Advances the parser and returns the next token.
     /// # Panics
     /// Panics when there is an unhandled error.
-    fn token(&mut self) -> Token<'a> {
+    fn skip(&mut self) -> Token<'a> {
         self.advance().unwrap()
     }
 
