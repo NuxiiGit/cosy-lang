@@ -75,32 +75,8 @@ impl<'a> Parser<'a> {
 
     /// Parses a stream of arbitrary operators.
     fn parse_expr_ops(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        let mut expr = self.parse_expr_equality()?;
-        while self.holds(|x| matches!(x, TokenKind::Identifier(IdentifierKind::Operator))) {
-            let ident = self.consume();
-            let right = self.parse_expr_equality()?;
-            expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
-        }
-        Ok(expr)
-    }
-
-    /// Parses a stream of `!=` and `==` binary operators.
-    fn parse_expr_equality(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        let mut expr = self.parse_expr_comparison()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "!" | "=")) {
-            let ident = self.consume();
-            let right = self.parse_expr_comparison()?;
-            expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
-        }
-        Ok(expr)
-    }
-
-    /// Parses a stream of `>`, `<`, `>=`, and `<=` binary operators.
-    fn parse_expr_comparison(&mut self) -> Result<Expr<'a>, Error<'a>> {
         let mut expr = self.parse_expr_disjunction()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "<" | ">")) {
+        while self.holds(|x| matches!(x, TokenKind::Identifier(IdentifierKind::Operator))) {
             let ident = self.consume();
             let right = self.parse_expr_disjunction()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -122,9 +98,33 @@ impl<'a> Parser<'a> {
 
     /// Parses a stream of `&` binary operators.
     fn parse_expr_conjunction(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        let mut expr = self.parse_expr_addition()?;
+        let mut expr = self.parse_expr_equality()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "&")) {
+            let ident = self.consume();
+            let right = self.parse_expr_equality()?;
+            expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
+        }
+        Ok(expr)
+    }
+
+    /// Parses a stream of `!=` and `==` binary operators.
+    fn parse_expr_equality(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_comparison()?;
+        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
+                matches!(substr(s, 0, 1), "!" | "=")) {
+            let ident = self.consume();
+            let right = self.parse_expr_comparison()?;
+            expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
+        }
+        Ok(expr)
+    }
+
+    /// Parses a stream of `>`, `<`, `>=`, and `<=` binary operators.
+    fn parse_expr_comparison(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        let mut expr = self.parse_expr_addition()?;
+        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
+                matches!(substr(s, 0, 1), "<" | ">")) {
             let ident = self.consume();
             let right = self.parse_expr_addition()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
