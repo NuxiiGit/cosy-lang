@@ -243,10 +243,10 @@ pub struct StringScanner<'a> {
     context : &'a str,
     chars : CharIndices<'a>,
     peeked : Option<char>,
-    row : usize,
-    column : usize,
+    row : (usize, usize),
+    column : (usize, usize),
     span_begin : usize,
-    span_end : usize
+    span_end : usize,
 }
 impl<'a> StringScanner<'a> {
     /// Create a new scanner from this string slice.
@@ -263,21 +263,11 @@ impl<'a> StringScanner<'a> {
             context,
             chars,
             peeked,
-            row : 1,
-            column : 1,
+            row : (1, 1),
+            column : (1, 1),
             span_begin : 0,
             span_end : 0,
         }
-    }
-
-    /// Returns the current column of the scanner.
-    pub fn column(&self) -> usize {
-        self.column
-    }
-
-    /// Returns the current row of the scanner.
-    pub fn row(&self) -> usize {
-        self.row
     }
 
     /// Peeks at the current substring.
@@ -288,6 +278,8 @@ impl<'a> StringScanner<'a> {
     /// Erases the current substring.
     pub fn ignore(&mut self) {
         self.span_begin = self.span_end;
+        self.row.0 = self.row.1;
+        self.column.0 = self.column.1;
     }
 
     /// Peek at the next character.
@@ -303,10 +295,10 @@ impl<'a> StringScanner<'a> {
             self.span_end = i;
             // move to new line
             if x == '\n' {
-                self.row += 1;
-                self.column = 1;
+                self.row.1 += 1;
+                self.column.1 = 0;
             } else {
-                self.column += 1;
+                self.column.1 += 1;
             }
             Some(x)
         } else {
@@ -321,8 +313,8 @@ impl<'a> StringScanner<'a> {
     pub fn span(&self) -> Span<'a> {
         Span {
             content : self.substr(),
-            row : self.row,
-            column : self.column
+            row : self.row.0,
+            column : self.column.0
         }
     }
 }
