@@ -29,18 +29,45 @@ impl<'a> Parser<'a> {
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Prog<'a>, Error<'a>> {
+    pub fn parse(mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
         self.parse_program()
     }
 
     /// Parses a program.
-    fn parse_program(&mut self) -> Result<Prog<'a>, Error<'a>> {
+    fn parse_program(&mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
         let mut stmts = Vec::new();
+        let mut warnings = Vec::new();
+        let mut errors = Vec::new();
         while !self.holds(|x| matches!(x, TokenKind::EoF)) {
-            let stmt = self.parse_stmt()?;
-            stmts.push(stmt);
+            match self.parse_stmt() {
+                Ok(stmt) => stmts.push(stmt),
+                Err(e) => {
+                    if e.is_fatal() {
+                        errors.push(e);
+                        while !self.is_empty() {
+                            if self.holds(|x| matches!(x, TokenKind::SemiColon)) {
+                                self.consume();
+                                break;
+                            } else if let Err(e) = self.advance() {
+                                if e.is_fatal() {
+                                    errors.push(e);
+                                }
+                            }
+                        }
+                        if self.is_empty() {
+                            break;
+                        }
+                    } else {
+                        warnings.push(e);
+                    }
+                }
+            }
         }
-        Ok(Prog { stmts })
+        if errors.is_empty() {
+            Ok(Prog { stmts, warnings })
+        } else {
+            Err(errors)
+        }
     }
 
     /// Parses any statement.
@@ -279,12 +306,21 @@ impl<'a> Parser<'a> {
 
     /// Advances the parser.
     /// # Panics
-    /// Panics when there is an unexpected end to the lexer.
+    /// If the lexer is empty.
     fn advance(&mut self) -> Result<Token<'a>, Error<'a>> {
         match self.lexer.next() {
             Some(Ok(token)) => Ok(token),
             Some(Err(e)) => Err(e),
             _ => unreachable!()
+        }
+    }
+
+    /// Returns whether the lexer is empty.
+    fn is_empty(&mut self) -> bool {
+        if let None = self.lexer.peek() {
+            true
+        } else {
+            false
         }
     }
 }

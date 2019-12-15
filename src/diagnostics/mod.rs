@@ -10,6 +10,12 @@ pub struct Error<'a> {
     pub reason : &'static str,
     pub token : Token<'a>
 }
+impl Error<'_> {
+    /// Returns whether this error is fatal.
+    pub fn is_fatal(&self) -> bool {
+        self.kind == ErrorKind::Fatal
+    }
+}
 impl fmt::Display for Error<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "{:?}! {}: {}",

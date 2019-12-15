@@ -31,8 +31,16 @@ fn main() {
     let parser = Parser::from(lexer);
     let result = parser.parse();
     let s = match result {
-        Ok(ast) => format!("{}\n\n{:#?}", ast, ast),
-        Err(e) => format!("{}\n", e)
+        Ok(ast) => format!("{}", ast),
+        Err(es) => {
+            es.iter().fold(String::from("Errors:"), |mut acc, e| {
+                if !acc.is_empty() {
+                    acc.push('\n');
+                }
+                acc.push_str(&e.to_string());
+                acc
+            })
+        }
     };
     out.write(s.as_bytes())
             .expect("unable to write to file");

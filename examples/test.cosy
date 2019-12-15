@@ -1,4 +1,10 @@
- "nice".x + 2 * 3;
+(f `nice);
+
+a.(d);
+
+finally
+
+/* "nice".x + 2 * 3;
 
  (+ "nice".x) (* 2 3);
 
