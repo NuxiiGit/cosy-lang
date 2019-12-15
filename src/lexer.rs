@@ -69,7 +69,7 @@ impl<'a> Iterator for Lexer<'a> {
                             _ => continue
                         }
                     }
-                    Err((ErrorKind::Warning, "unterminated block comment"))
+                    Err("unterminated block comment")
                 }
                 // match special symbols
                 '(' => {
@@ -107,7 +107,7 @@ impl<'a> Iterator for Lexer<'a> {
                                 break Ok(TokenKind::Literal(LiteralKind::String));
                             }
                         } else {
-                            break Err((ErrorKind::Fatal, "unterminated string literal"));
+                            break Err("unterminated string literal");
                         }
                     }
                 },
@@ -121,7 +121,7 @@ impl<'a> Iterator for Lexer<'a> {
                                 break Ok(TokenKind::Literal(LiteralKind::Character));
                             }
                         } else {
-                            break Err((ErrorKind::Fatal, "unterminated character literal"));
+                            break Err("unterminated character literal");
                         }
                     }
                 },
@@ -191,7 +191,7 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 },
                 // unknown lex
-                _ => Err((ErrorKind::Fatal, "unknown symbol"))
+                _ => Err("unknown symbol")
             }
         } else if self.eof {
             return None;
@@ -202,9 +202,9 @@ impl<'a> Iterator for Lexer<'a> {
         let span = self.scanner.span();
         Some(match result {
             Ok(kind) => Ok(Token { kind, span }),
-            Err((kind, reason)) => {
+            Err(reason) => {
                 let token = Token { kind : TokenKind::Unknown, span };
-                Err(Error { kind, reason, token })
+                Err(Error { reason, token })
             }
         })
     }

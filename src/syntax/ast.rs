@@ -1,5 +1,4 @@
 use crate::syntax::token::*;
-use crate::diagnostics::Error;
 
 use std::fmt;
 
@@ -14,8 +13,7 @@ macro_rules! write_op {
 /// A struct which encapsulates information about a program.
 #[derive(Debug)]
 pub struct Prog<'a> {
-    pub stmts : Vec<Stmt<'a>>,
-    pub warnings : Vec<Error<'a>>
+    pub stmts : Vec<Stmt<'a>>
 }
 impl fmt::Display for Prog<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {

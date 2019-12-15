@@ -36,35 +36,28 @@ impl<'a> Parser<'a> {
     /// Parses a program.
     fn parse_program(&mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
         let mut stmts = Vec::new();
-        let mut warnings = Vec::new();
         let mut errors = Vec::new();
         while !self.holds(|x| matches!(x, TokenKind::EoF)) {
             match self.parse_stmt() {
                 Ok(stmt) => stmts.push(stmt),
                 Err(e) => {
-                    if e.is_fatal() {
-                        errors.push(e);
-                        while !self.is_empty() {
-                            if self.holds(|x| matches!(x, TokenKind::SemiColon)) {
-                                self.consume();
-                                break;
-                            } else if let Err(e) = self.advance() {
-                                if e.is_fatal() {
-                                    errors.push(e);
-                                }
-                            }
-                        }
-                        if self.is_empty() {
+                    errors.push(e);
+                    while !self.is_empty() {
+                        if self.holds(|x| matches!(x, TokenKind::SemiColon)) {
+                            self.consume();
                             break;
+                        } else if let Err(e) = self.advance() {
+                            errors.push(e);
                         }
-                    } else {
-                        warnings.push(e);
+                    }
+                    if self.is_empty() {
+                        break;
                     }
                 }
             }
         }
         if errors.is_empty() {
-            Ok(Prog { stmts, warnings })
+            Ok(Prog { stmts })
         } else {
             Err(errors)
         }
@@ -273,7 +266,6 @@ impl<'a> Parser<'a> {
             let token = self.advance()?;
             Err(Error {
                 reason : on_err,
-                kind : ErrorKind::Fatal,
                 token
             })
         }
