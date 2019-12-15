@@ -193,7 +193,9 @@ impl<'a> Parser<'a> {
         if self.holds(|x| matches!(x, TokenKind::Backslash)) {
             self.consume();
             let param = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
-            self.expects(|x| matches!(x, TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
+            if !self.holds(|x| matches!(x, TokenKind::Backslash)) {
+                self.expects(|x| matches!(x, TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
+            }
             let body = self.parse_expr()?;
             Ok(Expr::Lambda {
                 param,
