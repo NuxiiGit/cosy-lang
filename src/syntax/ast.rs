@@ -117,7 +117,11 @@ impl fmt::Display for Expr<'_> {
             }
         } else if self.is_unaryop() {
             if let Expr::Call { func, arg } = self {
-                write!(out, "{}{}", func, arg)
+                if arg.is_op() {
+                    write!(out, "{}({})", func, arg)
+                } else {
+                    write!(out, "{}{}", func, arg)
+                }
             } else {
                 unreachable!()
             }
