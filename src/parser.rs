@@ -35,12 +35,12 @@ impl<'a> Parser<'a> {
 
     /// Parses a program.
     fn parse_program(&mut self) -> Result<Program<'a>, Error<'a>> {
-        let mut program = Vec::new();
+        let mut stmts = Vec::new();
         while !self.holds(|x| matches!(x, TokenKind::EoF)) {
             let stmt = self.parse_stmt()?;
-            program.push(stmt);
+            stmts.push(stmt);
         }
-        Ok(program)
+        Ok(Program { stmts })
     }
 
     /// Parses any statement.

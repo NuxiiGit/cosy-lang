@@ -3,11 +3,12 @@ use crate::diagnostics::Span;
 use std::fmt;
 
 /// Stores a token and its location in the source file.
+#[derive(Debug)]
 pub struct Token<'a> {
     pub kind : TokenKind,
     pub span : Span<'a>
 }
-impl fmt::Debug for Token<'_> {
+impl fmt::Display for Token<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "{}", self.span.content)
     }
