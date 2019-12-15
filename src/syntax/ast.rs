@@ -98,24 +98,15 @@ impl<'a> Expr<'a> {
             false
         }
     }
-
-    fn __binary_right(&self) -> String {
-        if let Expr::Call { func, arg } = self {
-            format!("{} {}", func, arg)
-        } else {
-            unreachable!()
-        }
-    }
 }
 impl fmt::Display for Expr<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         if self.is_binaryop() {
             if let Expr::Call { func, arg : a } = self {
-                match *func {
-                    Expr::Call { func : op, arg : b } => {
-                        write!(out, "({} {} {})", a, op, b)
-                    },
-                    _ => unreachable!()
+                if let Expr::Call { func : op, arg : b } = &**func { // ???
+                    write!(out, "({} {} {})", b, op, a)
+                } else {
+                    unreachable!()
                 }
             } else {
                 unreachable!()
