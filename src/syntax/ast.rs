@@ -12,10 +12,10 @@ macro_rules! write_op {
 
 /// A struct which encapsulates information about a program.
 #[derive(Debug)]
-pub struct Program<'a> {
-    pub stmts : Vec<Statement<'a>>
+pub struct Prog<'a> {
+    pub stmts : Vec<Stmt<'a>>
 }
-impl fmt::Display for Program<'_> {
+impl fmt::Display for Prog<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         let prog = self.stmts.iter().fold(String::new(), |mut acc, stmt| {
             if !acc.is_empty() {
@@ -30,15 +30,15 @@ impl fmt::Display for Program<'_> {
 
 /// A recursive enum which stores statement information.
 #[derive(Debug)]
-pub enum Statement<'a> {
-    ExprStmt {
+pub enum Stmt<'a> {
+    Expr {
         expr : Expr<'a>
     }
 }
-impl fmt::Display for Statement<'_> {
+impl fmt::Display for Stmt<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Statement::ExprStmt { expr } => write!(out, "{};", expr)
+            Stmt::Expr { expr } => write!(out, "{};", expr)
         }
     }
 }

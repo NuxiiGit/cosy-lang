@@ -29,30 +29,30 @@ impl<'a> Parser<'a> {
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Program<'a>, Error<'a>> {
+    pub fn parse(mut self) -> Result<Prog<'a>, Error<'a>> {
         self.parse_program()
     }
 
     /// Parses a program.
-    fn parse_program(&mut self) -> Result<Program<'a>, Error<'a>> {
+    fn parse_program(&mut self) -> Result<Prog<'a>, Error<'a>> {
         let mut stmts = Vec::new();
         while !self.holds(|x| matches!(x, TokenKind::EoF)) {
             let stmt = self.parse_stmt()?;
             stmts.push(stmt);
         }
-        Ok(Program { stmts })
+        Ok(Prog { stmts })
     }
 
     /// Parses any statement.
-    fn parse_stmt(&mut self) -> Result<Statement<'a>, Error<'a>> {
+    fn parse_stmt(&mut self) -> Result<Stmt<'a>, Error<'a>> {
         self.parse_stmt_expr()
     }
 
     /// Parses an expression statement.
-    fn parse_stmt_expr(&mut self) -> Result<Statement<'a>, Error<'a>> {
+    fn parse_stmt_expr(&mut self) -> Result<Stmt<'a>, Error<'a>> {
         let expr = self.parse_expr()?;
         self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after expression statement")?;
-        Ok(Statement::ExprStmt { expr })
+        Ok(Stmt::Expr { expr })
     }
 
     /// Parses any expression.
