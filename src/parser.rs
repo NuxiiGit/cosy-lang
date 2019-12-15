@@ -163,7 +163,8 @@ impl<'a> Parser<'a> {
                 TokenKind::Literal(..) |
                 TokenKind::Identifier(IdentifierKind::Alphanumeric) |
                 TokenKind::LeftParen |
-                TokenKind::LeftBox)) {
+                TokenKind::LeftBox |
+                TokenKind::Backslash)) {
             let arg = self.parse_expr_member()?;
             expr = Expr::Call {
                 func : Box::new(expr),
@@ -175,7 +176,7 @@ impl<'a> Parser<'a> {
 
     /// Parses a stream of member accesses.
     fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
-        let mut expr = self.parse_expr_frontier()?;
+        let mut expr = self.parse_expr_lambda()?;
         while self.holds(|x| matches!(x, TokenKind::Dot)) {
             self.consume();
             let ident = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
@@ -185,6 +186,22 @@ impl<'a> Parser<'a> {
             }
         }
         Ok(expr)
+    }
+
+    /// Parses a lambda function.
+    fn parse_expr_lambda(&mut self) -> Result<Expr<'a>, Error<'a>> {
+        if self.holds(|x| matches!(x, TokenKind::Backslash)) {
+            self.consume();
+            let param = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
+            self.expects(|x| matches!(x, TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
+            let body = self.parse_expr()?;
+            Ok(Expr::Lambda {
+                param,
+                body : Box::new(body)
+            })
+        } else {
+            self.parse_expr_frontier()
+        }
     }
 
     /// Parses expression literals and identifiers.

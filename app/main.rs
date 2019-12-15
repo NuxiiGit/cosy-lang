@@ -31,7 +31,7 @@ fn main() {
     let parser = Parser::from(lexer);
     let result = parser.parse();
     let s = match result {
-        Ok(ast) => format!("{}\n", ast),
+        Ok(ast) => format!("{}\n\n{:#?}", ast, ast),
         Err(e) => format!("{}\n", e)
     };
     out.write(s.as_bytes())

@@ -52,6 +52,10 @@ pub enum Expr<'a> {
         func : Box<Expr<'a>>,
         arg : Box<Expr<'a>>
     },
+    Lambda {
+        param : Token<'a>,
+        body : Box<Expr<'a>>
+    },
     Tuple {
         exprs : Vec<Expr<'a>>
     }
@@ -104,7 +108,7 @@ impl fmt::Display for Expr<'_> {
         if self.is_binaryop() {
             if let Expr::Call { func, arg : a } = self {
                 if let Expr::Call { func : op, arg : b } = &**func { // ???
-                    write!(out, "({} {} {})", b, op, a)
+                    write!(out, "{} {} {}", b, op, a)
                 } else {
                     unreachable!()
                 }
@@ -113,7 +117,7 @@ impl fmt::Display for Expr<'_> {
             }
         } else if self.is_unaryop() {
             if let Expr::Call { func, arg } = self {
-                write!(out, "({}{})", func, arg)
+                write!(out, "{}{}", func, arg)
             } else {
                 unreachable!()
             }
@@ -122,7 +126,8 @@ impl fmt::Display for Expr<'_> {
                 Expr::Constant { value } => write!(out, "{}", value),
                 Expr::Variable { ident } => write!(out, "{}", ident),
                 Expr::Member { expr, ident } => write!(out, "{}.{}", expr, ident),
-                Expr::Call { func, arg } => write!(out, "({} {})", func, arg),
+                Expr::Call { func, arg } => write!(out, "{} ({})", func, arg),
+                Expr::Lambda { param, body } => write!(out, "\\{} -> {}", param, body),
                 Expr::Tuple { exprs } => {
                     let tuple = exprs.iter().fold(String::new(), |mut acc, expr| {
                         if !acc.is_empty() {
@@ -132,7 +137,7 @@ impl fmt::Display for Expr<'_> {
                         acc
                     });
                     write!(out, "({})", tuple)
-                },
+                }
             }
         }
     }

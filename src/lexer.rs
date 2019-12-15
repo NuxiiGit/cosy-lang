@@ -136,6 +136,7 @@ impl<'a> Iterator for Lexer<'a> {
                     match self.scanner.substr() {
                         "->" => Ok(TokenKind::Arrow),
                         "=" => Ok(TokenKind::Assign),
+                        "\\" => Ok(TokenKind::Backslash),
                         _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
                     }
                 },
