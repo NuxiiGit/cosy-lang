@@ -2,6 +2,14 @@ use crate::syntax::token::*;
 
 use std::fmt;
 
+macro_rules! write_op {
+    ($out:expr, $ident:expr) => (if $ident.is_op() {
+        write!($out, "({})", $ident)
+    } else {
+        write!($out, "{}", $ident)
+    })
+}
+
 /// A struct which encapsulates information about a program.
 #[derive(Debug)]
 pub struct Program<'a> {
@@ -108,7 +116,11 @@ impl fmt::Display for Expr<'_> {
         if self.is_binaryop() {
             if let Expr::Call { func, arg : a } = self {
                 if let Expr::Call { func : op, arg : b } = &**func { // ???
-                    write!(out, "{} {} {}", b, op, a)
+                    write!(out, "(")?;
+                    write_op!(out, b)?;
+                    write!(out, " {} ", op)?;
+                    write_op!(out, a)?;
+                    write!(out, ")")
                 } else {
                     unreachable!()
                 }
@@ -117,11 +129,8 @@ impl fmt::Display for Expr<'_> {
             }
         } else if self.is_unaryop() {
             if let Expr::Call { func, arg } = self {
-                if arg.is_op() {
-                    write!(out, "{}({})", func, arg)
-                } else {
-                    write!(out, "{}{}", func, arg)
-                }
+                write!(out, "{}", func)?;
+                write_op!(out, arg)
             } else {
                 unreachable!()
             }
@@ -130,8 +139,14 @@ impl fmt::Display for Expr<'_> {
                 Expr::Constant { value } => write!(out, "{}", value),
                 Expr::Variable { ident } => write!(out, "{}", ident),
                 Expr::Member { expr, ident } => write!(out, "{}.{}", expr, ident),
-                Expr::Call { func, arg } => write!(out, "{} ({})", func, arg),
-                Expr::Lambda { param, body } => write!(out, "\\{} -> {}", param, body),
+                Expr::Call { func, arg } => {
+                    write!(out, "(")?;
+                    write_op!(out, func)?;
+                    write!(out, " ")?;
+                    write_op!(out, arg)?;
+                    write!(out, ")")
+                },
+                Expr::Lambda { param, body } => write!(out, "(\\{} -> {})", param, body),
                 Expr::Tuple { exprs } => {
                     let tuple = exprs.iter().fold(String::new(), |mut acc, expr| {
                         if !acc.is_empty() {
