@@ -34,20 +34,25 @@ impl<'a> Parser<'a> {
 
     /// Consumes the parser and produces an abstract syntax tree.
     pub fn parse(mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
-        let mut stmts = Vec::new();
-        while !self.holds(|x| matches!(x, TokenKind::EoF)) {
-            match self.parse_stmt() {
-                Some(stmt) => stmts.push(stmt),
-                None => {
-                    self.synchronise();
-                }
-            }
-        }
+        let prog = self.parse_prog();
         if self.errors.is_empty() {
-            Ok(Prog(stmts))
+            Ok(prog)
         } else {
             Err(self.errors)
         }
+    }
+
+    /// Parses a block statement.
+    fn parse_prog(&mut self) -> Prog<'a> {
+        let mut stmts = Vec::new();
+        while !self.is_empty() && !self.holds(|x| matches!(x, TokenKind::EoF)) {
+            if let Some(stmt) = self.parse_stmt() {
+                stmts.push(stmt);
+            } else {
+                self.synchronise();
+            }
+        }
+        Prog(stmts)
     }
 
     /// Parses any statement.
