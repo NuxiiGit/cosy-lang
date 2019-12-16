@@ -57,7 +57,7 @@ impl<'a> Parser<'a> {
             }
         }
         if errors.is_empty() {
-            Ok(Prog { stmts })
+            Ok(Prog(stmts))
         } else {
             Err(errors)
         }

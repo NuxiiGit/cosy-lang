@@ -1,8 +1,11 @@
-(f `nice);
-a.(d);
-
-finally {}
-
+if "nice".x + 2 * 3 {
+    nice();
+}
+if condition {
+    ok();
+} else {
+    otherwise();
+}
 
 /*
  "nice".x + 2 * 3;
