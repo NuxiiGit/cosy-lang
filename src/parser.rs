@@ -254,9 +254,9 @@ impl<'a> Parser<'a> {
     /// Advances the parser until a stable line is found.
     fn synchronise(&mut self) {
         while !self.is_empty() {
-            if let Some(TokenKind::SemiColon) = self.previous() {
+            if let Some(TokenKind::SemiColon) = self.previous_kind() {
                 break;
-            } else if let Some(kind) = self.next() {
+            } else if let Some(kind) = self.next_kind() {
                 if let TokenKind::Var |
                         TokenKind::Const |
                         TokenKind::If |
@@ -310,7 +310,7 @@ impl<'a> Parser<'a> {
 
     /// Advances the parser.
     fn advance(&mut self) -> Option<Token<'a>> {
-        self.previous = self.next(); // keep track of the previous token kind for error recovery
+        self.previous = self.next_kind(); // keep track of the previous token kind for error recovery
         match self.lexer.next() {
             Some(Ok(token)) => Some(token),
             Some(Err(e)) => {
@@ -336,7 +336,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns the next token kind.
-    fn next(&mut self) -> Option<TokenKind> {
+    fn next_kind(&mut self) -> Option<TokenKind> {
         if let Some(Ok(token)) = self.lexer.peek() {
             Some(token.kind.clone())
         } else {
@@ -345,7 +345,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns the next token kind.
-    fn previous(&self) -> Option<TokenKind> {
+    fn previous_kind(&self) -> Option<TokenKind> {
         self.previous.clone()
     }
 }
