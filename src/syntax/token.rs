@@ -69,25 +69,6 @@ pub enum TokenKind {
     Documentation,
     Unknown
 }
-impl TokenKind {
-    /// Returns `true` if this token kind is an identifier.
-    pub fn is_ident(&self) -> bool {
-        if let TokenKind::Identifier(..) = self {
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Returns `true` if this token kind is a literal.
-    pub fn is_literal(&self) -> bool {
-        if let TokenKind::Literal(..) = self {
-            true
-        } else {
-            false
-        }
-    }
-}
 
 /// An enum which describes available identifier types.
 #[derive(PartialEq, Debug, Clone)]

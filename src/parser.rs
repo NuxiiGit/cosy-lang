@@ -8,9 +8,16 @@ use crate::syntax::{
 use std::iter::Peekable;
 
 macro_rules! kind_of {
-    ($($kind:tt)*) => (|x| {
+    ($($kind:pat),+, $(!$ignore:pat),*) => (|x| {
         match x.kind {
-            $($kind)* => true,
+            $($ignore)|* => false,
+            $($kind)|* => true,
+            _ => false
+        }
+    });
+    ($($kind:pat),+) => (|x| {
+        match x.kind {
+            $($kind)|* => true,
             _ => false
         }
     })
@@ -170,15 +177,13 @@ impl<'a> Parser<'a> {
     /// Parses a stream of function calls.
     fn parse_expr_call(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_member()?;
-        while self.satisfies(|x| {
-            match &x.kind {
-                TokenKind::Identifier(IdentifierKind::Operator) => false,
-                x if x.is_ident() || x.is_literal() => true,
-                TokenKind::LeftParen | TokenKind::LeftBox |
-                        TokenKind::Backslash => true,
-                _ => false
-            }
-        }) {
+        while self.satisfies(kind_of!(
+                TokenKind::Identifier(..),
+                TokenKind::Literal(..),
+                TokenKind::LeftParen,
+                TokenKind::LeftBox,
+                TokenKind::Backslash,
+                !TokenKind::Identifier(IdentifierKind::Operator))) {
             let arg = self.parse_expr_member()?;
             expr = Expr::Call {
                 func : Box::new(expr),
@@ -257,17 +262,17 @@ impl<'a> Parser<'a> {
             if let Some(TokenKind::SemiColon) = self.previous_kind() {
                 break;
             } else if self.satisfies(kind_of!(
-                    TokenKind::Var |
-                    TokenKind::Const |
-                    TokenKind::If |
-                    TokenKind::Unless |
-                    TokenKind::Switch |
-                    TokenKind::While |
-                    TokenKind::Until |
-                    TokenKind::Repeat |
-                    TokenKind::For |
-                    TokenKind::Function |
-                    TokenKind::Object |
+                    TokenKind::Var,
+                    TokenKind::Const,
+                    TokenKind::If,
+                    TokenKind::Unless,
+                    TokenKind::Switch,
+                    TokenKind::While,
+                    TokenKind::Until,
+                    TokenKind::Repeat,
+                    TokenKind::For,
+                    TokenKind::Function,
+                    TokenKind::Object,
                     TokenKind::EoF)) {
                 break;
             }

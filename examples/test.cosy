@@ -1,4 +1,4 @@
-if "nice".x + 2 * 3 {
+/*if "nice".x + 2 * 3 {
     nice();
 }
 if condition {
@@ -9,9 +9,8 @@ if condition {
 
 (a + b;
 bleh {;
-ok `nice
+ok `nice*/
 
-/*
 "nice".x + 2 * 3;
 
 (+ "nice".x) (* 2 3);
@@ -27,7 +26,7 @@ a * x `a.x` b;
 
 a * x $ (1, 2);
 
-\x -> \y -> a != b || !y == x;
+\x \y -> a != b || !y == x;
 
 b || && ! d;
 
@@ -35,4 +34,4 @@ b || && ! d;
 
 (~) ($$) 12 * 5 + 3;
 
-! (&&);*/
+! (&&);
