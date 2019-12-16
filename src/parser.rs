@@ -64,12 +64,18 @@ impl<'a> Parser<'a> {
                 self.synchronise();
             }
         }
-        Prog(stmts)
+        Prog {
+            stmt : Stmt::Block{ stmts }
+        }
     }
 
     /// Parses any statement.
     fn parse_stmt(&mut self) -> Option<Stmt<'a>> {
-        self.parse_stmt_expr()
+        if self.satisfies(kind_of!(TokenKind::LeftBrace)) {
+            self.parse_stmt_block()
+        } else {
+            self.parse_stmt_expr()
+        }
     }
 
     /// Parses an expression statement.
@@ -77,6 +83,21 @@ impl<'a> Parser<'a> {
         let expr = self.parse_expr()?;
         self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after expression statement")?;
         Some(Stmt::Expr { expr })
+    }
+
+    /// Parses an expression statement.
+    fn parse_stmt_block(&mut self) -> Option<Stmt<'a>> {
+        self.expects(kind_of!(TokenKind::LeftBrace), "expected opening '{' before block statement")?;
+        let mut stmts = Vec::new();
+        while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::RightBrace)) {
+            if let Some(stmt) = self.parse_stmt() {
+                stmts.push(stmt);
+            } else {
+                self.synchronise();
+            }
+        }
+        self.expects(kind_of!(TokenKind::RightBrace), "expected closing '}' after block statement")?;
+        Some(Stmt::Block { stmts })
     }
 
     /// Parses any expression.

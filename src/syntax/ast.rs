@@ -12,18 +12,12 @@ macro_rules! write_op {
 
 /// A struct which encapsulates information about a program.
 #[derive(Debug)]
-pub struct Prog<'a>(pub Vec<Stmt<'a>>);
+pub struct Prog<'a> {
+    pub stmt : Stmt<'a>
+}
 impl fmt::Display for Prog<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        let Prog(stmts) = self;
-        let code = stmts.iter().fold(String::new(), |mut acc, stmt| {
-            if !acc.is_empty() {
-                acc.push('\n');
-            }
-            acc.push_str(&stmt.to_string());
-            acc
-        });
-        write!(out, "{}", code)
+        write!(out, "{}", self.stmt)
     }
 }
 
@@ -33,22 +27,22 @@ pub enum Stmt<'a> {
     Expr {
         expr : Expr<'a>
     },
-    If {
-        condition : Expr<'a>,
-        body : Prog<'a>,
-        if_else : Option<Prog<'a>>
+    Block {
+        stmts : Vec<Stmt<'a>>
     }
 }
 impl fmt::Display for Stmt<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
             Stmt::Expr { expr } => write!(out, "{};", expr),
-            Stmt::If { condition, body, if_else } => {
-                write!(out, "if {} {{\n{}\n}}", condition, body)?;
-                if let Some(clause) = if_else {
-                    write!(out, " else {{\n{}\n}}", clause)?;
-                }
-                Ok(())
+            Stmt::Block { stmts } => {
+                write!(out, "{{\n{}\n}}", stmts.iter().fold(String::new(), |mut acc, stmt| {
+                    if !acc.is_empty() {
+                        acc.push('\n');
+                    }
+                    acc.push_str(&stmt.to_string());
+                    acc
+                }))
             }
         }
     }
