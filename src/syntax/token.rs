@@ -19,7 +19,7 @@ impl fmt::Display for Token<'_> {
 }
 
 /// An enum which describes available token types.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum TokenKind {
     Empty,
     Var,
@@ -62,14 +62,14 @@ pub enum TokenKind {
 }
 
 /// An enum which describes available identifier types.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum IdentifierKind {
     Alphanumeric,
     Operator
 }
 
 /// An enum which describes available literal types.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum LiteralKind {
     String,
     Character,

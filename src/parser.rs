@@ -19,6 +19,7 @@ macro_rules! matches {
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
+    previous : TokenKind,
     errors : Vec<Error<'a>>
 }
 impl<'a> Parser<'a> {
@@ -26,6 +27,7 @@ impl<'a> Parser<'a> {
     pub fn from(lexer : Lexer<'a>) -> Self {
         Parser {
             lexer : lexer.peekable(),
+            previous : TokenKind::Unknown,
             errors : Vec::new()
         }
     }
@@ -37,16 +39,7 @@ impl<'a> Parser<'a> {
             match self.parse_stmt() {
                 Some(stmt) => stmts.push(stmt),
                 None => {
-                    while !self.is_empty() {
-                        if self.holds(|x| matches!(x, TokenKind::SemiColon)) {
-                            self.advance();
-                            break;
-                        }
-                        self.advance();
-                    }
-                    if self.is_empty() {
-                        break;
-                    }
+                    self.synchronise();
                 }
             }
         }
@@ -177,6 +170,7 @@ impl<'a> Parser<'a> {
                 TokenKind::Literal(..) |
                 TokenKind::Identifier(IdentifierKind::Alphanumeric) |
                 TokenKind::LeftParen |
+                TokenKind::Empty |
                 TokenKind::LeftBox |
                 TokenKind::Backslash)) {
             let arg = self.parse_expr_member()?;
@@ -252,6 +246,16 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Advances the parser until a stable line is found.
+    fn synchronise(&mut self) {
+        while !self.is_empty() {
+            if self.previous == TokenKind::SemiColon {
+                break;
+            }
+            self.advance();
+        }
+    }
+
     /// Advances the parser, but returns an error if some predicate isn't held.
     fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Option<Token<'a>> {
         if self.holds(p) {
@@ -287,7 +291,10 @@ impl<'a> Parser<'a> {
     /// Advances the parser.
     fn advance(&mut self) -> Option<Token<'a>> {
         match self.lexer.next() {
-            Some(Ok(token)) => Some(token),
+            Some(Ok(token)) => {
+                self.previous = token.kind.clone(); // keep track of the previous token kind for error recovery
+                Some(token)
+            },
             Some(Err(e)) => {
                 self.report(e);
                 None
