@@ -19,36 +19,30 @@ macro_rules! matches {
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
+    errors : Vec<Error<'a>>
 }
 impl<'a> Parser<'a> {
     /// Creates a new parser from this scanner.
     pub fn from(lexer : Lexer<'a>) -> Self {
         Parser {
-            lexer : lexer.peekable()
+            lexer : lexer.peekable(),
+            errors : Vec::new()
         }
     }
 
     /// Consumes the parser and produces an abstract syntax tree.
     pub fn parse(mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
-        self.parse_program()
-    }
-
-    /// Parses a program.
-    fn parse_program(&mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
         let mut stmts = Vec::new();
-        let mut errors = Vec::new();
         while !self.holds(|x| matches!(x, TokenKind::EoF)) {
             match self.parse_stmt() {
-                Ok(stmt) => stmts.push(stmt),
-                Err(e) => {
-                    errors.push(e);
+                Some(stmt) => stmts.push(stmt),
+                None => {
                     while !self.is_empty() {
                         if self.holds(|x| matches!(x, TokenKind::SemiColon)) {
-                            self.consume();
+                            self.advance();
                             break;
-                        } else if let Err(e) = self.advance() {
-                            errors.push(e);
                         }
+                        self.advance();
                     }
                     if self.is_empty() {
                         break;
@@ -56,128 +50,128 @@ impl<'a> Parser<'a> {
                 }
             }
         }
-        if errors.is_empty() {
+        if self.errors.is_empty() {
             Ok(Prog(stmts))
         } else {
-            Err(errors)
+            Err(self.errors)
         }
     }
 
     /// Parses any statement.
-    fn parse_stmt(&mut self) -> Result<Stmt<'a>, Error<'a>> {
+    fn parse_stmt(&mut self) -> Option<Stmt<'a>> {
         self.parse_stmt_expr()
     }
 
     /// Parses an expression statement.
-    fn parse_stmt_expr(&mut self) -> Result<Stmt<'a>, Error<'a>> {
+    fn parse_stmt_expr(&mut self) -> Option<Stmt<'a>> {
         let expr = self.parse_expr()?;
         self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after expression statement")?;
-        Ok(Stmt::Expr { expr })
+        Some(Stmt::Expr { expr })
     }
 
     /// Parses any expression.
-    fn parse_expr(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr(&mut self) -> Option<Expr<'a>> {
         self.parse_expr_opblock()
     }
 
     /// Parses a stream of operator blocks given by any expression wrapped in backticks \`.
-    fn parse_expr_opblock(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_opblock(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_ops()?;
         while self.holds(|x| matches!(x, TokenKind::Backtick)) {
-            self.consume();
+            self.advance();
             let op = self.parse_expr_ops()?;
             self.expects(|x| matches!(x, TokenKind::Backtick), "expected closing '`' in operator block")?;
             let right = self.parse_expr_ops()?;
             expr = Expr::binary_call(op, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of arbitrary operators.
-    fn parse_expr_ops(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_ops(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_disjunction()?;
         while self.holds(|x| matches!(x, TokenKind::Identifier(IdentifierKind::Operator))) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_disjunction()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of `|` and `^` binary operators.
-    fn parse_expr_disjunction(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_disjunction(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_conjunction()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "|" | "^")) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_conjunction()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of `&` binary operators.
-    fn parse_expr_conjunction(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_conjunction(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_equality()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "&")) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_equality()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of `!=` and `==` binary operators.
-    fn parse_expr_equality(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_equality(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_comparison()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "!" | "=")) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_comparison()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of `>`, `<`, `>=`, and `<=` binary operators.
-    fn parse_expr_comparison(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_comparison(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_addition()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "<" | ">")) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_addition()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of `+` and `-` binary operators.
-    fn parse_expr_addition(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_multiplication()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "+" | "-")) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_multiplication()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of `*`, `/`, and `%` binary operators.
-    fn parse_expr_multiplication(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_call()?;
         while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
                 matches!(substr(s, 0, 1), "*" | "/" | "%")) {
-            let ident = self.consume();
+            let ident = self.advance().unwrap();
             let right = self.parse_expr_call()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of function calls.
-    fn parse_expr_call(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_call(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_member()?;
         while self.holds(|x| matches!(x,
                 TokenKind::Literal(..) |
@@ -191,33 +185,33 @@ impl<'a> Parser<'a> {
                 arg : Box::new(arg)
             }
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a stream of member accesses.
-    fn parse_expr_member(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_member(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_lambda()?;
         while self.holds(|x| matches!(x, TokenKind::Dot)) {
-            self.consume();
+            self.advance();
             let ident = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
             expr = Expr::Member {
                 expr : Box::new(expr),
                 ident
             }
         }
-        Ok(expr)
+        Some(expr)
     }
 
     /// Parses a lambda function.
-    fn parse_expr_lambda(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_lambda(&mut self) -> Option<Expr<'a>> {
         if self.holds(|x| matches!(x, TokenKind::Backslash)) {
-            self.consume();
+            self.advance();
             let param = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
             if !self.holds(|x| matches!(x, TokenKind::Backslash)) {
                 self.expects(|x| matches!(x, TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
             }
             let body = self.parse_expr()?;
-            Ok(Expr::Lambda {
+            Some(Expr::Lambda {
                 param,
                 body : Box::new(body)
             })
@@ -227,47 +221,48 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses expression literals and identifiers.
-    fn parse_expr_frontier(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_frontier(&mut self) -> Option<Expr<'a>> {
         if self.holds(|x| matches!(x,
                 TokenKind::Literal(..) | TokenKind::Empty)) {
-            let value = self.consume();
-            Ok(Expr::Constant { value })
+            let value = self.advance().unwrap();
+            Some(Expr::Constant { value })
         } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
-            let ident = self.consume();
-            Ok(Expr::Variable { ident })
+            let ident = self.advance().unwrap();
+            Some(Expr::Variable { ident })
         } else {
             self.parse_expr_tuple()
         }
     }
 
     /// Parses a tuple.
-    fn parse_expr_tuple(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_expr_tuple(&mut self) -> Option<Expr<'a>> {
         self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
         let mut exprs = vec![self.parse_expr()?];
         while self.holds(|x| matches!(x, TokenKind::Comma)) {
-            self.consume();
+            self.advance();
             let expr = self.parse_expr()?;
             exprs.push(expr);
         }
         self.expects(|x| matches!(x, TokenKind::RightParen), "expected closing ')' after expression")?;
         if exprs.len() == 1 {
             // singleton grouping
-            Ok(exprs.pop().unwrap())
+            Some(exprs.pop().unwrap())
         } else {
-            Ok(Expr::Tuple { exprs })
+            Some(Expr::Tuple { exprs })
         }
     }
 
     /// Advances the parser, but returns an error if some predicate isn't held.
-    fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Result<Token<'a>, Error<'a>> {
+    fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Option<Token<'a>> {
         if self.holds(p) {
             self.advance()
         } else {
             let token = self.advance()?;
-            Err(Error {
+            self.report(Error {
                 reason : on_err,
                 token
-            })
+            });
+            None
         }
     }
 
@@ -289,22 +284,21 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Advances the parser and returns the next token.
-    /// # Panics
-    /// Panics when there is an unhandled error.
-    fn consume(&mut self) -> Token<'a> {
-        self.advance().unwrap()
+    /// Advances the parser.
+    fn advance(&mut self) -> Option<Token<'a>> {
+        match self.lexer.next() {
+            Some(Ok(token)) => Some(token),
+            Some(Err(e)) => {
+                self.report(e);
+                None
+            },
+            _ => None
+        }
     }
 
-    /// Advances the parser.
-    /// # Panics
-    /// If the lexer is empty.
-    fn advance(&mut self) -> Result<Token<'a>, Error<'a>> {
-        match self.lexer.next() {
-            Some(Ok(token)) => Ok(token),
-            Some(Err(e)) => Err(e),
-            _ => unreachable!()
-        }
+    /// Reports an error.
+    fn report(&mut self, e : Error<'a>) {
+        self.errors.push(e);
     }
 
     /// Returns whether the lexer is empty.
