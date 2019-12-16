@@ -19,7 +19,7 @@ macro_rules! matches {
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
-    previous : TokenKind,
+    previous : Option<TokenKind>,
     errors : Vec<Error<'a>>
 }
 impl<'a> Parser<'a> {
@@ -27,7 +27,7 @@ impl<'a> Parser<'a> {
     pub fn from(lexer : Lexer<'a>) -> Self {
         Parser {
             lexer : lexer.peekable(),
-            previous : TokenKind::Unknown,
+            previous : None,
             errors : Vec::new()
         }
     }
@@ -254,22 +254,23 @@ impl<'a> Parser<'a> {
     /// Advances the parser until a stable line is found.
     fn synchronise(&mut self) {
         while !self.is_empty() {
-            if self.previous == TokenKind::SemiColon {
+            if let Some(TokenKind::SemiColon) = self.previous() {
                 break;
-            } else if self.holds(|x| matches!(x,
-                    TokenKind::Var |
-                    TokenKind::Const |
-                    TokenKind::If |
-                    TokenKind::Unless |
-                    TokenKind::Switch |
-                    TokenKind::While |
-                    TokenKind::Until |
-                    TokenKind::Repeat |
-                    TokenKind::For |
-                    TokenKind::Function |
-                    TokenKind::Object |
-                    TokenKind::EoF)) {
-                break;
+            } else if let Some(kind) = self.next() {
+                if let TokenKind::Var |
+                        TokenKind::Const |
+                        TokenKind::If |
+                        TokenKind::Unless |
+                        TokenKind::Switch |
+                        TokenKind::While |
+                        TokenKind::Until |
+                        TokenKind::Repeat |
+                        TokenKind::For |
+                        TokenKind::Function |
+                        TokenKind::Object |
+                        TokenKind::EoF = kind {
+                    break;
+                }
             }
             self.advance();
         }
@@ -309,11 +310,9 @@ impl<'a> Parser<'a> {
 
     /// Advances the parser.
     fn advance(&mut self) -> Option<Token<'a>> {
+        self.previous = self.next(); // keep track of the previous token kind for error recovery
         match self.lexer.next() {
-            Some(Ok(token)) => {
-                self.previous = token.kind.clone(); // keep track of the previous token kind for error recovery
-                Some(token)
-            },
+            Some(Ok(token)) => Some(token),
             Some(Err(e)) => {
                 self.report(e);
                 None
@@ -334,6 +333,20 @@ impl<'a> Parser<'a> {
         } else {
             false
         }
+    }
+
+    /// Returns the next token kind.
+    fn next(&mut self) -> Option<TokenKind> {
+        if let Some(Ok(token)) = self.lexer.peek() {
+            Some(token.kind.clone())
+        } else {
+            None
+        }
+    }
+
+    /// Returns the next token kind.
+    fn previous(&self) -> Option<TokenKind> {
+        self.previous.clone()
     }
 }
 
