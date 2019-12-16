@@ -7,6 +7,16 @@ pub struct Token<'a> {
     pub kind : TokenKind,
     pub span : Span<'a>
 }
+impl Token<'_> {
+    /// Returns `true` if this token contains any of these prefixes.
+    pub fn contains_prefix(&self, prefixes : &[char]) -> bool {
+        if let Some(prefix) = self.span.content.chars().next() {
+            prefixes.iter().any(|x| *x == prefix)
+        } else {
+            false
+        }
+    }
+}
 impl fmt::Debug for Token<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "{}", self)
@@ -21,7 +31,6 @@ impl fmt::Display for Token<'_> {
 /// An enum which describes available token types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum TokenKind {
-    Empty,
     Var,
     Const,
     If,
@@ -60,12 +69,32 @@ pub enum TokenKind {
     Documentation,
     Unknown
 }
+impl TokenKind {
+    /// Returns `true` if this token kind is an identifier.
+    pub fn is_ident(&self) -> bool {
+        if let TokenKind::Identifier(..) = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Returns `true` if this token kind is a literal.
+    pub fn is_literal(&self) -> bool {
+        if let TokenKind::Literal(..) = self {
+            true
+        } else {
+            false
+        }
+    }
+}
 
 /// An enum which describes available identifier types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum IdentifierKind {
     Alphanumeric,
-    Operator
+    Operator,
+    Empty
 }
 
 /// An enum which describes available literal types.

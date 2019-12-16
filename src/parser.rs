@@ -7,13 +7,18 @@ use crate::syntax::{
 
 use std::iter::Peekable;
 
-macro_rules! matches {
-    ($value:expr, $($pattern:tt)*) => ({
-        match $value {
-            $($pattern)* => true,
+macro_rules! kind_of {
+    ($($kind:tt)*) => (|x| {
+        match x.kind {
+            $($kind)* => true,
             _ => false
         }
-    });
+    })
+}
+
+macro_rules! operator_of {
+    ($($prefix:tt)*) => (|x| x.kind == TokenKind::Identifier(IdentifierKind::Operator) &&
+            x.contains_prefix(&[$($prefix)*]))
 }
 
 /// Takes a lexer and uses it to construct a parse tree.
@@ -45,7 +50,7 @@ impl<'a> Parser<'a> {
     /// Parses a block statement.
     fn parse_prog(&mut self) -> Prog<'a> {
         let mut stmts = Vec::new();
-        while !self.is_empty() && !self.holds(|x| matches!(x, TokenKind::EoF)) {
+        while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::EoF)) {
             if let Some(stmt) = self.parse_stmt() {
                 stmts.push(stmt);
             } else {
@@ -63,7 +68,7 @@ impl<'a> Parser<'a> {
     /// Parses an expression statement.
     fn parse_stmt_expr(&mut self) -> Option<Stmt<'a>> {
         let expr = self.parse_expr()?;
-        self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after expression statement")?;
+        self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after expression statement")?;
         Some(Stmt::Expr { expr })
     }
 
@@ -75,10 +80,10 @@ impl<'a> Parser<'a> {
     /// Parses a stream of operator blocks given by any expression wrapped in backticks \`.
     fn parse_expr_opblock(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_ops()?;
-        while self.holds(|x| matches!(x, TokenKind::Backtick)) {
+        while self.satisfies(kind_of!(TokenKind::Backtick)) {
             self.advance();
             let op = self.parse_expr_ops()?;
-            self.expects(|x| matches!(x, TokenKind::Backtick), "expected closing '`' in operator block")?;
+            self.expects(kind_of!(TokenKind::Backtick), "expected closing '`' in operator block")?;
             let right = self.parse_expr_ops()?;
             expr = Expr::binary_call(op, expr, right);
         }
@@ -88,7 +93,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of arbitrary operators.
     fn parse_expr_ops(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_disjunction()?;
-        while self.holds(|x| matches!(x, TokenKind::Identifier(IdentifierKind::Operator))) {
+        while self.satisfies(kind_of!(TokenKind::Identifier(IdentifierKind::Operator))) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_disjunction()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -99,8 +104,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of `|` and `^` binary operators.
     fn parse_expr_disjunction(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_conjunction()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "|" | "^")) {
+        while self.satisfies(operator_of!('|', '^')) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_conjunction()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -111,8 +115,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of `&` binary operators.
     fn parse_expr_conjunction(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_equality()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "&")) {
+        while self.satisfies(operator_of!('&')) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_equality()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -123,8 +126,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of `!=` and `==` binary operators.
     fn parse_expr_equality(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_comparison()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "!" | "=")) {
+        while self.satisfies(operator_of!('!', '=')) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_comparison()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -135,8 +137,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of `>`, `<`, `>=`, and `<=` binary operators.
     fn parse_expr_comparison(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_addition()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "<" | ">")) {
+        while self.satisfies(operator_of!('<', '>')) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_addition()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -147,8 +148,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of `+` and `-` binary operators.
     fn parse_expr_addition(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_multiplication()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "+" | "-")) {
+        while self.satisfies(operator_of!('+', '-')) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_multiplication()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -159,8 +159,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of `*`, `/`, and `%` binary operators.
     fn parse_expr_multiplication(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_call()?;
-        while self.holds_content(|k, s| matches!(k, TokenKind::Identifier(IdentifierKind::Operator)) &&
-                matches!(substr(s, 0, 1), "*" | "/" | "%")) {
+        while self.satisfies(operator_of!('*', '/', '%')) {
             let ident = self.advance().unwrap();
             let right = self.parse_expr_call()?;
             expr = Expr::binary_call(Expr::Variable { ident }, expr, right);
@@ -171,13 +170,15 @@ impl<'a> Parser<'a> {
     /// Parses a stream of function calls.
     fn parse_expr_call(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_member()?;
-        while self.holds(|x| matches!(x,
-                TokenKind::Literal(..) |
-                TokenKind::Identifier(IdentifierKind::Alphanumeric) |
-                TokenKind::LeftParen |
-                TokenKind::Empty |
-                TokenKind::LeftBox |
-                TokenKind::Backslash)) {
+        while self.satisfies(|x| {
+            match &x.kind {
+                TokenKind::Identifier(IdentifierKind::Operator) => false,
+                x if x.is_ident() || x.is_literal() => true,
+                TokenKind::LeftParen | TokenKind::LeftBox |
+                        TokenKind::Backslash => true,
+                _ => false
+            }
+        }) {
             let arg = self.parse_expr_member()?;
             expr = Expr::Call {
                 func : Box::new(expr),
@@ -190,9 +191,9 @@ impl<'a> Parser<'a> {
     /// Parses a stream of member accesses.
     fn parse_expr_member(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_lambda()?;
-        while self.holds(|x| matches!(x, TokenKind::Dot)) {
+        while self.satisfies(kind_of!(TokenKind::Dot)) {
             self.advance();
-            let ident = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
+            let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
             expr = Expr::Member {
                 expr : Box::new(expr),
                 ident
@@ -203,11 +204,11 @@ impl<'a> Parser<'a> {
 
     /// Parses a lambda function.
     fn parse_expr_lambda(&mut self) -> Option<Expr<'a>> {
-        if self.holds(|x| matches!(x, TokenKind::Backslash)) {
+        if self.satisfies(kind_of!(TokenKind::Backslash)) {
             self.advance();
-            let param = self.expects(|x| matches!(x, TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
-            if !self.holds(|x| matches!(x, TokenKind::Backslash)) {
-                self.expects(|x| matches!(x, TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
+            let param = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
+            if !self.satisfies(kind_of!(TokenKind::Backslash)) {
+                self.expects(kind_of!(TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
             }
             let body = self.parse_expr()?;
             Some(Expr::Lambda {
@@ -221,11 +222,10 @@ impl<'a> Parser<'a> {
 
     /// Parses expression literals and identifiers.
     fn parse_expr_frontier(&mut self) -> Option<Expr<'a>> {
-        if self.holds(|x| matches!(x,
-                TokenKind::Literal(..) | TokenKind::Empty)) {
+        if self.satisfies(kind_of!(TokenKind::Literal(..))) {
             let value = self.advance().unwrap();
             Some(Expr::Constant { value })
-        } else if self.holds(|x| matches!(x, TokenKind::Identifier(..))) {
+        } else if self.satisfies(kind_of!(TokenKind::Identifier(..))) {
             let ident = self.advance().unwrap();
             Some(Expr::Variable { ident })
         } else {
@@ -235,14 +235,14 @@ impl<'a> Parser<'a> {
 
     /// Parses a tuple.
     fn parse_expr_tuple(&mut self) -> Option<Expr<'a>> {
-        self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
+        self.expects(kind_of!(TokenKind::LeftParen), "malformed expression")?;
         let mut exprs = vec![self.parse_expr()?];
-        while self.holds(|x| matches!(x, TokenKind::Comma)) {
+        while self.satisfies(kind_of!(TokenKind::Comma)) {
             self.advance();
             let expr = self.parse_expr()?;
             exprs.push(expr);
         }
-        self.expects(|x| matches!(x, TokenKind::RightParen), "expected closing ')' after expression")?;
+        self.expects(kind_of!(TokenKind::RightParen), "expected closing ')' after expression")?;
         if exprs.len() == 1 {
             // singleton grouping
             Some(exprs.pop().unwrap())
@@ -256,29 +256,28 @@ impl<'a> Parser<'a> {
         while !self.is_empty() {
             if let Some(TokenKind::SemiColon) = self.previous_kind() {
                 break;
-            } else if let Some(kind) = self.next_kind() {
-                if let TokenKind::Var |
-                        TokenKind::Const |
-                        TokenKind::If |
-                        TokenKind::Unless |
-                        TokenKind::Switch |
-                        TokenKind::While |
-                        TokenKind::Until |
-                        TokenKind::Repeat |
-                        TokenKind::For |
-                        TokenKind::Function |
-                        TokenKind::Object |
-                        TokenKind::EoF = kind {
-                    break;
-                }
+            } else if self.satisfies(kind_of!(
+                    TokenKind::Var |
+                    TokenKind::Const |
+                    TokenKind::If |
+                    TokenKind::Unless |
+                    TokenKind::Switch |
+                    TokenKind::While |
+                    TokenKind::Until |
+                    TokenKind::Repeat |
+                    TokenKind::For |
+                    TokenKind::Function |
+                    TokenKind::Object |
+                    TokenKind::EoF)) {
+                break;
             }
             self.advance();
         }
     }
 
     /// Advances the parser, but returns an error if some predicate isn't held.
-    fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Option<Token<'a>> {
-        if self.holds(p) {
+    fn expects(&mut self, p : impl Fn(&Token) -> bool, on_err : &'static str) -> Option<Token<'a>> {
+        if self.satisfies(p) {
             self.advance()
         } else {
             let token = self.advance()?;
@@ -291,18 +290,9 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns `true` if the next token satisfies some predicate.
-    fn holds(&mut self, p : fn(&TokenKind) -> bool) -> bool {
+    fn satisfies(&mut self, p : impl Fn(&Token) -> bool) -> bool {
         if let Some(Ok(token)) = self.lexer.peek() {
-            p(&token.kind)
-        } else {
-            false
-        }
-    }
-
-    /// Returns `true` if the next token satisfies some predicate.
-    fn holds_content(&mut self, p : fn(&TokenKind, &str) -> bool) -> bool {
-        if let Some(Ok(token)) = self.lexer.peek() {
-            p(&token.kind, token.span.content)
+            p(token)
         } else {
             false
         }
@@ -348,17 +338,4 @@ impl<'a> Parser<'a> {
     fn previous_kind(&self) -> Option<TokenKind> {
         self.previous.clone()
     }
-}
-
-/// Returns a substring of this `str`.
-fn substr<'a>(x : &'a str, start : usize, n : usize) -> &'a str {
-    let end = if let Some((i, _)) = x
-            .char_indices()
-            .skip(n + start)
-            .next() {
-        i
-    } else {
-        x.len()
-    };
-    &x[start..end]
 }

@@ -11,9 +11,10 @@ if condition {
 bleh {;
 ok `nice
 
-/* "nice".x + 2 * 3;
+/*
+"nice".x + 2 * 3;
 
- (+ "nice".x) (* 2 3);
+(+ "nice".x) (* 2 3);
 
 a `nice` b;
 (nice a b);
@@ -34,5 +35,4 @@ b || && ! d;
 
 (~) ($$) 12 * 5 + 3;
 
-! (&&);
-*/
+! (&&);*/

@@ -75,7 +75,7 @@ impl<'a> Iterator for Lexer<'a> {
                 '(' => {
                     if let Some(')') = self.scanner.chr() {
                         self.scanner.advance();
-                        Ok(TokenKind::Empty)
+                        Ok(TokenKind::Identifier(IdentifierKind::Empty))
                     } else {
                         Ok(TokenKind::LeftParen)
                     }
