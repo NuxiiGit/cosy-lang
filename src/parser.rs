@@ -256,6 +256,20 @@ impl<'a> Parser<'a> {
         while !self.is_empty() {
             if self.previous == TokenKind::SemiColon {
                 break;
+            } else if self.holds(|x| matches!(x,
+                    TokenKind::Var |
+                    TokenKind::Const |
+                    TokenKind::If |
+                    TokenKind::Unless |
+                    TokenKind::Switch |
+                    TokenKind::While |
+                    TokenKind::Until |
+                    TokenKind::Repeat |
+                    TokenKind::For |
+                    TokenKind::Function |
+                    TokenKind::Object |
+                    TokenKind::EoF)) {
+                break;
             }
             self.advance();
         }

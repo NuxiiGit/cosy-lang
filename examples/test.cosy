@@ -1,11 +1,11 @@
-/*if "nice".x + 2 * 3 {
+if "nice".x + 2 * 3 {
     nice();
 }
 if condition {
     ok();
 } else {
     otherwise();
-}*/
+}
 
 (a + b;
 bleh {;
