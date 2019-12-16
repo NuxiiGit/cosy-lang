@@ -71,10 +71,9 @@ impl<'a> Parser<'a> {
 
     /// Parses any statement.
     fn parse_stmt(&mut self) -> Option<Stmt<'a>> {
-        if self.satisfies(kind_of!(TokenKind::LeftBrace)) {
-            self.parse_stmt_block()
-        } else {
-            self.parse_stmt_expr()
+        match self.peek() {
+            Some(TokenKind::LeftBrace) => self.parse_stmt_block(),
+            _ => self.parse_stmt_expr()
         }
     }
 
@@ -280,7 +279,7 @@ impl<'a> Parser<'a> {
     /// Advances the parser until a stable line is found.
     fn synchronise(&mut self) {
         while !self.is_empty() {
-            if let Some(TokenKind::SemiColon) = self.previous_kind() {
+            if let Some(TokenKind::SemiColon) = self.previous {
                 break;
             } else if self.satisfies(kind_of!(
                     TokenKind::Var,
@@ -326,9 +325,11 @@ impl<'a> Parser<'a> {
 
     /// Advances the parser.
     fn advance(&mut self) -> Option<Token<'a>> {
-        self.previous = self.next_kind(); // keep track of the previous token kind for error recovery
         match self.lexer.next() {
-            Some(Ok(token)) => Some(token),
+            Some(Ok(token)) => {
+                self.previous = Some(token.kind.clone()); // keep track of the previous token kind for error recovery
+                Some(token)
+            },
             Some(Err(e)) => {
                 self.report(e);
                 None
@@ -352,16 +353,11 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns the next token kind.
-    fn next_kind(&mut self) -> Option<TokenKind> {
+    fn peek(&mut self) -> Option<&TokenKind> {
         if let Some(Ok(token)) = self.lexer.peek() {
-            Some(token.kind.clone())
+            Some(&token.kind)
         } else {
             None
         }
-    }
-
-    /// Returns the next token kind.
-    fn previous_kind(&self) -> Option<TokenKind> {
-        self.previous.clone()
     }
 }
