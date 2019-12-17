@@ -31,7 +31,6 @@ macro_rules! operator_of {
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
-    previous : Option<TokenKind>,
     errors : Vec<Error<'a>>
 }
 impl<'a> Parser<'a> {
@@ -39,7 +38,6 @@ impl<'a> Parser<'a> {
     pub fn parse(lexer : Lexer<'a>) -> Result<Prog<'a>, Vec<Error<'a>>> {
         let mut parser = Parser {
             lexer : lexer.peekable(),
-            previous : None,
             errors : Vec::new()
         };
         let prog = parser.parse_prog();
@@ -274,7 +272,8 @@ impl<'a> Parser<'a> {
     /// Advances the parser until a stable line is found.
     fn synchronise(&mut self) {
         while !self.is_empty() {
-            if let Some(TokenKind::SemiColon) = self.previous {
+            if self.satisfies(kind_of!(TokenKind::SemiColon)) {
+                self.advance();
                 break;
             } else if self.satisfies(kind_of!(
                     TokenKind::Var,
@@ -321,10 +320,7 @@ impl<'a> Parser<'a> {
     /// Advances the parser.
     fn advance(&mut self) -> Option<Token<'a>> {
         match self.lexer.next() {
-            Some(Ok(token)) => {
-                self.previous = Some(token.kind.clone()); // keep track of the previous token kind for error recovery
-                Some(token)
-            },
+            Some(Ok(token)) => Some(token),
             Some(Err(e)) => {
                 self.report(e);
                 None
