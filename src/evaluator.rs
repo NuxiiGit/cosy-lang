@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 use crate::diagnostics::*;
 use crate::syntax::{
     token::*,
