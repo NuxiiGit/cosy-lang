@@ -1,0 +1,19 @@
+// sub procedures have no return type and cannot be curried like functions can
+// in other words, they are purely side-effecting operations
+
+// sub procedure definition
+sub log(message : String) {
+    print(message);
+}
+
+// calling a procedure
+call log("hello world");
+
+// passing by reference
+sub increment(byref value : Int) {
+    value += 1;
+}
+
+var a = 0;
+call increment(a);
+print(a); // a = 1
