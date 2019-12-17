@@ -28,8 +28,7 @@ fn main() {
             .expect("unable to read from file");
     let scanner = StringScanner::from(&source);
     let lexer = Lexer::from(scanner);
-    let parser = Parser::from(lexer);
-    let result = parser.parse();
+    let result = Parser::parse(lexer);
     let s = match result {
         Ok(ast) => format!("{}", ast),
         Err(es) => {

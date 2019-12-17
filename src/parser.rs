@@ -35,25 +35,20 @@ pub struct Parser<'a> {
     errors : Vec<Error<'a>>
 }
 impl<'a> Parser<'a> {
-    /// Creates a new parser from this scanner.
-    pub fn from(lexer : Lexer<'a>) -> Self {
-        Parser {
+    /// Creates a new parser from this scanner and converts it into a syntax tree.
+    pub fn parse(lexer : Lexer<'a>) -> Result<Prog<'a>, Vec<Error<'a>>> {
+        let mut parser = Parser {
             lexer : lexer.peekable(),
             previous : None,
             errors : Vec::new()
-        }
-    }
-
-    /// Consumes the parser and produces an abstract syntax tree.
-    pub fn parse(mut self) -> Result<Prog<'a>, Vec<Error<'a>>> {
-        let prog = self.parse_prog();
-        if self.errors.is_empty() {
+        };
+        let prog = parser.parse_prog();
+        if parser.errors.is_empty() {
             Ok(prog)
         } else {
-            Err(self.errors)
+            Err(parser.errors)
         }
     }
-
     /// Parses a block statement.
     fn parse_prog(&mut self) -> Prog<'a> {
         let mut stmts = Vec::new();
