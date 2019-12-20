@@ -7,24 +7,16 @@ use crate::syntax::{
     ast::*
 };
 
-use std::collections::hash_map::HashMap;
-
 /// Takes a lexer and uses it to construct a parse tree.
-pub struct Interpreter<'a> {
-    environment : Environment<'a>
+pub struct Interpreter;
+impl Interpreter {
+    
 }
 
 /// An enum of value types recognised by the interpreter.
 #[derive(Clone)]
-pub enum Value<'a> {
+pub enum Value {
     Integer(i64),
     Real(f64),
-    Char(char),
-    Function {
-        closure : Environment<'a>,
-        func : fn(Environment<'a>, Value<'a>) -> Value<'a>
-    }
+    Char(char)
 }
-
-/// A type alias for environments.
-pub type Environment<'a> = HashMap<&'a str, Value<'a>>;
