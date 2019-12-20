@@ -41,26 +41,45 @@ impl<'a> Interpreter {
     }
 
     /// Visits a literal.
-    fn visit_expr_literal(&mut self, token : Token<'a>) -> Result<'a> {
-        let result = if let TokenKind::Literal(kind) = &token.kind {
-            let content = token.span.content;
+    fn visit_expr_literal(&mut self, literal : Token<'a>) -> Result<'a> {
+        let error_msg = if let TokenKind::Literal(kind) = &literal.kind {
+            let content = literal.span.content;
             match kind {
                 LiteralKind::Integer => {
                     if let Ok(value) = content.parse::<i64>() {
-                        Ok(Value::Integer(value))
+                        return Ok(Value::Integer(value));
                     } else {
-                        Err("unable to parse integer literal")
+                        "unable to parse integer literal"
                     }
                 },
-                _ => Err("unknown literal kind")
+                LiteralKind::Real => {
+                    if let Ok(value) = content.parse::<f64>() {
+                        return Ok(Value::Real(value));
+                    } else {
+                        "unable to parse float literal"
+                    }
+                },
+                LiteralKind::Character => {
+                    let mut indices = content.char_indices();
+                    indices.next();
+                    if let Some((start, _)) = indices.next() {
+                        if let Some((end, _)) = indices.next_back() {
+                            if let Ok(value) = (&content[start..end]).parse::<char>() {
+                                return Ok(Value::Character(value));
+                            }
+                        }
+                    }
+                    "unable to parse character literal"
+                },
+                _ => "unknown literal kind"
             }
         } else {
-            Err("expected literal")
+            "expected literal"
         };
-        match result {
-            Ok(value) => Ok(value),
-            Err(reason) => Err(Error { reason, token })
-        }
+        Err(Error {
+            reason : error_msg,
+            token : literal
+        })
     }
 }
 
@@ -72,6 +91,6 @@ pub type Result<'a> = std::result::Result<Value, Error<'a>>;
 pub enum Value {
     Integer(i64),
     Real(f64),
-    Char(char),
+    Character(char),
     Empty
 }
