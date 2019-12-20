@@ -35,7 +35,7 @@ pub struct Parser<'a> {
 }
 impl<'a> Parser<'a> {
     /// Creates a new parser from this scanner and converts it into a syntax tree.
-    pub fn parse(lexer : Lexer<'a>) -> Result<Prog<'a>, Vec<Error<'a>>> {
+    pub fn parse(lexer : Lexer<'a>) -> Result<'a> {
         let mut parser = Parser {
             lexer : lexer.peekable(),
             errors : Vec::new()
@@ -352,3 +352,6 @@ impl<'a> Parser<'a> {
         }
     }
 }
+
+/// The result of the lexer.
+pub type Result<'a> = std::result::Result<Prog<'a>, Vec<Error<'a>>>;
