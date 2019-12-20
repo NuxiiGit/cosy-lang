@@ -18,7 +18,7 @@ impl<'a> Lexer<'a> {
     }
 }
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>, Error<'a>>;
+    type Item = Result<'a>;
     fn next(&mut self) -> Option<Self::Item> {
         self.scanner.ignore();
         let result = if let Some(x) = self.scanner.advance() {
@@ -209,6 +209,9 @@ impl<'a> Iterator for Lexer<'a> {
         })
     }
 }
+
+/// The result of the lexer.
+pub type Result<'a> = std::result::Result<Token<'a>, Error<'a>>;
 
 /// A function which returns whether this character is a valid operator character.
 pub fn valid_operator(x : char) -> bool {
