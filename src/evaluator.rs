@@ -13,52 +13,59 @@ impl<'a> Interpreter {
     }
 
     /// Interprets some syntax tree.
-    pub fn interpret(&mut self, prog : &Prog<'a>) -> Value {
-        self.visit_stmt(&prog.stmt)
+    pub fn interpret(&mut self, prog : Prog<'a>) -> Result<'a> {
+        self.visit_stmt(prog.stmt)
     }
 
     /// Visits a statement.
-    fn visit_stmt(&mut self, stmt : &Stmt<'a>) -> Value {
+    fn visit_stmt(&mut self, stmt : Stmt<'a>) -> Result<'a> {
         match stmt {
-            Stmt::Expr { expr } => self.visit_expr(&expr),
-            Stmt::Block { stmts } => {
+            Stmt::Expr { expr } => self.visit_expr(expr),
+            Stmt::Block { mut stmts } => {
                 if stmts.len() == 0 {
-                    Value::Empty
+                    Ok(Value::Empty)
                 } else {
-                    self.visit_stmt(&stmts[0])
+                    self.visit_stmt(stmts.remove(0))
                 }
             }
         }
     }
 
     /// Visits an expression.
-    fn visit_expr(&mut self, expr : &Expr<'a>) -> Value {
+    fn visit_expr(&mut self, expr : Expr<'a>) -> Result<'a> {
         match expr {
-            Expr::Constant { value } => self.visit_expr_literal(&value),
+            Expr::Constant { value } => self.visit_expr_literal(value),
             Expr::Variable { ident } => unimplemented!(),
             _ => unimplemented!()
         }
     }
 
     /// Visits a literal.
-    fn visit_expr_literal(&mut self, literal : &Token<'a>) -> Value {
-        if let TokenKind::Literal(kind) = &literal.kind {
-            let content = literal.span.content;
+    fn visit_expr_literal(&mut self, token : Token<'a>) -> Result<'a> {
+        let result = if let TokenKind::Literal(kind) = &token.kind {
+            let content = token.span.content;
             match kind {
                 LiteralKind::Integer => {
                     if let Ok(value) = content.parse::<i64>() {
-                        Value::Integer(value)
+                        Ok(Value::Integer(value))
                     } else {
-                        panic!("invalid parse")
+                        Err("unable to parse integer literal")
                     }
                 },
-                _ => unimplemented!()
+                _ => Err("unknown literal kind")
             }
         } else {
-            panic!("temp error")
+            Err("expected literal")
+        };
+        match result {
+            Ok(value) => Ok(value),
+            Err(reason) => Err(Error { reason, token })
         }
     }
 }
+
+/// The result of the interpreter.
+pub type Result<'a> = std::result::Result<Value, Error<'a>>;
 
 /// An enum of value types recognised by the interpreter.
 #[derive(PartialEq, Debug, Clone)]

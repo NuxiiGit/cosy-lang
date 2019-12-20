@@ -32,8 +32,12 @@ fn main() {
     let result = Parser::parse(lexer);
     let s = match result {
         Ok(ast) => {
-            let value = Interpreter::new().interpret(&ast);
-            format!("{}\n\nValue: {:?}", ast, value)
+            let source = ast.to_string();
+            let result = Interpreter::new().interpret(ast);
+            match result {
+                Ok(value) => format!("Source:\n{}\n\nValue:\n{:?}", source, value),
+                Err(e) => format!("Runtime Error:\n{}", e)
+            }
         },
         Err(es) => {
             es.iter().fold(String::from("Errors:"), |mut acc, e| {
