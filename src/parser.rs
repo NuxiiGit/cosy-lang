@@ -40,25 +40,30 @@ impl<'a> Parser<'a> {
             lexer : lexer.peekable(),
             errors : Vec::new()
         };
-        let prog = parser.parse_prog();
-        if parser.errors.is_empty() {
+        if let Some(prog) = parser.parse_prog() {
             Ok(prog)
         } else {
             Err(parser.errors)
         }
     }
     /// Parses a block statement.
-    fn parse_prog(&mut self) -> Prog<'a> {
+    fn parse_prog(&mut self) -> Option<Prog<'a>> {
         let mut stmts = Vec::new();
+        let mut invalidated = false;
         while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::EoF)) {
             if let Some(stmt) = self.parse_stmt() {
                 stmts.push(stmt);
             } else {
                 self.synchronise();
+                invalidated = true;
             }
         }
-        Prog {
-            stmt : Stmt::Block{ stmts }
+        if invalidated {
+            None
+        } else {
+            Some(Prog {
+                stmt : Stmt::Block{ stmts }
+            })
         }
     }
 
