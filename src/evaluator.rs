@@ -31,7 +31,8 @@ impl<'a> Interpreter {
                 } else {
                     self.visit_stmt(stmts.remove(0))
                 }
-            }
+            },
+            _ => unimplemented!()
         }
     }
 

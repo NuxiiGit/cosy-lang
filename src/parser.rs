@@ -70,6 +70,7 @@ impl<'a> Parser<'a> {
     fn parse_stmt(&mut self) -> Option<Stmt<'a>> {
         match self.peek() {
             Some(TokenKind::LeftBrace) => self.parse_stmt_block(),
+            Some(TokenKind::Var) => self.parse_stmt_declr(),
             _ => self.parse_stmt_expr()
         }
     }
@@ -84,10 +85,11 @@ impl<'a> Parser<'a> {
     /// Parses an expression statement.
     fn parse_stmt_declr(&mut self) -> Option<Stmt<'a>> {
         self.expects(kind_of!(TokenKind::Var), "expected 'var' beginning declaration statement")?;
+        let assignments = Vec::new();
         let left = self.parse_expr()?;
         self.expects(kind_of!(TokenKind::Assign), "expected '=' after left-hand-side of expression")?;
         let right = self.parse_expr()?;
-        Some(Stmt::Declr { ident,  expr })
+        Some(Stmt::Declr { assignments })
     }
 
     /// Parses an expression statement.

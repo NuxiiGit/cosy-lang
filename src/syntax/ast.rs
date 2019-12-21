@@ -32,8 +32,7 @@ pub enum Stmt<'a> {
         expr : Expr<'a>
     },
     Declr {
-        ident : Token<'a>,
-        expr : Expr<'a>
+        assignments : Vec<(Token<'a>, Expr<'a>)>
     },
     Block {
         stmts : Vec<Stmt<'a>>
@@ -49,7 +48,8 @@ impl fmt::Display for Stmt<'_> {
                     acc.push('\n');
                     acc
                 }))
-            }
+            },
+            _ => unimplemented!()
         }
     }
 }
