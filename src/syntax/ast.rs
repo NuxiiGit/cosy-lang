@@ -13,11 +13,15 @@ macro_rules! write_op {
 /// A struct which encapsulates information about a program.
 #[derive(Debug)]
 pub struct Prog<'a> {
-    pub stmt : Stmt<'a>
+    pub stmts : Vec<Stmt<'a>>
 }
 impl fmt::Display for Prog<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}", self.stmt)
+        write!(out, "{}", self.stmts.iter().fold(String::new(), |mut acc, stmt| {
+            acc.push_str(&stmt.to_string());
+            acc.push('\n');
+            acc
+        }))
     }
 }
 
@@ -37,10 +41,8 @@ impl fmt::Display for Stmt<'_> {
             Stmt::Expr { expr } => write!(out, "{};", expr),
             Stmt::Block { stmts } => {
                 write!(out, "{{\n{}\n}}", stmts.iter().fold(String::new(), |mut acc, stmt| {
-                    if !acc.is_empty() {
-                        acc.push('\n');
-                    }
                     acc.push_str(&stmt.to_string());
+                    acc.push('\n');
                     acc
                 }))
             }

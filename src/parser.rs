@@ -61,9 +61,7 @@ impl<'a> Parser<'a> {
         if invalidated {
             None
         } else {
-            Some(Prog {
-                stmt : Stmt::Block{ stmts }
-            })
+            Some(Prog { stmts })
         }
     }
 

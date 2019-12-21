@@ -13,8 +13,12 @@ impl<'a> Interpreter {
     }
 
     /// Interprets some syntax tree.
-    pub fn interpret(&mut self, prog : Prog<'a>) -> Result<'a> {
-        self.visit_stmt(prog.stmt)
+    pub fn interpret(&mut self, mut prog : Prog<'a>) -> Result<'a> {
+        if prog.stmts.len() == 0 {
+            Ok(Value::Empty)
+        } else {
+            self.visit_stmt(prog.stmts.remove(0))
+        }
     }
 
     /// Visits a statement.
