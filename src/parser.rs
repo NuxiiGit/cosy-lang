@@ -66,11 +66,23 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parses an expression statement.
+    fn parse_declr(&mut self) -> Option<Stmt<'a>> {
+        if self.satisfies(kind_of!(TokenKind::Var)) {
+            let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier")?;
+            self.expects(kind_of!(TokenKind::Assign), "expected '=' after left-hand-side of declaration expression")?;
+            let expr = self.parse_expr()?;
+            self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after declaration")?;
+            Some(Stmt::Declr { ident, expr })
+        } else {
+            self.parse_stmt()
+        }
+    }
+
     /// Parses any statement.
     fn parse_stmt(&mut self) -> Option<Stmt<'a>> {
         match self.peek() {
             Some(TokenKind::LeftBrace) => self.parse_stmt_block(),
-            Some(TokenKind::Var) => self.parse_stmt_declr(),
             _ => self.parse_stmt_expr()
         }
     }
@@ -83,21 +95,11 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses an expression statement.
-    fn parse_stmt_declr(&mut self) -> Option<Stmt<'a>> {
-        self.expects(kind_of!(TokenKind::Var), "expected 'var' before declaration statement")?;
-        let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier")?;
-        self.expects(kind_of!(TokenKind::Assign), "expected '=' after left-hand-side of declaration expression")?;
-        let expr = self.parse_expr()?;
-        self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after declaration statement")?;
-        Some(Stmt::Declr { ident, expr })
-    }
-
-    /// Parses an expression statement.
     fn parse_stmt_block(&mut self) -> Option<Stmt<'a>> {
         self.expects(kind_of!(TokenKind::LeftBrace), "expected opening '{' before block statement")?;
         let mut stmts = Vec::new();
         while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::RightBrace)) {
-            if let Some(stmt) = self.parse_stmt() {
+            if let Some(stmt) = self.parse_declr() {
                 stmts.push(stmt);
             } else {
                 self.synchronise();
@@ -239,13 +241,13 @@ impl<'a> Parser<'a> {
     fn parse_expr_lambda(&mut self) -> Option<Expr<'a>> {
         if self.satisfies(kind_of!(TokenKind::Backslash)) {
             self.advance();
-            let param = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
+            let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
             if !self.satisfies(kind_of!(TokenKind::Backslash)) {
                 self.expects(kind_of!(TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
             }
             let body = self.parse_expr()?;
             Some(Expr::Lambda {
-                param,
+                param : Box::new(Expr::Variable { ident }),
                 body : Box::new(body)
             })
         } else {
