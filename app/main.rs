@@ -11,7 +11,7 @@ use std::io::{
 };
 
 fn main() {
-    let inp = "examples/test.cosy";
+    let inp = "tests/test.cosy";
     let mut inp = fs::OpenOptions::new()
             .read(true)
             .open(inp)

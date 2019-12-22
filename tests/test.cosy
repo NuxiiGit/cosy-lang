@@ -1,4 +1,5 @@
-var a $ b = something a b;
+var f(x, y, z) = x + y + z;
+var a ~ b = a - b;
 
 /*if "nice".x + 2 * 3 {
     nice();
