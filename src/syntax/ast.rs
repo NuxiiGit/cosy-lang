@@ -19,7 +19,7 @@ impl fmt::Display for Prog<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "{}", self.stmts.iter().fold(String::new(), |mut acc, stmt| {
             acc.push_str(&stmt.to_string());
-            acc.push('\n');
+            acc.push(' ');
             acc
         }))
     }
@@ -45,9 +45,9 @@ impl fmt::Display for Stmt<'_> {
             Stmt::Expr { expr } => write!(out, "{};", expr),
             Stmt::Declr { atom, expr } => write!(out, "var {} = {};", atom, expr),
             Stmt::Block { stmts } => {
-                write!(out, "{{\n{}\n}}", stmts.iter().fold(String::new(), |mut acc, stmt| {
+                write!(out, "{{ {} }}", stmts.iter().fold(String::new(), |mut acc, stmt| {
                     acc.push_str(&stmt.to_string());
-                    acc.push('\n');
+                    acc.push(' ');
                     acc
                 }))
             }
