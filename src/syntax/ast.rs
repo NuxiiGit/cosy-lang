@@ -73,7 +73,7 @@ pub enum Expr<'a> {
         arg : Box<Expr<'a>>
     },
     Lambda {
-        param : Token<'a>,
+        param : Box<Expr<'a>>,
         body : Box<Expr<'a>>
     },
     Tuple {
@@ -120,6 +120,20 @@ impl<'a> Expr<'a> {
             func.is_unaryop()
         } else {
             false
+        }
+    }
+
+    /// Atomises the left-hand-side expression by adding equivalent operations to the right-hand-side expression.
+    pub fn atomise<'b>(left : Expr<'b>, right : Expr<'b>) -> (Expr<'b>, Expr<'b>) {
+        match left {
+            Expr::Call { func, arg } => {
+                let (atom, body) = Expr::atomise(*func, right);
+                (atom, Expr::Lambda {
+                    param : Box::new(*arg),
+                    body : Box::new(body)
+                })
+            }
+            atom => (atom, right)
         }
     }
 }
