@@ -1,7 +1,6 @@
 use cosyc::{
     lexer::*,
-    parser::*,
-    evaluator::*
+    parser::*
 };
 
 use std::fs;
@@ -31,15 +30,7 @@ fn main() {
     let lexer = Lexer::from(scanner);
     let result = Parser::parse(lexer);
     let s = match result {
-        Ok(ast) => {
-            let source = ast.to_string();
-            format!("{}", source)
-            /*let result = Interpreter::new().interpret(ast);
-            match result {
-                Ok(value) => format!("Source:\n{}\n\nValue:\n{:?}", source, "n/a"),
-                Err(e) => format!("Runtime Error:\n{}", e)
-            }*/
-        },
+        Ok(ast) => format!("{}", ast.to_string()),
         Err(es) => {
             es.iter().fold(String::from("Errors:"), |mut acc, e| {
                 if !acc.is_empty() {
