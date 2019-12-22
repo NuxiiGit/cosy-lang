@@ -70,12 +70,9 @@ impl<'a> Parser<'a> {
     fn parse_declr(&mut self) -> Option<Stmt<'a>> {
         if self.satisfies(kind_of!(TokenKind::Var)) {
             self.advance();
-            let left = self.parse_expr()?;
-            self.expects(kind_of!(TokenKind::Assign), "expected '=' after left-hand-side of declaration expression")?;
-            let right = self.parse_expr()?;
-            let (atom, expr) = Expr::atomise(left, right);
+            let expr = self.parse_expr()?;
             self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after declaration")?;
-            Some(Stmt::Declr { atom, expr })
+            Some(Stmt::Declr { expr })
         } else {
             self.parse_stmt()
         }
@@ -113,7 +110,23 @@ impl<'a> Parser<'a> {
 
     /// Parses any expression.
     fn parse_expr(&mut self) -> Option<Expr<'a>> {
-        self.parse_expr_opblock()
+        self.parse_expr_assign()
+    }
+
+    /// Parses an assignment expression.
+    fn parse_expr_assign(&mut self) -> Option<Expr<'a>> {
+        let left = self.parse_expr_opblock()?;
+        if self.satisfies(kind_of!(TokenKind::Assign)) {
+            self.advance();
+            let right = self.parse_expr_assign()?;
+            let (atom, expr) = Expr::atomise(left, right);
+            Some(Expr::Assign {
+                atom : Box::new(atom),
+                expr : Box::new(expr)
+            })
+        } else {
+            Some(left)
+        }
     }
 
     /// Parses a stream of operator blocks given by any expression wrapped in backticks \`.

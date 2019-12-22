@@ -32,7 +32,6 @@ pub enum Stmt<'a> {
         expr : Expr<'a>
     },
     Declr {
-        atom : Expr<'a>,
         expr : Expr<'a>
     },
     Block {
@@ -43,7 +42,7 @@ impl fmt::Display for Stmt<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
             Stmt::Expr { expr } => write!(out, "{};", expr),
-            Stmt::Declr { atom, expr } => write!(out, "var {} = {};", atom, expr),
+            Stmt::Declr { expr } => write!(out, "var {};", expr),
             Stmt::Block { stmts } => {
                 write!(out, "{{ {} }}", stmts.iter().fold(String::new(), |mut acc, stmt| {
                     acc.push_str(&stmt.to_string());
@@ -78,6 +77,10 @@ pub enum Expr<'a> {
     },
     Tuple {
         exprs : Vec<Expr<'a>>
+    },
+    Assign {
+        atom : Box<Expr<'a>>,
+        expr : Box<Expr<'a>>
     }
 }
 impl<'a> Expr<'a> {
@@ -182,7 +185,8 @@ impl fmt::Display for Expr<'_> {
                         acc
                     });
                     write!(out, "({})", tuple)
-                }
+                },
+                Expr::Assign { atom, expr } => write!(out, "({} = {})", atom, expr)
             }
         }
     }
