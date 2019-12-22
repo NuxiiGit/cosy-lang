@@ -52,7 +52,7 @@ impl<'a> Parser<'a> {
         let mut stmts = Vec::new();
         let mut invalidated = false;
         while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::EoF)) {
-            if let Some(stmt) = self.parse_stmt() {
+            if let Some(stmt) = self.parse_declr() {
                 stmts.push(stmt);
             } else {
                 self.synchronise();
@@ -69,11 +69,13 @@ impl<'a> Parser<'a> {
     /// Parses an expression statement.
     fn parse_declr(&mut self) -> Option<Stmt<'a>> {
         if self.satisfies(kind_of!(TokenKind::Var)) {
-            let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier")?;
+            self.advance();
+            let left = self.parse_expr()?;
             self.expects(kind_of!(TokenKind::Assign), "expected '=' after left-hand-side of declaration expression")?;
-            let expr = self.parse_expr()?;
+            let right = self.parse_expr()?;
+            let (atom, expr) = Expr::atomise(left, right);
             self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after declaration")?;
-            Some(Stmt::Declr { ident, expr })
+            Some(Stmt::Declr { atom, expr })
         } else {
             self.parse_stmt()
         }

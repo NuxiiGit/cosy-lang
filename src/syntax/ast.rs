@@ -32,7 +32,7 @@ pub enum Stmt<'a> {
         expr : Expr<'a>
     },
     Declr {
-        ident : Token<'a>,
+        atom : Expr<'a>,
         expr : Expr<'a>
     },
     Block {
@@ -43,14 +43,14 @@ impl fmt::Display for Stmt<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
             Stmt::Expr { expr } => write!(out, "{};", expr),
+            Stmt::Declr { atom, expr } => write!(out, "var {} = {};", atom, expr),
             Stmt::Block { stmts } => {
                 write!(out, "{{\n{}\n}}", stmts.iter().fold(String::new(), |mut acc, stmt| {
                     acc.push_str(&stmt.to_string());
                     acc.push('\n');
                     acc
                 }))
-            },
-            _ => unimplemented!()
+            }
         }
     }
 }

@@ -33,11 +33,12 @@ fn main() {
     let s = match result {
         Ok(ast) => {
             let source = ast.to_string();
-            let result = Interpreter::new().interpret(ast);
+            format!("{}", source)
+            /*let result = Interpreter::new().interpret(ast);
             match result {
-                Ok(value) => format!("Source:\n{}\n\nValue:\n{:?}", source, value),
+                Ok(value) => format!("Source:\n{}\n\nValue:\n{:?}", source, "n/a"),
                 Err(e) => format!("Runtime Error:\n{}", e)
-            }
+            }*/
         },
         Err(es) => {
             es.iter().fold(String::from("Errors:"), |mut acc, e| {
