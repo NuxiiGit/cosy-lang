@@ -32,7 +32,8 @@ pub enum Stmt<'a> {
         expr : Expr<'a>
     },
     Declr {
-        assignments : Vec<(Token<'a>, Expr<'a>)>
+        ident : Token<'a>,
+        expr : Expr<'a>
     },
     Block {
         stmts : Vec<Stmt<'a>>
