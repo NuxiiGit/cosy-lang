@@ -241,13 +241,13 @@ impl<'a> Parser<'a> {
     fn parse_expr_lambda(&mut self) -> Option<Expr<'a>> {
         if self.satisfies(kind_of!(TokenKind::Backslash)) {
             self.advance();
-            let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier after '\\' in lambda expression")?;
+            let param = self.parse_expr_frontier()?;
             if !self.satisfies(kind_of!(TokenKind::Backslash)) {
                 self.expects(kind_of!(TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
             }
             let body = self.parse_expr()?;
             Some(Expr::Lambda {
-                param : Box::new(Expr::Variable { ident }),
+                param : Box::new(param),
                 body : Box::new(body)
             })
         } else {
