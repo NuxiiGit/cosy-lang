@@ -82,15 +82,9 @@ impl<'a> Parser<'a> {
     fn parse_stmt(&mut self) -> Option<Stmt<'a>> {
         match self.peek() {
             Some(TokenKind::LeftBrace) => self.parse_stmt_block(),
+            Some(TokenKind::If) => self.parse_stmt_if(),
             _ => self.parse_stmt_expr()
         }
-    }
-
-    /// Parses an expression statement.
-    fn parse_stmt_expr(&mut self) -> Option<Stmt<'a>> {
-        let expr = self.parse_expr()?;
-        self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after expression statement")?;
-        Some(Stmt::Expr { expr })
     }
 
     /// Parses an expression statement.
@@ -106,6 +100,34 @@ impl<'a> Parser<'a> {
         }
         self.expects(kind_of!(TokenKind::RightBrace), "expected closing '}' after block statement")?;
         Some(Stmt::Block { stmts })
+    }
+
+    /// Parses an if statement.
+    fn parse_stmt_if(&mut self) -> Option<Stmt<'a>> {
+        self.expects(kind_of!(TokenKind::If), "expected 'if' before branch statement")?;
+        let condition = self.parse_expr()?;
+        if self.satisfies(kind_of!(TokenKind::Then)) {
+            let if_then = self.parse_stmt()?;
+            Some(Stmt::Branch {
+                condition,
+                if_then : Some(Box::new(if_then)),
+                if_else : None
+            })
+        } else {
+            let if_then = self.parse_stmt_block()?;
+            Some(Stmt::Branch {
+                condition,
+                if_then : Some(Box::new(if_then)),
+                if_else : None
+            })
+        }
+    }
+
+    /// Parses an expression statement.
+    fn parse_stmt_expr(&mut self) -> Option<Stmt<'a>> {
+        let expr = self.parse_expr()?;
+        self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after expression statement")?;
+        Some(Stmt::Expr { expr })
     }
 
     /// Parses any expression.

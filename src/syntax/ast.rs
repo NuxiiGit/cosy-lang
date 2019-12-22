@@ -36,6 +36,11 @@ pub enum Stmt<'a> {
     },
     Block {
         stmts : Vec<Stmt<'a>>
+    },
+    Branch {
+        condition : Expr<'a>,
+        if_then : Option<Box<Stmt<'a>>>,
+        if_else : Option<Box<Stmt<'a>>>
     }
 }
 impl fmt::Display for Stmt<'_> {
@@ -49,6 +54,17 @@ impl fmt::Display for Stmt<'_> {
                     acc.push(' ');
                     acc
                 }))
+            },
+            Stmt::Branch { condition, if_then, if_else } => {
+                if let Some(stmt) = if_then {
+                    write!(out, "if {} {{ {} }}", condition, stmt)?;
+                } else {
+                    write!(out, "unless {}", condition)?;
+                }
+                if let Some(stmt) = if_else {
+                    write!(out, " else {{ {} }}", stmt)?;
+                }
+                Ok(())
             }
         }
     }
