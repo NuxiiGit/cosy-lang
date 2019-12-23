@@ -68,8 +68,7 @@ impl<'a> Parser<'a> {
 
     /// Parses a declaration statement.
     fn parse_declr(&mut self) -> Option<Stmt<'a>> {
-        if self.satisfies(kind_of!(TokenKind::Var)) {
-            self.advance();
+        if self.matches(kind_of!(TokenKind::Var)) {
             let expr = self.parse_expr()?;
             self.expects(kind_of!(TokenKind::SemiColon), "expected semicolon after declaration")?;
             Some(Stmt::Declr { expr })
@@ -89,8 +88,7 @@ impl<'a> Parser<'a> {
 
     /// Parses an if statement.
     fn parse_stmt_if(&mut self) -> Option<Stmt<'a>> {
-        let alternative = if self.satisfies(kind_of!(TokenKind::If)) {
-            self.advance();
+        let alternative = if self.matches(kind_of!(TokenKind::If)) {
             false
         } else {
             self.expects(kind_of!(TokenKind::Unless), "expected 'if' or 'unless' before branch statement")?;
@@ -98,8 +96,7 @@ impl<'a> Parser<'a> {
         };
         let accept_blocks;
         let condition = self.parse_expr()?;
-        let if_then = Some(Box::new(if self.satisfies(kind_of!(TokenKind::Then)) {
-            self.advance();
+        let if_then = Some(Box::new(if self.matches(kind_of!(TokenKind::Then)) {
             // single statement expressions
             accept_blocks = false;
             self.parse_stmt()
@@ -108,8 +105,7 @@ impl<'a> Parser<'a> {
             accept_blocks = true;
             self.parse_stmt_block()
         }?));
-        let if_else = if self.satisfies(kind_of!(TokenKind::Else)) {
-            self.advance();
+        let if_else = if self.matches(kind_of!(TokenKind::Else)) {
             Some(Box::new(if accept_blocks {
                 // block statements
                 self.parse_stmt_block()
@@ -161,8 +157,7 @@ impl<'a> Parser<'a> {
     /// Parses an assignment expression.
     fn parse_expr_assign(&mut self) -> Option<Expr<'a>> {
         let left = self.parse_expr_opblock()?;
-        if self.satisfies(kind_of!(TokenKind::Assign)) {
-            self.advance();
+        if self.matches(kind_of!(TokenKind::Assign)) {
             let right = self.parse_expr_assign()?;
             let (atom, expr) = Expr::atomise(left, right);
             Some(Expr::Assign {
@@ -177,8 +172,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of operator blocks given by any expression wrapped in backticks \`.
     fn parse_expr_opblock(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_ops()?;
-        while self.satisfies(kind_of!(TokenKind::Backtick)) {
-            self.advance();
+        while self.matches(kind_of!(TokenKind::Backtick)) {
             let op = self.parse_expr_ops()?;
             self.expects(kind_of!(TokenKind::Backtick), "expected closing '`' in operator block")?;
             let right = self.parse_expr_ops()?;
@@ -286,8 +280,7 @@ impl<'a> Parser<'a> {
     /// Parses a stream of member accesses.
     fn parse_expr_member(&mut self) -> Option<Expr<'a>> {
         let mut expr = self.parse_expr_lambda()?;
-        while self.satisfies(kind_of!(TokenKind::Dot)) {
-            self.advance();
+        while self.matches(kind_of!(TokenKind::Dot)) {
             let ident = self.expects(kind_of!(TokenKind::Identifier(..)), "expected identifier after '.' symbol")?;
             expr = Expr::Member {
                 expr : Box::new(expr),
@@ -299,8 +292,7 @@ impl<'a> Parser<'a> {
 
     /// Parses a lambda function.
     fn parse_expr_lambda(&mut self) -> Option<Expr<'a>> {
-        if self.satisfies(kind_of!(TokenKind::Backslash)) {
-            self.advance();
+        if self.matches(kind_of!(TokenKind::Backslash)) {
             let param = self.parse_expr_frontier()?;
             if !self.satisfies(kind_of!(TokenKind::Backslash)) {
                 self.expects(kind_of!(TokenKind::Arrow), "expected '->' after lambda expression parameter")?;
@@ -332,8 +324,7 @@ impl<'a> Parser<'a> {
     fn parse_expr_tuple(&mut self) -> Option<Expr<'a>> {
         self.expects(kind_of!(TokenKind::LeftParen), "malformed expression")?;
         let mut exprs = vec![self.parse_expr()?];
-        while self.satisfies(kind_of!(TokenKind::Comma)) {
-            self.advance();
+        while self.matches(kind_of!(TokenKind::Comma)) {
             let expr = self.parse_expr()?;
             exprs.push(expr);
         }
@@ -349,8 +340,7 @@ impl<'a> Parser<'a> {
     /// Advances the parser until a stable line is found.
     fn synchronise(&mut self) {
         while !self.is_empty() {
-            if self.satisfies(kind_of!(TokenKind::SemiColon)) {
-                self.advance();
+            if self.matches(kind_of!(TokenKind::SemiColon)) {
                 break;
             } else if self.satisfies(kind_of!(
                     TokenKind::Var,
@@ -382,6 +372,16 @@ impl<'a> Parser<'a> {
                 token
             });
             None
+        }
+    }
+
+    /// Advances the parser only if the next token satisfies some predicate.
+    fn matches(&mut self, p : impl Fn(&Token) -> bool) -> bool {
+        if self.satisfies(p) {
+            self.advance();
+            true
+        } else {
+            false
         }
     }
 
