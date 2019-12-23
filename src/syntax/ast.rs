@@ -166,6 +166,27 @@ impl<'a> Expr<'a> {
             atom => (atom, right)
         }
     }
+
+    /// Consumes the expressions and finds the left-most token, then returns it.
+    /// #Panics
+    /// Panics if a token cannot be found.
+    pub fn unwrap(self) -> Token<'a> {
+        match self {
+            Expr::Constant { value } => value,
+            Expr::Variable { ident } => ident,
+            Expr::Member { expr, .. } => expr.unwrap(),
+            Expr::Call { func, .. } => func.unwrap(),
+            Expr::Lambda { param, .. } => param.unwrap(),
+            Expr::Tuple { mut exprs } => {
+                if exprs.len() == 0 {
+                    panic!("unable to locate a valid token in tuple expression");
+                } else {
+                    exprs.remove(0).unwrap()
+                }
+            },
+            Expr::Assign { atom, .. } => atom.unwrap()
+        }
+    }
 }
 impl fmt::Display for Expr<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
