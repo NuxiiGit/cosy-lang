@@ -49,7 +49,7 @@ impl fmt::Display for Stmt<'_> {
             Stmt::Expr { expr } => write!(out, "{};", expr),
             Stmt::Declr { expr } => write!(out, "var {};", expr),
             Stmt::Block { stmts } => {
-                write!(out, "{{ {} }}", stmts.iter().fold(String::new(), |mut acc, stmt| {
+                write!(out, "{{ {}}}", stmts.iter().fold(String::new(), |mut acc, stmt| {
                     acc.push_str(&stmt.to_string());
                     acc.push(' ');
                     acc
@@ -57,13 +57,24 @@ impl fmt::Display for Stmt<'_> {
             },
             Stmt::Branch { condition, if_then, if_else } => {
                 if let Some(stmt) = if_then {
-                    write!(out, "if {} {{ {} }}", condition, stmt)?;
-                } else {
-                    write!(out, "unless {}", condition)?;
+                    write!(out, "if {} ", condition)?;
+                    if let Stmt::Block { .. } = &**stmt {
+                        write!(out, "{}", stmt)?;
+                    } else {
+                        write!(out, "then {}", stmt)?;
+                    }
+                    if let Some(stmt) = if_else {
+                        write!(out, " else {}", stmt)?;
+                    }
+                } else if let Some(stmt) = if_else {
+                    write!(out, "unless {} ", condition)?;
+                    if let Stmt::Block { .. } = &**stmt {
+                        write!(out, "{}", stmt)?;
+                    } else {
+                        write!(out, "then {}", stmt)?;
+                    }
                 }
-                if let Some(stmt) = if_else {
-                    write!(out, " else {{ {} }}", stmt)?;
-                }
+                
                 Ok(())
             }
         }

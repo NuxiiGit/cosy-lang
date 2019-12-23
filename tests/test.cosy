@@ -1,6 +1,8 @@
-var a;
-var b;
-var c x = a y = b = 2;
+unless condition2
+then something();
+else {
+    nice + 3;
+}
 
 //var f(x, y, z) = x + y + z;
 //var a ~ b = a - b;
