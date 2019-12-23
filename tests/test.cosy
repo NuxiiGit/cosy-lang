@@ -1,15 +1,3 @@
-// if statement
-if condition {
-    stuff();
-}
-
-// else clause
-if condition {
-    stuff();
-} else {
-    other_stuff();
-}
-
 // if not (unless) statement
 unless condition {
     stuff();
@@ -18,8 +6,3 @@ unless condition {
 } else {
     more_stuff();
 }
-
-// inline condition
-if condition then stuff();
-
-unless condition then other_stuff();

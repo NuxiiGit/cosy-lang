@@ -61,7 +61,7 @@ impl fmt::Display for Stmt<'_> {
                     if let Stmt::Block { .. } = &**stmt {
                         write!(out, "{}", stmt)?;
                     } else {
-                        write!(out, "then {}", stmt)?;
+                        write!(out, "{{ {} }}", stmt)?;
                     }
                     if let Some(stmt) = if_else {
                         write!(out, " else {}", stmt)?;
@@ -71,7 +71,7 @@ impl fmt::Display for Stmt<'_> {
                     if let Stmt::Block { .. } = &**stmt {
                         write!(out, "{}", stmt)?;
                     } else {
-                        write!(out, "then {}", stmt)?;
+                        write!(out, "{{ {} }}", stmt)?;
                     }
                 }
                 
