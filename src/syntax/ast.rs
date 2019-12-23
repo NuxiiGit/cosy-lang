@@ -168,7 +168,7 @@ impl<'a> Expr<'a> {
     }
 
     /// Consumes the expressions and finds the left-most token, then returns it.
-    /// #Panics
+    /// # Panics
     /// Panics if a token cannot be found.
     pub fn unwrap(self) -> Token<'a> {
         match self {

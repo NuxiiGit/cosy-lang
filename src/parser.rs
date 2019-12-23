@@ -106,7 +106,10 @@ impl<'a> Parser<'a> {
             self.parse_stmt_block()
         }?));
         let if_else = if self.matches(kind_of!(TokenKind::Else)) {
-            Some(Box::new(if accept_blocks {
+            Some(Box::new(if self.satisfies(kind_of!(TokenKind::If, TokenKind::Unless)) {
+                // if statement
+                self.parse_stmt_if()
+            } else if accept_blocks {
                 // block statements
                 self.parse_stmt_block()
             } else {
