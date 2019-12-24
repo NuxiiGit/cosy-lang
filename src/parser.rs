@@ -88,45 +88,37 @@ impl<'a> Parser<'a> {
 
     /// Parses an if statement.
     fn parse_stmt_if(&mut self) -> Option<Stmt<'a>> {
-        let alternative = if self.matches(kind_of!(TokenKind::If)) {
-            false
+        let alternative;
+        if self.matches(kind_of!(TokenKind::If)) {
+            alternative = false;
         } else {
             self.expects(kind_of!(TokenKind::Unless), "expected 'if' or 'unless' before branch statement")?;
-            true
-        };
-        let accept_blocks;
+            alternative = true;
+        }
         let condition = self.parse_expr()?;
-        let if_then = Some(Box::new(if self.matches(kind_of!(TokenKind::Then)) {
-            // single statement expressions
-            accept_blocks = false;
-            self.parse_stmt()
-        } else {
-            // block statements
-            accept_blocks = true;
-            self.parse_stmt_block()
-        }?));
+        let if_then = self.parse_stmt_block()?;
         let if_else = if self.matches(kind_of!(TokenKind::Else)) {
-            Some(Box::new(if self.satisfies(kind_of!(TokenKind::If, TokenKind::Unless)) {
-                // if statement
-                self.parse_stmt_if()
-            } else if accept_blocks {
-                // block statements
-                self.parse_stmt_block()
+            if self.satisfies(kind_of!(TokenKind::LeftBrace)) {
+                self.parse_stmt_block()?
             } else {
-                // single statement expressions
-                self.parse_stmt()
-            }?))
-        } else {
-            None
-        };
-        Some(if alternative {
-            Stmt::Branch {
-                condition,
-                if_then : if_else,
-                if_else : if_then
+                Stmt::Block {
+                    stmts : vec![self.parse_stmt_if()?]
+                }
             }
         } else {
-            Stmt::Branch { condition, if_then, if_else }
+            Stmt::Block {
+                stmts : Vec::new()
+            }
+        };
+        let (if_then, if_else) = if alternative {
+            (if_else, if_then)
+        } else {
+            (if_then, if_else)
+        };
+        Some(Stmt::Branch {
+            condition,
+            if_then : Box::new(if_then),
+            if_else : Box::new(if_else)
         })
     }
 

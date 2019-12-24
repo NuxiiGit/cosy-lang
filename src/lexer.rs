@@ -175,7 +175,6 @@ impl<'a> Iterator for Lexer<'a> {
                         "if" => Ok(TokenKind::If),
                         "unless" => Ok(TokenKind::Unless),
                         "else" => Ok(TokenKind::Else),
-                        "then" => Ok(TokenKind::Then),
                         "switch" => Ok(TokenKind::Switch),
                         "case" => Ok(TokenKind::Case),
                         "is" => Ok(TokenKind::Is),

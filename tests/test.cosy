@@ -1,7 +1,7 @@
 // if not (unless) statement
-unless condition {
+if condition {
     stuff();
-} else if otherwise {
+} else unless otherwise {
     other_stuff();
 } else {
     more_stuff();

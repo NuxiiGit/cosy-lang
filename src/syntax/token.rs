@@ -36,7 +36,6 @@ pub enum TokenKind {
     If,
     Unless,
     Else,
-    Then,
     Switch,
     Case,
     Is,

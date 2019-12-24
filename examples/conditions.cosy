@@ -19,11 +19,6 @@ unless condition {
     more_stuff();
 }
 
-// inline condition
-if condition then stuff();
-
-unless condition then other_stuff();
-
 // case condition
 switch state {
 case 0:
