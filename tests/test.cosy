@@ -6,3 +6,9 @@ if condition {
 } else {
     more_stuff();
 }
+
+if a
+then b();
+else {
+    niceward + 3;
+}

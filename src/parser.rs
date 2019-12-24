@@ -82,6 +82,7 @@ impl<'a> Parser<'a> {
         match self.peek() {
             Some(TokenKind::If) |
                     Some(TokenKind::Unless) => self.parse_stmt_if(),
+            Some(TokenKind::LeftBrace) => self.parse_stmt_block(),
             _ => self.parse_stmt_expr()
         }
     }
@@ -96,15 +97,14 @@ impl<'a> Parser<'a> {
             alternative = true;
         }
         let condition = self.parse_expr()?;
-        let if_then = self.parse_stmt_block()?;
+        let if_then = if self.matches(kind_of!(TokenKind::Then)) {
+            self.parse_stmt()?
+        } else {
+            // only blocks can come after expressions in branch statements
+            self.parse_stmt_block()?
+        };
         let if_else = if self.matches(kind_of!(TokenKind::Else)) {
-            if self.satisfies(kind_of!(TokenKind::LeftBrace)) {
-                self.parse_stmt_block()?
-            } else {
-                Stmt::Block {
-                    stmts : vec![self.parse_stmt_if()?]
-                }
-            }
+            self.parse_stmt()?
         } else {
             Stmt::Block {
                 stmts : Vec::new()

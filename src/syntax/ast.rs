@@ -55,7 +55,15 @@ impl fmt::Display for Stmt<'_> {
                     acc
                 }))
             },
-            Stmt::Branch { condition, if_then, if_else } => write!(out, "if {} {} else {}", condition, if_then, if_else)
+            Stmt::Branch { condition, if_then, if_else } => {
+                write!(out, "if {} ", condition)?;
+                if let Stmt::Block { .. } = &**if_then {
+                    write!(out, "{}", if_then)?;
+                } else {
+                    write!(out, "then {}", if_then)?;
+                }
+                write!(out, " else {}", if_else)
+            }
         }
     }
 }
