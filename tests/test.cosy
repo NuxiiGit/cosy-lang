@@ -9,6 +9,4 @@ if condition {
 
 if a
 then b();
-else {
-    niceward + 3;
-}
+else niceward + 3;

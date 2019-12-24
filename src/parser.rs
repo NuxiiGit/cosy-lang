@@ -82,7 +82,6 @@ impl<'a> Parser<'a> {
         match self.peek() {
             Some(TokenKind::If) |
                     Some(TokenKind::Unless) => self.parse_stmt_if(),
-            Some(TokenKind::LeftBrace) => self.parse_stmt_block(),
             _ => self.parse_stmt_expr()
         }
     }
@@ -97,14 +96,9 @@ impl<'a> Parser<'a> {
             alternative = true;
         }
         let condition = self.parse_expr()?;
-        let if_then = if self.matches(kind_of!(TokenKind::Then)) {
-            self.parse_stmt()?
-        } else {
-            // only blocks can come after expressions in branch statements
-            self.parse_stmt_block()?
-        };
+        let if_then = self.parse_stmt_then()?;
         let if_else = if self.matches(kind_of!(TokenKind::Else)) {
-            self.parse_stmt()?
+            self.parse_stmt_block()?
         } else {
             Stmt::NoOp
         };
@@ -127,18 +121,27 @@ impl<'a> Parser<'a> {
         Some(Stmt::Expr { expr })
     }
 
+    /// Parses a then statement.
+    fn parse_stmt_then(&mut self) -> Option<Stmt<'a>> {
+        self.matches(kind_of!(TokenKind::Then));
+        self.parse_stmt_block()
+    }
+
     /// Parses a block statement.
     fn parse_stmt_block(&mut self) -> Option<Stmt<'a>> {
-        self.expects(kind_of!(TokenKind::LeftBrace), "expected opening '{' before block statement")?;
         let mut stmts = Vec::new();
-        while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::RightBrace)) {
-            if let Some(stmt) = self.parse_declr() {
-                stmts.push(stmt);
-            } else {
-                self.synchronise();
+        if self.matches(kind_of!(TokenKind::LeftBrace)) {
+            while !self.is_empty() && !self.satisfies(kind_of!(TokenKind::RightBrace)) {
+                if let Some(stmt) = self.parse_declr() {
+                    stmts.push(stmt);
+                } else {
+                    self.synchronise();
+                }
             }
+            self.expects(kind_of!(TokenKind::RightBrace), "expected closing '}' after block statement")?;
+        } else {
+            stmts.push(self.parse_stmt()?);
         }
-        self.expects(kind_of!(TokenKind::RightBrace), "expected closing '}' after block statement")?;
         if stmts.len() == 0 {
             Some(Stmt::NoOp)
         } else {
