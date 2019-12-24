@@ -106,9 +106,7 @@ impl<'a> Parser<'a> {
         let if_else = if self.matches(kind_of!(TokenKind::Else)) {
             self.parse_stmt()?
         } else {
-            Stmt::Block {
-                stmts : Vec::new()
-            }
+            Stmt::NoOp
         };
         let (if_then, if_else) = if alternative {
             (if_else, if_then)
@@ -141,7 +139,11 @@ impl<'a> Parser<'a> {
             }
         }
         self.expects(kind_of!(TokenKind::RightBrace), "expected closing '}' after block statement")?;
-        Some(Stmt::Block { stmts })
+        if stmts.len() == 0 {
+            Some(Stmt::NoOp)
+        } else {
+            Some(Stmt::Block { stmts })
+        }
     }
 
     /// Parses any expression.

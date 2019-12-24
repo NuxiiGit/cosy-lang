@@ -41,7 +41,8 @@ pub enum Stmt<'a> {
         condition : Expr<'a>,
         if_then : Box<Stmt<'a>>,
         if_else : Box<Stmt<'a>>
-    }
+    },
+    NoOp
 }
 impl fmt::Display for Stmt<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
@@ -63,7 +64,8 @@ impl fmt::Display for Stmt<'_> {
                     write!(out, "then {}", if_then)?;
                 }
                 write!(out, " else {}", if_else)
-            }
+            },
+            Stmt::NoOp => write!(out, "{{}}")
         }
     }
 }
