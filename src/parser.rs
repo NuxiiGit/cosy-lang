@@ -151,7 +151,21 @@ impl<'a> Parser<'a> {
 
     /// Parses any expression.
     fn parse_expr(&mut self) -> Option<Expr<'a>> {
-        self.parse_expr_assign()
+        self.parse_expr_dollar()
+    }
+
+    /// Parses the Haskell dollar `$` operator into a typical function application.
+    fn parse_expr_dollar(&mut self) -> Option<Expr<'a>> {
+        let left = self.parse_expr_assign()?;
+        if self.matches(kind_of!(TokenKind::Dollar)) {
+            let right = self.parse_expr_dollar()?;
+            Some(Expr::Call {
+                func : Box::new(left),
+                arg : Box::new(right)
+            })
+        } else {
+            Some(left)
+        }
     }
 
     /// Parses an assignment expression.
