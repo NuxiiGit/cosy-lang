@@ -1,0 +1,12 @@
+// if not (unless) statement
+if condition {
+    stuff();
+} else unless otherwise {
+    other_stuff();
+} else {
+    more_stuff();
+}
+
+if a
+then b();
+else niceward + 3;
