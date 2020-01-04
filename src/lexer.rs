@@ -96,6 +96,7 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 },
                 ';' => Ok(TokenKind::SemiColon),
+                '$' => Ok(TokenKind::Dollar),
                 '`' => Ok(TokenKind::Backtick),
                 '"' => {
                     // get string literal
@@ -137,7 +138,6 @@ impl<'a> Iterator for Lexer<'a> {
                         "->" => Ok(TokenKind::Arrow),
                         "=" => Ok(TokenKind::Assign),
                         "\\" => Ok(TokenKind::Backslash),
-                        "$" => Ok(TokenKind::Dollar),
                         _ => Ok(TokenKind::Identifier(IdentifierKind::Operator))
                     }
                 },
@@ -217,7 +217,7 @@ pub type Result<'a> = std::result::Result<Token<'a>, Error<'a>>;
 /// A function which returns whether this character is a valid operator character.
 pub fn valid_operator(x : char) -> bool {
     if let '!' | '?' |
-            '@' | '$' | '&' | '#' |
+            '@' | '&' | '#' |
             '+' | '-' | '*' | '/' | '\\' | '%' | '^' |
             '<' | '=' | '>' |
             '|' | '~' = x {
