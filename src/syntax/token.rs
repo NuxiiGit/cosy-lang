@@ -61,6 +61,7 @@ pub enum TokenKind {
     SemiColon,
     Arrow,
     Assign,
+    Dollar,
     Backtick,
     Backslash,
     Identifier(IdentifierKind),
