@@ -195,7 +195,9 @@ impl fmt::Display for Expr<'_> {
             }
         } else if self.is_unaryop() {
             if let Expr::Call { func, arg } = self {
-                write!(out, "{}({})", func, arg)
+                write!(out, "({}", func)?;
+                write_op!(out, arg)?;
+                write!(out, ")")
             } else {
                 unreachable!()
             }
@@ -215,7 +217,7 @@ impl fmt::Display for Expr<'_> {
                 Expr::Tuple { exprs } => {
                     let tuple = exprs.iter().fold(String::new(), |mut acc, expr| {
                         if !acc.is_empty() {
-                            acc.push(',');
+                            acc.push_str(", ");
                         }
                         acc.push_str(&expr.to_string());
                         acc
