@@ -11,7 +11,7 @@ macro_rules! write_op {
 }
 
 /// A struct which encapsulates information about a program.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Prog<'a> {
     pub stmts : Vec<Stmt<'a>>
 }
@@ -26,7 +26,7 @@ impl fmt::Display for Prog<'_> {
 }
 
 /// A recursive enum which stores statement information.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Stmt<'a> {
     Expr {
         expr : Expr<'a>
@@ -71,7 +71,7 @@ impl fmt::Display for Stmt<'_> {
 }
 
 /// A recursive enum which stores expression information.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr<'a> {
     Constant {
         value : Token<'a>

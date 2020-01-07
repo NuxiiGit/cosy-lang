@@ -18,7 +18,7 @@ impl fmt::Display for Error<'_> {
 impl error::Error for Error<'_> {}
 
 /// A struct which stores information about some substring of a source file.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Span<'a> {
     pub content : &'a str,
     pub row : usize,

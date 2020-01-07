@@ -3,6 +3,7 @@ use crate::diagnostics::Span;
 use std::fmt;
 
 /// Stores a token and its location in the source file.
+#[derive(Clone)]
 pub struct Token<'a> {
     pub kind : TokenKind,
     pub span : Span<'a>
