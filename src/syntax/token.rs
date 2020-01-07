@@ -68,6 +68,7 @@ pub enum TokenKind {
     Identifier(IdentifierKind),
     Literal(LiteralKind),
     EoF,
+    Directive,
     Documentation,
     Unknown
 }

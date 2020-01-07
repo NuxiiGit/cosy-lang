@@ -126,6 +126,16 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                     }
                 },
+                '#' => {
+                    // compiler directive
+                    while let Some(x) = self.scanner.chr() {
+                        if valid_whitespace(x) {
+                            break;
+                        }
+                        self.scanner.advance();
+                    }
+                    Ok(TokenKind::Directive)
+                },
                 // match operators
                 x if valid_operator(x) => {
                     while let Some(x) = self.scanner.chr() {
@@ -217,7 +227,7 @@ pub type Result<'a> = std::result::Result<Token<'a>, Error<'a>>;
 /// A function which returns whether this character is a valid operator character.
 pub fn valid_operator(x : char) -> bool {
     if let '!' | '?' |
-            '@' | '&' | '#' |
+            '@' | '&' |
             '+' | '-' | '*' | '/' | '\\' | '%' | '^' |
             '<' | '=' | '>' |
             '|' | '~' = x {
