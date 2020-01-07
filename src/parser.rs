@@ -275,31 +275,21 @@ impl<'a> Parser<'a> {
 
     /// Parses a stream of function calls.
     fn parse_expr_call(&mut self) -> Option<Expr<'a>> {
-        if self.satisfies(kind_of!(TokenKind::Identifier(IdentifierKind::Operator))) {
-            // unary operators
-            let ident = self.advance().unwrap();
-            let arg = self.parse_expr_call()?;
-            Some(Expr::Call {
-                func : Box::new(Expr::Variable { ident }),
+        let mut expr = self.parse_expr_member()?;
+        while self.satisfies(kind_of!(
+                TokenKind::Identifier(..),
+                TokenKind::Literal(..),
+                TokenKind::LeftParen,
+                TokenKind::LeftBox,
+                TokenKind::Backslash,
+                !TokenKind::Identifier(IdentifierKind::Operator))) {
+            let arg = self.parse_expr_member()?;
+            expr = Expr::Call {
+                func : Box::new(expr),
                 arg : Box::new(arg)
-            })
-        } else {
-            let mut expr = self.parse_expr_member()?;
-            while self.satisfies(kind_of!(
-                    TokenKind::Identifier(..),
-                    TokenKind::Literal(..),
-                    TokenKind::LeftParen,
-                    TokenKind::LeftBox,
-                    TokenKind::Backslash,
-                    !TokenKind::Identifier(IdentifierKind::Operator))) {
-                let arg = self.parse_expr_member()?;
-                expr = Expr::Call {
-                    func : Box::new(expr),
-                    arg : Box::new(arg)
-                }
             }
-            Some(expr)
         }
+        Some(expr)
     }
 
     /// Parses a stream of member accesses.
