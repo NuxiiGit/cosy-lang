@@ -65,7 +65,7 @@ impl fmt::Display for Stmt<'_> {
                 }
                 write!(out, " else {}", if_else)
             },
-            Stmt::NoOp => write!(out, "{{}}")
+            Stmt::NoOp => write!(out, ";")
         }
     }
 }

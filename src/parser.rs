@@ -82,6 +82,7 @@ impl<'a> Parser<'a> {
         match self.peek() {
             Some(TokenKind::If) |
                     Some(TokenKind::Unless) => self.parse_stmt_if(),
+            Some(TokenKind::SemiColon) => Some(Stmt::NoOp),
             _ => self.parse_stmt_expr()
         }
     }
