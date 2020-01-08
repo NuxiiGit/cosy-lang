@@ -1,4 +1,6 @@
-use crate::diagnostics::*;
+use crate::diagnostics::{
+    Error, Handler
+};
 use crate::lexer::Lexer;
 use crate::syntax::{
     token::*,
@@ -40,14 +42,16 @@ macro_rules! slice_of {
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
-    errors : Vec<Error<'a>>
+    errors : Vec<Error<'a>>,
+    handler : Handler<'a>
 }
 impl<'a> Parser<'a> {
     /// Creates a new parser from this scanner and converts it into a syntax tree.
     pub fn parse(lexer : Lexer<'a>) -> Result<'a> {
         let mut parser = Parser {
             lexer : lexer.peekable(),
-            errors : Vec::new()
+            errors : Vec::new(),
+            handler : Handler::new()
         };
         if let Some(prog) = parser.parse_prog() {
             Ok(prog)
