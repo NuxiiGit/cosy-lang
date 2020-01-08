@@ -132,7 +132,7 @@ impl<'a> Iterator for Lexer<'a> {
                 '#' => {
                     // compiler directive
                     while let Some(x) = self.scanner.chr() {
-                        if valid_whitespace(x) {
+                        if !valid_graphic(x) {
                             break;
                         }
                         self.scanner.advance();
