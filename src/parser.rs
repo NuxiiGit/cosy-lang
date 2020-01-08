@@ -28,6 +28,15 @@ macro_rules! operator_of {
             x.contains_prefix(&[$($prefix)*]))
 }
 
+macro_rules! slice_of {
+    ($($slices:pat),+) => (|x| {
+        match x.span.content {
+            $($slices)|* => true,
+            _ => false
+        }
+    })
+}
+
 /// Takes a lexer and uses it to construct a parse tree.
 pub struct Parser<'a> {
     lexer : Peekable<Lexer<'a>>,
