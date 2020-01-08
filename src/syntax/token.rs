@@ -1,4 +1,4 @@
-use crate::diagnostics::Span;
+use crate::syntax::span::Span;
 
 use std::fmt;
 

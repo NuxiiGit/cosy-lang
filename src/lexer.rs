@@ -1,5 +1,8 @@
-use crate::diagnostics::*;
-use crate::syntax::token::*;
+use crate::diagnostics::Error;
+use crate::syntax::{
+    span::*,
+    token::*
+};
 
 use std::str::CharIndices;
 
