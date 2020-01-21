@@ -116,17 +116,24 @@ impl<'a> Iterator for Lexer<'a> {
                     }
                 },
                 '\'' => {
-                    // get char literal
-                    loop {
-                        if let Some(x) = self.scanner.advance() {
-                            if x == '\\' {
-                                self.scanner.advance();
-                            } else if x == '\'' {
-                                break Ok(TokenKind::Literal(LiteralKind::Character));
+                    // character/type literals
+                    if let Some(x) = self.scanner.advance() 
+                        if x.is_alphanumeric() {
+                            if let Some('\'') = self.scanner.advance() {
+                                Ok(TokenKind::Literal(LiteralKind::Character))
+                            } else {
+                                Err("generic types not implemented")
                             }
                         } else {
-                            break Err("unterminated character literal");
+                            // symbol
+                            if let Some('\'') = self.scanner.advance() {
+                                Ok(TokenKind::Literal(LiteralKind::Character))
+                            } else {
+                                Err("unterminated character literal")
+                            }
                         }
+                    } else {
+                        Err("unexpected single quote")
                     }
                 },
                 '#' => {
