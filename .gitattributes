@@ -1,0 +1,5 @@
+*.rs   text eol=crlf
+*.lock text eol=crlf
+*.toml text eol=crlf
+*.md   text eol=crlf
+*.cosy text eol=crlf
