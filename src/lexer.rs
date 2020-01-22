@@ -117,7 +117,7 @@ impl<'a> Iterator for Lexer<'a> {
                 },
                 '\'' => {
                     // character/type literals
-                    if let Some(x) = self.scanner.advance() 
+                    if let Some(x) = self.scanner.advance() {
                         if x.is_alphanumeric() {
                             if let Some('\'') = self.scanner.advance() {
                                 Ok(TokenKind::Literal(LiteralKind::Character))
