@@ -78,6 +78,7 @@ pub enum TokenKind {
 pub enum IdentifierKind {
     Alphanumeric,
     Operator,
+    Generic,
     Empty
 }
 

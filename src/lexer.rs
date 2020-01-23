@@ -119,10 +119,17 @@ impl<'a> Iterator for Lexer<'a> {
                     // character/type literals
                     if let Some(x) = self.scanner.advance() {
                         if x.is_alphanumeric() {
-                            if let Some('\'') = self.scanner.advance() {
+                            if let Some('\'') = self.scanner.chr() {
+                                self.scanner.advance();
                                 Ok(TokenKind::Literal(LiteralKind::Character))
                             } else {
-                                Err("generic types not implemented")
+                                while let Some(x) = self.scanner.chr() {
+                                    if !valid_graphic(x) {
+                                        break;
+                                    }
+                                    self.scanner.advance();
+                                }
+                                Ok(TokenKind::Identifier(IdentifierKind::Generic))
                             }
                         } else {
                             // symbol
