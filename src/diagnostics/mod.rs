@@ -3,6 +3,22 @@ use crate::syntax::token::Token;
 use std::fmt;
 use std::error;
 
+pub struct Diagnostic<T : fmt::Display> {
+    value : T
+}
+impl<T : fmt::Display> Diagnostic<T> {
+    /// Creates a new diagnostic from this value.
+    pub fn new(value : T) -> Self {
+        Self { value }
+    }
+
+    /// Consumes this diagnostic and reports a warning.
+    pub fn warn(self, message : &str) -> Self {
+        println!("Warning! got {}: {}", &self.value, message);
+        self
+    }
+}
+
 /// A struct which handles the compilation of errors.
 #[derive(Debug)]
 pub struct Handler<'a> {
