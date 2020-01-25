@@ -1,4 +1,14 @@
 use cosyc::{
+    diagnostics::error,
+    syntax::span
+};
+
+fn main() {
+    error::set_destination(Some("temp/log.txt"));
+    error::report(0,0, "something");
+}
+
+/* use cosyc::{
     lexer::*,
     parser::*
 };
@@ -43,4 +53,4 @@ fn main() {
     };
     out.write(s.as_bytes())
             .expect("unable to write to file");
-}
+}*/
