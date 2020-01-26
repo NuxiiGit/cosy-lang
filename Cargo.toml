@@ -6,7 +6,7 @@ edition = "2018"
 
 [[bin]]
 name = "cosy"
-path = "app/main.rs"
+path = "src/main.rs"
 
 [lib]
 name = "cosyc"

@@ -1,11 +1,7 @@
-use cosyc::{
-    diagnostics::error,
-    syntax::span
-};
+use cosyc::diagnostics;
 
 fn main() {
-    error::set_destination(Some("temp/log.txt"));
-    error::report(0,0, "something");
+    
 }
 
 /* use cosyc::{
