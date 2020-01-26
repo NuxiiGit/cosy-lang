@@ -21,7 +21,7 @@ pub fn report(message : &str) -> io::Result<()> {
                     .write(true)
                     .append(true)
                     .open(path)?;
-            out.write(format!("{}\n", message).as_bytes())?;
+            out.write(message.as_bytes())?;
         }
     }
     Ok(())
