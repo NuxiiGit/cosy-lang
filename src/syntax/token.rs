@@ -11,6 +11,7 @@ pub struct Token {
 #[derive(PartialEq, Debug, Clone)]
 pub enum TokenKind {
     Keyword(KeywordKind),
+    Symbol(SymbolKind),
     Identifier,
     Operator(OperatorKind),
     Literal(LiteralKind),
@@ -80,7 +81,12 @@ pub enum KeywordKind {
     In,
     Function,
     Object,
-    New,
+    New
+}
+
+/// An enum which describes available symbol types.
+#[derive(PartialEq, Debug, Clone)]
+pub enum SymbolKind {
     LeftParen,
     RightParen,
     LeftBrace,
