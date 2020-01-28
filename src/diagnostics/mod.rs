@@ -11,8 +11,7 @@ pub struct Error {
 }
 impl fmt::Display for Error {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}: {}",
-                self.span, self.reason)
+        write!(out, "error {}: {}", self.span, self.reason)
     }
 }
 impl error::Error for Error {}

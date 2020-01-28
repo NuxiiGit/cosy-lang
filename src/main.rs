@@ -1,7 +1,6 @@
-use cosyc::diagnostics;
 
 fn main() {
-    
+
 }
 
 /* use cosyc::{
