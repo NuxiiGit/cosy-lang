@@ -43,14 +43,36 @@ impl<'a> Scanner<'a> {
         Some(*x)
     }
 
+    /// Advance the cursor.
+    pub fn advance(&mut self) -> Option<char> {
+        let (_, x) = self.chars.next()?;
+        if let Some((i, _)) = self.chars.peek() {
+            // update span
+            self.cursor_end.byte = *i;
+            // move cursor row/column
+            if x == '\n' {
+                self.cursor_end.row += 1;
+                self.cursor_end.column = 1;
+            } else {
+                self.cursor_end.column += 1;
+            }
+        } else {
+            // end of file
+            self.cursor_end.byte = self.src.len();
+        }
+        Some(x)
+    }
+
     /// Consumes the current substring and returns its span.
     pub fn consume(&mut self) -> Span {
-        Span {
+        let span = Span {
             row : self.cursor_start.row,
             column : self.cursor_start.column,
             byte_begin : self.cursor_start.byte,
             byte_end : self.cursor_end.byte
-        }
+        };
+        self.clear();
+        span
     }
 }
 

@@ -1,1 +1,1 @@
-mod scanner;
+pub mod scanner;
