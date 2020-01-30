@@ -5,41 +5,37 @@ use std::error;
 
 /// A struct which stores compiler session information.
 pub struct Session {
-    errors : Vec<Error>,
-    warnings : Vec<Error>
+    fatal_occurred : bool,
+    errors : Vec<Error>
 }
 impl Session {
     /// Creates a new empty session.
     pub fn new() -> Self {
         Self {
-            errors : Vec::new(),
-            warnings : Vec::new()
+            fatal_occurred : false,
+            errors : Vec::new()
         }
     }
 
     /// Adds a new error to the session.
-    pub fn add_error(&mut self, error : Error) {
+    pub fn fatal(&mut self, error : Error) {
         self.errors.push(error);
+        self.fatal_occurred = true;
     }
 
     /// Adds a new warning to the session.
-    pub fn add_warning(&mut self, error : Error) {
-        self.warnings.push(error);
+    pub fn warning(&mut self, error : Error) {
+        self.errors.push(error);
     }
 
     /// Returns whether a fatal error occured.
     pub fn is_fatal(&self) -> bool {
-        !self.errors.is_empty()
+        self.fatal_occurred
     }
 
-    /// Returns a reference to all fatal errors.
+    /// Returns a reference to all errors.
     pub fn errors(&self) -> &[Error] {
         &self.errors
-    }
-
-    /// Returns a reference to all warnings.
-    pub fn warnings(&self) -> &[Error] {
-        &self.warnings
     }
 }
 
