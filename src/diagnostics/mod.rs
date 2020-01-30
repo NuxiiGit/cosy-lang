@@ -36,32 +36,36 @@ impl Session {
 
 /// Builds a diagnostic which can be used to throw errors or check validity.
 pub struct DiagnosticBuilder<T> {
-    error_occured : Option<&'static str>,
+    error_occured : bool,
     value : T
 }
 impl<T> DiagnosticBuilder<T> {
+    /// Creates a new diagnostic builder with this value.
+    pub fn from(value : T) -> Self {
+        Self {
+            error_occured : false,
+            value
+        }
+    }
+
     /// Consumes the diagnostic and returns a boolean value depending on whether the value is valid.
-    pub fn is_valid(self) -> bool {
-        self.error_occured.is_none()
+    pub fn check(self) -> bool {
+        self.error_occured
     }
 
-    /// Consumes the diagnostic and adds some warning to the session if the diagnostic was invalid.
-    pub fn warn(self, mut sess : Session, token : Token) -> Option<T> {
-        if let Some(reason) = self.error_occured {
-            sess.errors.push(Error { reason, token });
-            None
-        } else {
-            Some(self.value)
+    /// Reports a warning to the session if the value was invalid according to the current diagnostic.
+    pub fn warn(self, mut sess : Session, error : Error) -> Self {
+        if self.error_occured {
+            sess.warnings.push(error);
         }
+        self
     }
-
-    /// Consumes the diagnostic and adds some error to the session if the diagnostic was invalid.
-    pub fn submit(self, mut sess : Session, token : Token) -> Option<T> {
-        if let Some(reason) = self.error_occured {
-            sess.errors.push(Error { reason, token });
-            None
-        } else {
-            Some(self.value)
+    
+    /// Reports a fatal error to the session if the value was invalid according to the current diagnostic.
+    pub fn error(self, mut sess : Session, error : Error) -> Self {
+        if self.error_occured {
+            sess.warnings.push(error);
         }
+        self
     }
 }

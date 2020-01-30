@@ -11,7 +11,7 @@ pub struct Error {
 }
 impl fmt::Display for Error {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "error {}: {}. got {:?}",
+        write!(out, "{}: {}. got {:?}",
                 self.token.span, self.reason, self.token.kind)
     }
 }
