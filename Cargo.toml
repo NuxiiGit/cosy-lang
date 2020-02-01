@@ -1,15 +1,16 @@
 [package]
 name = "cosy-lang"
 version = "0.0.1"
-authors = ["Nuxii <nuxii09@gmail.com>"]
+authors = ["Nuxii"]
 edition = "2018"
 
 [[bin]]
 name = "cosy"
-path = "src/main.rs"
+path = "app/main.rs"
 
 [lib]
 name = "cosyc"
 path = "src/lib.rs"
 
 [dependencies]
+lazy_static = "1.4.0"
