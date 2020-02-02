@@ -2,7 +2,7 @@ use cosyc::lexer::*;
 use cosyc::diagnostics::error::Session;
 
 fn main() {
-    let src = "hello!ーあなた";
+    let src = "hello!           ーあなた";
     let scanner = scanner::Scanner::new(src);
     let mut sess = Session::new();
     let mut lexer = Lexer::from(&mut sess, scanner);
@@ -11,6 +11,33 @@ fn main() {
         println!("{}", error);
     }
 }
+
+/*
+use cosyc::lexer::scanner::Scanner;
+
+fn main() {
+    let src = "hello!ーあなた";
+    let mut scanner = Scanner::new(src);
+    println!("{:?}", scanner.chr());
+    scanner.advance(); // h
+    scanner.advance(); // e
+    scanner.advance(); // l
+    scanner.advance(); // l
+    println!("{}", scanner.substr());
+    let slice = scanner.span();
+    scanner.clear();
+    println!("{} {}", &src[slice.byte_begin..slice.byte_end], slice);
+    scanner.advance(); // o
+    scanner.advance(); // !
+    scanner.advance(); // ー
+    scanner.advance(); // あ
+    scanner.advance(); // な
+    scanner.advance(); // た
+    println!("{}", scanner.substr());
+    let slice = scanner.span();
+    println!("{} {}", &src[slice.byte_begin..slice.byte_end], slice);
+}
+*/
 
 /* use cosyc::{
     lexer::*,

@@ -10,8 +10,7 @@ pub struct Scanner<'a> {
     src : &'a str,
     chars : Peekable<CharIndices<'a>>,
     cursor_start : Cursor,
-    cursor_end : Cursor,
-    eof : bool
+    cursor_end : Cursor
 }
 impl<'a> Scanner<'a> {
     /// Consume this string to create a new scanner.
@@ -23,13 +22,7 @@ impl<'a> Scanner<'a> {
                     .peekable(),
             cursor_start : Cursor::new(),
             cursor_end : Cursor::new(),
-            eof : false
         }
-    }
-
-    /// returns whether the scanner is at the end of the file.
-    pub fn eof(&self) -> bool {
-        self.eof
     }
 
     /// Returns the current substring.
@@ -41,13 +34,26 @@ impl<'a> Scanner<'a> {
 
     /// Clears the current substring.
     pub fn clear(&mut self) {
-        self.cursor_end.copy_into(&mut self.cursor_start);
+        self.cursor_start.row = self.cursor_end.row;
+        self.cursor_start.column = self.cursor_end.column;
+        self.cursor_start.byte = self.cursor_end.byte;
     }
 
-    /// Peek at the next character.
-    pub fn chr(&mut self) -> Option<char> {
+    /// Peek at the next character. Returns `None` if the scanner is at the end of the file.
+    pub fn chr(&mut self) -> Option<&char> {
         let (_, x) = self.chars.peek()?;
-        Some(*x)
+        Some(x)
+    }
+
+    /// Advance the cursor whilst some predicate holds.
+    pub fn advance_while(&mut self, p : fn(&char) -> bool) -> &'a str {
+        while let Some(x) = self.chr() {
+            if !p(x) {
+                break;
+            }
+            self.advance();
+        }
+        self.substr()
     }
 
     /// Advance the cursor.
@@ -66,7 +72,6 @@ impl<'a> Scanner<'a> {
         } else {
             // end of file
             self.cursor_end.byte = self.src.len();
-            self.eof = true;
         }
         Some(x)
     }
@@ -96,12 +101,5 @@ impl Cursor {
             column : 0,
             byte : 0
         }
-    }
-
-    /// Copies the state of this cursor into another.
-    pub fn copy_into(&self, cursor : &mut Cursor) {
-        cursor.row = self.row;
-        cursor.column = self.column;
-        cursor.byte = self.byte;
     }
 }
