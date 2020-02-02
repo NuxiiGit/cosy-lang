@@ -11,6 +11,7 @@ pub struct Scanner<'a> {
     chars : Peekable<CharIndices<'a>>,
     cursor_start : Cursor,
     cursor_end : Cursor,
+    eof : bool
 }
 impl<'a> Scanner<'a> {
     /// Consume this string to create a new scanner.
@@ -21,10 +22,16 @@ impl<'a> Scanner<'a> {
                     .char_indices()
                     .peekable(),
             cursor_start : Cursor::new(),
-            cursor_end : Cursor::new()
+            cursor_end : Cursor::new(),
+            eof : false
         }
     }
-    
+
+    /// returns whether the scanner is at the end of the file.
+    pub fn eof(&self) -> bool {
+        self.eof
+    }
+
     /// Returns the current substring.
     pub fn substr(&self) -> &'a str {
         let start = self.cursor_start.byte;
@@ -59,20 +66,19 @@ impl<'a> Scanner<'a> {
         } else {
             // end of file
             self.cursor_end.byte = self.src.len();
+            self.eof = true;
         }
         Some(x)
     }
 
-    /// Consumes the current substring and returns its span.
-    pub fn consume(&mut self) -> Span {
-        let span = Span {
+    /// Returns the span of the current substring.
+    pub fn span(&self) -> Span {
+        Span {
             row : self.cursor_start.row,
             column : self.cursor_start.column,
             byte_begin : self.cursor_start.byte,
             byte_end : self.cursor_end.byte
-        };
-        self.clear();
-        span
+        }
     }
 }
 

@@ -2,39 +2,34 @@ use crate::syntax::token::Token;
 
 use std::fmt;
 use std::error;
+use std::ops::Deref;
 
 /// A struct which stores compiler session information.
 pub struct Session {
-    fatal_occurred : bool,
     errors : Vec<Error>
 }
 impl Session {
     /// Creates a new empty session.
     pub fn new() -> Self {
         Self {
-            fatal_occurred : false,
             errors : Vec::new()
         }
     }
 
     /// Adds a new error to the session.
-    pub fn fatal(&mut self, error : Error) {
+    pub fn report(&mut self, error : Error) {
         self.errors.push(error);
-        self.fatal_occurred = true;
-    }
-
-    /// Adds a new warning to the session.
-    pub fn warning(&mut self, error : Error) {
-        self.errors.push(error);
-    }
-
-    /// Returns whether a fatal error occured.
-    pub fn is_fatal(&self) -> bool {
-        self.fatal_occurred
     }
 
     /// Returns a reference to all errors.
     pub fn errors(&self) -> &[Error] {
+        &self.errors
+    }
+}
+impl Deref for Session {
+    type Target = Vec<Error>;
+
+    fn deref(&self) -> &Self::Target {
         &self.errors
     }
 }
