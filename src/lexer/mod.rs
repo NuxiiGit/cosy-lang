@@ -22,12 +22,49 @@ impl<'a, 'b> Lexer<'a, 'b> {
         'search:
         loop {
             self.scanner.clear();
-            let kind = if let Some(x) = self.scanner.chr() {
-                if valid_whitespace(x) {
+            let kind = if let Some(x) = self.scanner.advance() {
+                let peek = self.scanner.chr();
+                if valid_whitespace(&x) {
                     // trim whitespace
                     self.scanner.advance_while(valid_whitespace);
                     continue 'search;
-                } else if valid_digit(x) {
+                } else if x == '/' && peek == Some(&'/') {
+                    // trim line comment
+                    self.scanner.advance();
+                    let documentation = Some(&'|') == self.scanner.chr();
+                    self.scanner.advance_while(|x| *x != '\n');
+                    if documentation {
+                        TokenKind::Documentation
+                    } else {
+                        continue 'search;
+                    }
+                } else if x == '/' && peek == Some(&'*') {
+                    // trim block comments
+                    self.scanner.advance();
+                    let mut nests = 1;
+                    loop {
+                        match self.scanner.advance() {
+                            Some('*') if Some(&'/') == self.scanner.chr() => {
+                                self.scanner.advance();
+                                if nests == 1 {
+                                    break;
+                                } else {
+                                    nests -= 1;
+                                }
+                            },
+                            Some('/') if Some(&'*') == self.scanner.chr() => {
+                                self.scanner.advance();
+                                nests += 1
+                            },
+                            Some(_) => (),
+                            None => {
+                                self.error("unterminated block comment");
+                                break;
+                            }
+                        }
+                    }
+                    continue 'search;
+                } else if valid_digit(&x) {
                     // lex numbers
                     let mut is_real = false;
                     while let Some(x) = self.scanner.chr() {
@@ -47,7 +84,7 @@ impl<'a, 'b> Lexer<'a, 'b> {
                     } else {
                         LiteralKind::Integer
                     })
-                } else if valid_graphic(x) {
+                } else if valid_graphic(&x) {
                     // lex keywords and identifiers
                     self.scanner.advance_while(valid_graphic);
                     match self.scanner.substr() {
@@ -70,7 +107,7 @@ impl<'a, 'b> Lexer<'a, 'b> {
                         "new" => TokenKind::Keyword(KeywordKind::New),
                         _ => TokenKind::Identifier
                     }
-                } else if valid_operator(x) {
+                } else if valid_operator(&x) {
                     // lex operators
                     let kind = OperatorKind::Custom;
                     self.scanner.advance_while(valid_operator);
