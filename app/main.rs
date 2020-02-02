@@ -3,7 +3,7 @@ use cosyc::diagnostics::error::Session;
 
 fn main() {
     let src = "あhello!           ーあなた";
-    let scanner = scanner::Scanner::new(src);
+    let scanner = scanner::Cursor::new(src);
     let mut sess = Session::new();
     let mut lexer = Lexer::from(&mut sess, scanner);
     println!("{:?}", lexer.next());

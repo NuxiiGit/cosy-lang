@@ -3,17 +3,17 @@ pub mod scanner;
 use crate::diagnostics::error::{ Error, Session };
 use crate::syntax::token::*;
 
-use scanner::Scanner;
+use scanner::Cursor;
 use std::char;
 
 /// An iterator over a string slice which produces `Token`s.
 pub struct Lexer<'a, 'b> {
     sess : &'a mut Session,
-    scanner : Scanner<'b>
+    scanner : Cursor<'b>
 }
 impl<'a, 'b> Lexer<'a, 'b> {
     /// Creates a new lexer from this string scanner and parser session.
-    pub fn from(sess : &'a mut Session, scanner : Scanner<'b>) -> Self {
+    pub fn from(sess : &'a mut Session, scanner : Cursor<'b>) -> Self {
         Lexer { sess, scanner }
     }
 
@@ -118,8 +118,41 @@ impl<'a, 'b> Lexer<'a, 'b> {
                         _ => TokenKind::Operator(kind)
                     }
                 } else {
-                    self.error("unicode characters are unsupported");
-                    continue 'search;
+                    // lex symbols
+                    match x {
+                        '(' => TokenKind::Symbol(SymbolKind::LeftParen),
+                        ')' => TokenKind::Symbol(SymbolKind::RightParen),
+                        '{' => TokenKind::Symbol(SymbolKind::LeftBrace),
+                        '}' => TokenKind::Symbol(SymbolKind::RightBrace),
+                        '[' => TokenKind::Symbol(SymbolKind::LeftBox),
+                        ']' => TokenKind::Symbol(SymbolKind::RightBox),
+                        '.' => TokenKind::Symbol(SymbolKind::Dot),
+                        ',' => TokenKind::Symbol(SymbolKind::Comma),
+                        ':' if peek == Some(&':') => TokenKind::Symbol(SymbolKind::ColonColon),
+                        ':' => TokenKind::Symbol(SymbolKind::Colon),
+                        ';' => TokenKind::Symbol(SymbolKind::SemiColon),
+                        '$' => TokenKind::Symbol(SymbolKind::Dollar),
+                        '`' => TokenKind::Symbol(SymbolKind::Backtick),
+                        '"' => {
+                            // lex string literal
+                            loop {
+                                if let Some(x) = self.scanner.advance() {
+                                    if x == '\\' {
+                                        self.scanner.advance();
+                                    } else if x == '"' {
+                                        break TokenKind::Literal(LiteralKind::String);
+                                    }
+                                } else {
+                                    self.error("unterminated string literal");
+                                    continue 'search;
+                                }
+                            }
+                        },
+                        _ => {
+                            self.error("unicode characters are unsupported");
+                            continue 'search;
+                        }
+                    }
                 }
             } else {
                 TokenKind::EoF

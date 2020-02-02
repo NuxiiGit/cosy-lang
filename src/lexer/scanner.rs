@@ -6,13 +6,13 @@ use std::{
 };
 
 /// A structure over a string slice which produces individual `Span`s.
-pub struct Scanner<'a> {
+pub struct Cursor<'a> {
     src : &'a str,
     chars : Peekable<CharIndices<'a>>,
-    cursor_start : Cursor,
-    cursor_end : Cursor
+    pos_start : SlicePosition,
+    pos_end : SlicePosition
 }
-impl<'a> Scanner<'a> {
+impl<'a> Cursor<'a> {
     /// Consume this string to create a new scanner.
     pub fn new(src : &'a str) -> Self {
         Self {
@@ -20,23 +20,23 @@ impl<'a> Scanner<'a> {
             chars : src
                     .char_indices()
                     .peekable(),
-            cursor_start : Cursor::new(),
-            cursor_end : Cursor::new(),
+            pos_start : SlicePosition::new(),
+            pos_end : SlicePosition::new(),
         }
     }
 
     /// Returns the current substring.
     pub fn substr(&self) -> &'a str {
-        let start = self.cursor_start.byte;
-        let end = self.cursor_end.byte;
+        let start = self.pos_start.byte;
+        let end = self.pos_end.byte;
         &self.src[start..end]
     }
 
     /// Clears the current substring.
     pub fn clear(&mut self) {
-        self.cursor_start.row = self.cursor_end.row;
-        self.cursor_start.column = self.cursor_end.column;
-        self.cursor_start.byte = self.cursor_end.byte;
+        self.pos_start.row = self.pos_end.row;
+        self.pos_start.column = self.pos_end.column;
+        self.pos_start.byte = self.pos_end.byte;
     }
 
     /// Peek at the next character. Returns `None` if the scanner is at the end of the file.
@@ -61,17 +61,17 @@ impl<'a> Scanner<'a> {
         let (_, x) = self.chars.next()?;
         if let Some((i, _)) = self.chars.peek() {
             // update span
-            self.cursor_end.byte = *i;
+            self.pos_end.byte = *i;
             // move cursor row/column
             if x == '\n' {
-                self.cursor_end.row += 1;
-                self.cursor_end.column = 1;
+                self.pos_end.row += 1;
+                self.pos_end.column = 1;
             } else {
-                self.cursor_end.column += 1;
+                self.pos_end.column += 1;
             }
         } else {
             // end of file
-            self.cursor_end.byte = self.src.len();
+            self.pos_end.byte = self.src.len();
         }
         Some(x)
     }
@@ -79,21 +79,21 @@ impl<'a> Scanner<'a> {
     /// Returns the span of the current substring.
     pub fn span(&self) -> Span {
         Span {
-            row : self.cursor_start.row,
-            column : self.cursor_start.column,
-            byte_begin : self.cursor_start.byte,
-            byte_end : self.cursor_end.byte
+            row : self.pos_start.row,
+            column : self.pos_start.column,
+            byte_begin : self.pos_start.byte,
+            byte_end : self.pos_end.byte
         }
     }
 }
 
 /// A container type for the current cursor position.
-struct Cursor {
+struct SlicePosition {
     pub row : usize,
     pub column : usize,
     pub byte : usize
 }
-impl Cursor {
+impl SlicePosition {
     /// Creates a new default cursor.
     pub fn new() -> Self {
         Self {
