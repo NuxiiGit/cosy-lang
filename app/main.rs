@@ -5,10 +5,10 @@ fn main() {
     let src = "あhello!           ーあなた";
     let scanner = scanner::Cursor::new(src);
     let mut sess = Session::new();
-    let mut lexer = Lexer::from(&mut sess, scanner);
+    let mut lexer = tokeniser::Tokeniser::from(&mut sess, scanner);
     println!("{:?}", lexer.next());
     for error in &*sess {
-        println!("{}", error);
+        panic!("{}", error);
     }
 }
 
