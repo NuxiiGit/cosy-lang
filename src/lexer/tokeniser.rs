@@ -24,15 +24,15 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
             self.scanner.clear();
             let kind = if let Some(x) = self.scanner.advance() {
                 let peek = self.scanner.chr();
-                if valid_whitespace(&x) {
+                if x.is_whitespace() {
                     // trim whitespace
-                    self.scanner.advance_while(valid_whitespace);
+                    self.scanner.advance_while(char::is_whitespace);
                     continue 'search;
                 } else if x == '/' && peek == Some(&'/') {
                     // trim line comment
                     self.scanner.advance();
                     let documentation = Some(&'|') == self.scanner.chr();
-                    self.scanner.advance_while(|x| *x != '\n');
+                    self.scanner.advance_while(|x| x != '\n');
                     if documentation {
                         TokenKind::Documentation
                     } else {
@@ -64,7 +64,7 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
                         }
                     }
                     continue 'search;
-                } else if valid_digit(&x) {
+                } else if x.is_ascii_digit() {
                     // lex numbers
                     let mut is_real = false;
                     while let Some(x) = self.scanner.chr() {
@@ -74,7 +74,7 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
                             } else {
                                 is_real = true;
                             }
-                        } else if !valid_digit(x) {
+                        } else if !x.is_ascii_digit() {
                             break;
                         }
                         self.scanner.advance();
@@ -84,9 +84,9 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
                     } else {
                         LiteralKind::Integer
                     })
-                } else if valid_graphic(&x) {
+                } else if x == '_' || x.is_alphanumeric() {
                     // lex keywords and identifiers
-                    self.scanner.advance_while(valid_graphic);
+                    self.scanner.advance_while(|x| x == '_' || x.is_alphanumeric());
                     match self.scanner.substr() {
                         "var" => TokenKind::Keyword(KeywordKind::Var),
                         "const" => TokenKind::Keyword(KeywordKind::Const),
@@ -107,16 +107,6 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
                         "new" => TokenKind::Keyword(KeywordKind::New),
                         _ => TokenKind::Identifier
                     }
-                } else if valid_operator(&x) {
-                    // lex operators
-                    let kind = OperatorKind::Custom;
-                    self.scanner.advance_while(valid_operator);
-                    match self.scanner.substr() {
-                        "->" => TokenKind::Symbol(SymbolKind::Arrow),
-                        "=" => TokenKind::Symbol(SymbolKind::Assign),
-                        "\\" => TokenKind::Symbol(SymbolKind::Backslash),
-                        _ => TokenKind::Operator(kind)
-                    }
                 } else {
                     // lex symbols
                     match x {
@@ -127,8 +117,9 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
                         '[' => TokenKind::Symbol(SymbolKind::LeftBox),
                         ']' => TokenKind::Symbol(SymbolKind::RightBox),
                         '.' => TokenKind::Symbol(SymbolKind::Dot),
+                        '=' => TokenKind::Symbol(SymbolKind::Assign),
+                        '\\' => TokenKind::Symbol(SymbolKind::Backslash),
                         ',' => TokenKind::Symbol(SymbolKind::Comma),
-                        ':' if peek == Some(&':') => TokenKind::Symbol(SymbolKind::ColonColon),
                         ':' => TokenKind::Symbol(SymbolKind::Colon),
                         ';' => TokenKind::Symbol(SymbolKind::SemiColon),
                         '$' => TokenKind::Symbol(SymbolKind::Dollar),
@@ -148,10 +139,7 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
                                 }
                             }
                         },
-                        _ => {
-                            self.error("unicode characters are unsupported");
-                            continue 'search;
-                        }
+                        _ => TokenKind::Operator(OperatorKind::Custom)
                     }
                 }
             } else {
@@ -176,32 +164,4 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
         let span = self.scanner.span();
         Token { kind, span }
     }
-}
-
-/// Returns whether this character is a valid operator character.
-pub fn valid_operator(x : &char) -> bool {
-    if let '!' | '?' | '\'' | '_' |
-            '@' | '&' |
-            '+' | '-' | '*' | '/' | '\\' | '%' | '^' |
-            '<' | '=' | '>' |
-            '|' | '~' = x {
-        true
-    } else {
-        false
-    }
-}
-
-/// Returns whether this character is a valid whitespace character.
-pub fn valid_whitespace(x : &char) -> bool {
-    x.is_ascii_whitespace()
-}
-
-/// Returns whether this character is a valid identifier character.
-pub fn valid_graphic(x : &char) -> bool {
-    *x == '\'' || *x == '_' || x.is_ascii_alphanumeric()
-}
-
-/// Returns whether this character is a valid number character.
-pub fn valid_digit(x : &char) -> bool {
-    x.is_ascii_digit()
 }

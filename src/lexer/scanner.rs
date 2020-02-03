@@ -46,9 +46,9 @@ impl<'a> Cursor<'a> {
     }
 
     /// Advance the cursor whilst some predicate holds.
-    pub fn advance_while(&mut self, p : fn(&char) -> bool) -> &'a str {
+    pub fn advance_while(&mut self, p : fn(char) -> bool) -> &'a str {
         while let Some(x) = self.chr() {
-            if !p(x) {
+            if !p(*x) {
                 break;
             }
             self.advance();
