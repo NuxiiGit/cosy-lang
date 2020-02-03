@@ -2,7 +2,7 @@ use crate::syntax::token::Token;
 
 use std::fmt;
 use std::error;
-use std::ops::Deref;
+use std::iter::IntoIterator;
 
 /// A struct which stores compiler session information.
 pub struct Session {
@@ -20,17 +20,13 @@ impl Session {
     pub fn report(&mut self, error : Error) {
         self.errors.push(error);
     }
-
-    /// Returns a reference to all errors.
-    pub fn errors(&self) -> &[Error] {
-        &self.errors
-    }
 }
-impl Deref for Session {
-    type Target = Vec<Error>;
+impl IntoIterator for Session {
+    type Item = Error;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
 
-    fn deref(&self) -> &Self::Target {
-        &self.errors
+    fn into_iter(self) -> Self::IntoIter {
+        self.errors.into_iter()
     }
 }
 

@@ -8,9 +8,56 @@ use std::char;
 
 /// An iterator over a string slice which produces `Token`s.
 pub struct Tokeniser<'a, 'b> {
-    sess : &'a mut Session,
-    scanner : Cursor<'b>
+    scanner : Cursor<'a>,
+    sess : &'b mut Session,
+    eof : bool
 }
+impl<'a, 'b> Tokeniser<'a, 'b> {
+    /// Creates a new tokeniser from this string scanner.
+    pub fn from(scanner : Cursor<'a>, sess : &'b mut Session) -> Self {
+        Tokeniser {
+            scanner,
+            sess,
+            eof : false
+        }
+    }
+
+    /// Reports a new error with this reason.
+    fn error(&mut self, reason : &'static str) {
+        let token = self.tokenise(TokenKind::Unknown);
+        self.sess.report(Error { reason, token });
+    }
+
+    /// Creates a token of this kind from the scanner.
+    fn tokenise(&mut self, kind : TokenKind) -> Token {
+        let span = self.scanner.span();
+        Token { kind, span }
+    }
+}
+impl Iterator for Tokeniser<'_, '_> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let token = 'search: loop {
+            self.scanner.clear();
+            let kind = if let Some(current) = self.scanner.advance() {
+                let next = self.scanner.chr();
+                self.error("unimplemented");
+                continue 'search;
+            } else if self.eof {
+                // true end of file reached
+                return None;
+            } else {
+                self.eof = true;
+                TokenKind::EoF
+            };
+            break self.tokenise(kind);
+        };
+        Some(token)
+    }
+}
+
+/*
 impl<'a, 'b> Tokeniser<'a, 'b> {
     /// Creates a new tokeniser from this string scanner and parser session.
     pub fn from(sess : &'a mut Session, scanner : Cursor<'b>) -> Self {
@@ -150,7 +197,7 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
     }
 
     /// Reports an error of this kind.
-    pub fn error(&mut self, reason : &'static str) {
+    fn error(&mut self, reason : &'static str) {
         let span = self.scanner.span();
         let token = Token {
             kind : TokenKind::Unknown,
@@ -160,8 +207,9 @@ impl<'a, 'b> Tokeniser<'a, 'b> {
     }
 
     /// Creates a token of this kind from the scanner.
-    pub fn tokenise(&mut self, kind : TokenKind) -> Token {
+    fn tokenise(&mut self, kind : TokenKind) -> Token {
         let span = self.scanner.span();
         Token { kind, span }
     }
 }
+*/

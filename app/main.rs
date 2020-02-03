@@ -5,10 +5,13 @@ fn main() {
     let src = "あhello!           ーあなた";
     let scanner = scanner::Cursor::new(src);
     let mut sess = Session::new();
-    let mut lexer = tokeniser::Tokeniser::from(&mut sess, scanner);
-    println!("{:?}", lexer.next());
-    for error in &*sess {
-        panic!("{}", error);
+    let lexer = tokeniser::Tokeniser::from(scanner, &mut sess);
+    let tokens : Vec<_> = lexer.collect();
+    for token in tokens {
+        print!("token! {:?}\n", token);
+    }
+    for error in sess {
+        print!("error! {}\n", error);
     }
 }
 
