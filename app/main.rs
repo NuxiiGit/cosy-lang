@@ -2,16 +2,20 @@ use cosyc::lexer::*;
 use cosyc::diagnostics::error::Session;
 
 fn main() {
-    let src = "あhello!           ーあなた";
+    let src = " /*nice*/    //| bleh          ーあなた";
     let scanner = scanner::Cursor::new(src);
     let mut sess = Session::new();
     let lexer = tokeniser::Tokeniser::from(scanner, &mut sess);
     let tokens : Vec<_> = lexer.collect();
-    for token in tokens {
-        print!("token! {:?}\n", token);
-    }
-    for error in sess {
-        print!("error! {}\n", error);
+    if sess.is_empty() {
+        for token in tokens {
+            print!("token! {:?}\n", token);
+        }
+    } else {
+        // report errors
+        for error in sess {
+            print!("error! {}\n", error);
+        }
     }
 }
 

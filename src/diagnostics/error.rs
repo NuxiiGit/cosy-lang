@@ -16,6 +16,11 @@ impl Session {
         }
     }
 
+    /// Returns whether the session is empty.
+    pub fn is_empty(&self) -> bool {
+        self.errors.is_empty()
+    }
+
     /// Adds a new error to the session.
     pub fn report(&mut self, error : Error) {
         self.errors.push(error);

@@ -16,6 +16,7 @@ pub enum TokenKind {
     Operator(OperatorKind),
     Literal(LiteralKind),
     EoF,
+    Epsilon,
     Directive,
     Documentation,
     Unknown
@@ -99,15 +100,34 @@ pub enum SymbolKind {
     ColonColon,
     SemiColon,
     Arrow,
-    Assign,
     Dollar,
     Backtick,
-    Backslash
+    Bar,
+    Caret,
+    Ampersand,
+    Bang,
+    Equals,
+    LessThan,
+    GreaterThan,
+    Plus,
+    Minus,
+    Asterisk,
+    ForwardSlash,
+    BackSlash,
+    Percent,
+    Hashtag,
+    Address
 }
 
 /// An enum which describes available operator types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum OperatorKind {
+    Disjunction,
+    Conjunction,
+    Equality,
+    Comparison,
+    Addition,
+    Multiplication,
     Custom
 }
 

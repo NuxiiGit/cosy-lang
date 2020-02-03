@@ -21,7 +21,7 @@ impl<'a> Cursor<'a> {
                     .char_indices()
                     .peekable(),
             pos_start : SlicePosition::new(),
-            pos_end : SlicePosition::new(),
+            pos_end : SlicePosition::new()
         }
     }
 
