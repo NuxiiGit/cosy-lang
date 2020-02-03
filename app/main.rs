@@ -2,7 +2,7 @@ use cosyc::lexer::*;
 use cosyc::diagnostics::error::Session;
 
 fn main() {
-    let src = " /*nice*/    //| bleh          ーあなた";
+    let src = " nice    bleh          ーあなた";
     let scanner = scanner::Cursor::new(src);
     let mut sess = Session::new();
     let lexer = tokeniser::Tokeniser::from(scanner, &mut sess);

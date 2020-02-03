@@ -102,6 +102,14 @@ pub enum SymbolKind {
     Arrow,
     Dollar,
     Backtick,
+    Assignment,
+    Hashtag,
+    Address
+}
+
+/// An enum which describes available operator types.
+#[derive(PartialEq, Debug, Clone)]
+pub enum OperatorKind {
     Bar,
     Caret,
     Ampersand,
@@ -115,20 +123,7 @@ pub enum SymbolKind {
     ForwardSlash,
     BackSlash,
     Percent,
-    Hashtag,
-    Address
-}
-
-/// An enum which describes available operator types.
-#[derive(PartialEq, Debug, Clone)]
-pub enum OperatorKind {
-    Disjunction,
-    Conjunction,
-    Equality,
-    Comparison,
-    Addition,
-    Multiplication,
-    Custom
+    Other
 }
 
 /// An enum which describes available literal types.
