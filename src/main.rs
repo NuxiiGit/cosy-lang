@@ -1,4 +1,7 @@
+use cosyc::diagnostics::error::ErrorKind;
+
 fn main() {
+    println!("{}", ErrorKind::Fatal < ErrorKind::Warning);
 }
 
 /*

@@ -4,12 +4,5 @@ version = "0.0.1"
 authors = ["Nuxii"]
 edition = "2018"
 
-[[bin]]
-name = "cosy"
-path = "app/main.rs"
-
 [lib]
 name = "cosyc"
-path = "src/lib.rs"
-
-[dependencies]
