@@ -1,46 +1,31 @@
-use crate::syntax::token::Token;
+pub mod error;
 
-use std::fmt;
-use std::error;
+use std::cmp::PartialEq;
 
-/// A struct which handles the compilation of errors.
-#[derive(Debug)]
-pub struct Handler<'a> {
-    errors : Vec<Error<'a>>
+/// Builds a diagnostic which can be used to throw errors or check validity.
+pub struct Diagnostic<T : PartialEq> {
+    invalid : bool,
+    value : T
 }
-impl Handler<'_> {
-    /// Creates an empty error handler.
-    pub fn new() -> Self {
-        Handler {
-            errors : Vec::new()
+impl<T : PartialEq> Diagnostic<T> {
+    /// Creates a new diagnostic builder with this value.
+    pub fn from(value : T) -> Self {
+        Self {
+            invalid : true,
+            value
         }
     }
-}
-impl fmt::Display for Handler<'_> {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        if self.errors.len() == 0 {
-            write!(out, "No errors!")
-        } else {
-            write!(out, "Errors:{}", self.errors.iter().fold(String::new(), |mut acc, err| {
-                acc.push('\n');
-                acc.push_str(&err.to_string());
-                acc
-            }))
-        }
-    }
-}
-impl error::Error for Handler<'_> {}
 
-/// A struct which stores error information.
-#[derive(Debug)]
-pub struct Error<'a> {
-    pub reason : &'static str,
-    pub token : Token<'a>
-}
-impl fmt::Display for Error<'_> {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}: {}",
-                self.token.span, self.reason)
+    /// Validates the value if it is equal to the expected value.
+    pub fn expects(mut self, value : T) -> Self {
+        if self.invalid && self.value == value {
+            self.invalid = true;
+        }
+        self
+    }
+
+    /// Consumes the diagnostic and returns a boolean value depending on whether the value is valid.
+    pub fn check(self) -> bool {
+        !self.invalid
     }
 }
-impl error::Error for Error<'_> {}

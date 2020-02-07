@@ -1,4 +1,52 @@
-use cosyc::{
+use cosyc::lexer::*;
+use cosyc::diagnostics::error::Session;
+
+fn main() {
+    let src = " nice    bleh          ーあなた";
+    let scanner = scanner::Cursor::new(src);
+    let mut sess = Session::new();
+    let lexer = tokeniser::Tokeniser::from(scanner, &mut sess);
+    let tokens : Vec<_> = lexer.collect();
+    if sess.is_empty() {
+        for token in tokens {
+            print!("token! {:?}\n", token);
+        }
+    } else {
+        // report errors
+        for error in sess {
+            print!("error! {}\n", error);
+        }
+    }
+}
+
+/*
+use cosyc::lexer::scanner::Scanner;
+
+fn main() {
+    let src = "hello!ーあなた";
+    let mut scanner = Scanner::new(src);
+    println!("{:?}", scanner.chr());
+    scanner.advance(); // h
+    scanner.advance(); // e
+    scanner.advance(); // l
+    scanner.advance(); // l
+    println!("{}", scanner.substr());
+    let slice = scanner.span();
+    scanner.clear();
+    println!("{} {}", &src[slice.byte_begin..slice.byte_end], slice);
+    scanner.advance(); // o
+    scanner.advance(); // !
+    scanner.advance(); // ー
+    scanner.advance(); // あ
+    scanner.advance(); // な
+    scanner.advance(); // た
+    println!("{}", scanner.substr());
+    let slice = scanner.span();
+    println!("{} {}", &src[slice.byte_begin..slice.byte_end], slice);
+}
+*/
+
+/* use cosyc::{
     lexer::*,
     parser::*
 };
@@ -43,4 +91,4 @@ fn main() {
     };
     out.write(s.as_bytes())
             .expect("unable to write to file");
-}
+}*/

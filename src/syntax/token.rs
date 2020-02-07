@@ -1,54 +1,91 @@
-use crate::syntax::span::Span;
-
-use std::fmt;
+use super::span::Span;
 
 /// Stores a token and its location in the source file.
-#[derive(Clone)]
-pub struct Token<'a> {
+#[derive(Debug, Clone)]
+pub struct Token {
     pub kind : TokenKind,
-    pub span : Span<'a>
-}
-impl Token<'_> {
-    /// Returns `true` if this token contains any of these prefixes.
-    pub fn contains_prefix(&self, prefixes : &[char]) -> bool {
-        if let Some(prefix) = self.span.content.chars().next() {
-            prefixes.iter().any(|x| *x == prefix)
-        } else {
-            false
-        }
-    }
-}
-impl fmt::Debug for Token<'_> {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}", self)
-    }
-}
-impl fmt::Display for Token<'_> {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}", self.span.content)
-    }
+    pub span : Span
 }
 
 /// An enum which describes available token types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum TokenKind {
+    Keyword(KeywordKind),
+    Symbol(SymbolKind),
+    Identifier,
+    Operator(OperatorKind),
+    Literal(LiteralKind),
+    EoF,
+    Epsilon,
+    Directive,
+    Documentation,
+    Unknown
+}
+impl TokenKind {
+    /// Returns `true` of the token is a keyword.
+    pub fn is_keyword(&self) -> bool {
+        if let TokenKind::Keyword(..) = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is an identifier.
+    pub fn is_identifier(&self) -> bool {
+        if let TokenKind::Identifier = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is an operator.
+    pub fn is_operator(&self) -> bool {
+        if let TokenKind::Operator(..) = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is a literal.
+    pub fn is_literal(&self) -> bool {
+        if let TokenKind::Literal(..) = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is the end of the file.
+    pub fn is_eof(&self) -> bool {
+        if let TokenKind::EoF = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is a compiler directive.
+    pub fn is_directive(&self) -> bool {
+        if let TokenKind::Directive = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is documentation.
+    pub fn is_documentation(&self) -> bool {
+        if let TokenKind::Documentation = self { true } else { false }
+    }
+
+    /// Returns `true` of the token is unknown.
+    pub fn is_unknown(&self) -> bool {
+        if let TokenKind::Unknown = self { true } else { false }
+    }
+}
+
+/// An enum which describes available keyword types.
+#[derive(PartialEq, Debug, Clone)]
+pub enum KeywordKind {
     Var,
     Const,
     If,
-    Unless,
     Else,
     Then,
     Switch,
     Case,
     Is,
     While,
-    Until,
     Repeat,
     For,
     In,
     Function,
     Object,
-    New,
+    New
+}
+
+/// An enum which describes available symbol types.
+#[derive(PartialEq, Debug, Clone)]
+pub enum SymbolKind {
     LeftParen,
     RightParen,
     LeftBrace,
@@ -61,24 +98,30 @@ pub enum TokenKind {
     ColonColon,
     SemiColon,
     Arrow,
-    Assign,
     Dollar,
     Backtick,
-    Backslash,
-    Identifier(IdentifierKind),
-    Literal(LiteralKind),
-    EoF,
-    Directive,
-    Documentation,
-    Unknown
+    Assignment,
+    Hashtag,
+    Address
 }
 
-/// An enum which describes available identifier types.
+/// An enum which describes available operator types.
 #[derive(PartialEq, Debug, Clone)]
-pub enum IdentifierKind {
-    Alphanumeric,
-    Operator,
-    Empty
+pub enum OperatorKind {
+    Bar,
+    Caret,
+    Ampersand,
+    Bang,
+    Equals,
+    LessThan,
+    GreaterThan,
+    Plus,
+    Minus,
+    Asterisk,
+    ForwardSlash,
+    BackSlash,
+    Percent,
+    Other
 }
 
 /// An enum which describes available literal types.
