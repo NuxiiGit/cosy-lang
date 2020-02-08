@@ -1,11 +1,29 @@
 // function definition
-function max (a : Int) (b : Int) : Int {
+def max (a : Int) (b : Int) : Int {
     if a > b {
         return a;
     } else {
         return b;
     }
 }
+
+/* Note: the `def` keyword is used because it will
+ * allow for more options than simply `function`.
+ *
+ * For example:
+ * |
+ * | def Vec2::get_x(Vec2 v) : Float = v.x;
+ * |
+ * 
+ * would get compiled into:
+ * |
+ * | def Vec2::get_x = \(Vec2 v) -> v.x : Float;
+ * |
+ * 
+ * which shows that `def` is similar to `var`, except
+ * values will be immutable and include the ability to
+ * add scope to functions/values.
+ */
 
 // function application
 var greatest = max 3 4;
@@ -26,7 +44,7 @@ max' = \a -> \b -> max a b;
 var positive : Int -> Int = max 1;
 
 // procedural style functions
-function izard(a : String, b : String) : String {
+def izard(a : String, b : String) : String {
     return a ++ " fo' " ++ b ++ "izard";
 }
 
