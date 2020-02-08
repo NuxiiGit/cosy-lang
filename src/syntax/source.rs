@@ -1,9 +1,11 @@
 use std::fmt;
+use std::rc::Rc;
 
 /// A struct which stores information about some substring of a source file.
 #[derive(Debug, Clone)]
 pub struct Context {
     pub src : String,
+    pub filepath : Rc<String>,
     pub row : usize,
     pub column : usize
 }

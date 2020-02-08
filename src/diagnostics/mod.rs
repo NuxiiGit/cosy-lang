@@ -1,32 +1,39 @@
 pub mod error;
 
-use error::Error;
+use error::{ Error, ErrorKind };
 
 use std::vec;
 
-/// A struct which stores compiler session information.
-pub struct Session {
-    errors : Vec<Error>
+/// A struct which keeps track of errors.
+pub struct IssueTracker {
+    errors : Vec<Error>,
+    level : Option<ErrorKind>
 }
-impl Session {
+impl IssueTracker {
     /// Creates a new empty session.
     pub fn new() -> Self {
         Self {
-            errors : Vec::new()
+            errors : Vec::new(),
+            level : None
         }
     }
 
-    /// Returns whether the session is empty.
-    pub fn is_empty(&self) -> bool {
-        self.errors.is_empty()
+    /// Returns the error level, if one exists.
+    pub fn level(&self) -> Option<ErrorKind> {
+        self.level.clone()
     }
 
     /// Adds a new error to the session.
     pub fn report(&mut self, error : Error) {
+        let increase_level = if let Some(kind) = &self.level
+                { error.kind > *kind } else { true };
+        if increase_level {
+            self.level = Some(error.kind.clone());
+        }
         self.errors.push(error);
     }
 }
-impl IntoIterator for Session {
+impl IntoIterator for IssueTracker {
     type Item = Error;
     type IntoIter = vec::IntoIter<Self::Item>;
 
