@@ -1,111 +1,77 @@
-use crate::{
-    diagnostics::{ error::*, Session },
-    syntax::{ token::*, source::Context }
-};
+pub mod scanner;
 
-use std::{ str::CharIndices, iter::Peekable };
+use crate::diagnostics::IssueTracker;
+use crate::diagnostics::error::{ Error, ErrorKind };
+use crate::syntax::token::*;
 
-/// A structure over a string slice which produces individual `Token`s.
-pub struct Lexer<'a> {
-    src : &'a str,
-    chars : Peekable<CharIndices<'a>>,
-    pos_start : Cursor,
-    pos_end : Cursor
+use scanner::Scanner;
+
+/// An iterator over a string slice which produces `Token`s.
+pub struct Lexer<'a, 'b> {
+    scanner : Scanner<'a>,
+    issues : &'b mut IssueTracker
 }
-impl<'a> Lexer<'a> {
-    /// Create a new scanner from this string.
-    pub fn from(src : &'a str) -> Self {
-        Self {
-            src,
-            chars : src
-                    .char_indices()
-                    .peekable(),
-            pos_start : Cursor::new(),
-            pos_end : Cursor::new()
-        }
+impl<'a, 'b> Lexer<'a, 'b> {
+    /// Creates a new tokeniser from this string scanner.
+    pub fn from(scanner : Scanner<'a>, issues : &'b mut IssueTracker) -> Self {
+        Self { scanner, issues }
     }
 
-    /// Returns the current substring.
-    pub fn substr(&self) -> &'a str {
-        let start = self.pos_start.byte;
-        let end = self.pos_end.byte;
-        &self.src[start..end]
-    }
-
-    /// Clears the current substring.
-    pub fn clear(&mut self) {
-        self.pos_start.row = self.pos_end.row;
-        self.pos_start.column = self.pos_end.column;
-        self.pos_start.byte = self.pos_end.byte;
-    }
-
-    /// Peek at the next character. Returns `None` if the scanner is at the end of the file.
-    pub fn chr(&mut self) -> Option<&char> {
-        let (_, x) = self.chars.peek()?;
-        Some(x)
-    }
-
-    /// Advance the cursor whilst some predicate holds.
-    pub fn advance_while(&mut self, p : fn(char) -> bool) -> &'a str {
-        while let Some(x) = self.chr() {
-            if !p(*x) {
-                break;
-            }
-            self.advance();
-        }
-        self.substr()
-    }
-
-    /// Advance the cursor.
-    pub fn advance(&mut self) -> Option<char> {
-        let (_, x) = self.chars.next()?;
-        if let Some((i, _)) = self.chars.peek() {
-            // update span
-            self.pos_end.byte = *i;
-            // move cursor row/column
-            if x == '\n' {
-                self.pos_end.row += 1;
-                self.pos_end.column = 1;
+    /// Tokenises the current token and returns it.
+    pub fn next(&mut self) -> Token {
+        'search:
+        loop {
+            self.scanner.clear();
+            let kind = if let Some(current) = self.scanner.advance() {
+                let next = self.scanner.chr();
+                if current.is_whitespace() {
+                    // ignore whitespace
+                    self.scanner.advance_while(char::is_whitespace);
+                    continue 'search;
+                } else if '/' == current && Some(&'/') == next {
+                    // ignore line comments
+                    self.scanner.advance_while(|x| x != '\n');
+                    self.scanner.advance(); // ignore final `'\n'`
+                    continue 'search;
+                } else if '/' == current && Some(&'*') == next {
+                    // ignore block comments
+                    self.scanner.advance();
+                    let mut nests = 1;
+                    loop {
+                        match self.scanner.advance() {
+                            Some('*') if Some(&'/') == self.scanner.chr() => {
+                                self.scanner.advance();
+                                if nests == 1 {
+                                    break;
+                                } else {
+                                    nests -= 1;
+                                }
+                            },
+                            Some('/') if Some(&'*') == self.scanner.chr() => {
+                                self.scanner.advance();
+                                nests += 1
+                            },
+                            Some(_) => {},
+                            None => {
+                                self.error(ErrorKind::Warning, "unterminated block comment");
+                                break;
+                            }
+                        }
+                    }
+                    continue 'search;
+                }
+                self.error(ErrorKind::Fatal, "not implemented");
+                continue 'search;
             } else {
-                self.pos_end.column += 1;
-            }
-        } else {
-            // end of file
-            self.pos_end.byte = self.src.len();
+                TokenKind::EoF
+            };
+            break self.scanner.tokenise(kind);
         }
-        Some(x)
     }
 
-    /// Creates a new error with this reason.
-    pub fn error(&mut self, kind : ErrorKind, reason : &'static str) -> Error {
-        let token = self.tokenise(TokenKind::Unknown);
-        Error { reason, token, kind }
-    }
-
-    /// Returns a token of this kind for the current substring.
-    pub fn tokenise(&self, kind : TokenKind) -> Token {
-        let context = Context {
-            row : self.pos_start.row,
-            column : self.pos_start.column,
-            src : self.substr().to_string()
-        };
-        Token { kind, context }
-    }
-}
-
-/// A container type for the current cursor position.
-struct Cursor {
-    pub row : usize,
-    pub column : usize,
-    pub byte : usize
-}
-impl Cursor {
-    /// Creates a new default cursor.
-    pub fn new() -> Self {
-        Self {
-            row : 0,
-            column : 0,
-            byte : 0
-        }
+    /// Reports a new error with this reason.
+    pub fn error(&mut self, kind : ErrorKind, reason : &'static str) {
+        let token = self.scanner.tokenise(TokenKind::Unknown);
+        self.issues.report(Error { reason, token, kind });
     }
 }

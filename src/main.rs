@@ -1,7 +1,21 @@
-use cosyc::diagnostics::error::ErrorKind;
+use cosyc::lexer::scanner::Scanner;
+use cosyc::lexer::Lexer;
+use cosyc::diagnostics::IssueTracker;
 
 fn main() {
-    println!("{}", ErrorKind::Fatal < ErrorKind::Warning);
+    let src = "hello!ーあなた";
+    let scanner = Scanner::from(src);
+    let mut issues = IssueTracker::new();
+    let mut lexer = Lexer::from(scanner, &mut issues);
+    println!("{:?}", lexer.next());
+    println!("{:?}", lexer.next());
+    println!("{:?}", lexer.next());
+    println!("{:?}", lexer.next());
+    if issues.level().is_some() {
+        for e in issues {
+            println!("{}", e);
+        }
+    }
 }
 
 /*
