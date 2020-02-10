@@ -11,9 +11,19 @@ fn main() {
     println!("{:?}", scanner.next());
     println!("{:?}", scanner.next());
     println!("{:?}", scanner.next());
+    println!("{}", scanner.substr());
+    scanner.clear();
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
     println!("{:?}", scanner.next());
     println!("{}", scanner.substr());
-    println!("{}", scanner.context());
 
     /*let mut issues = IssueTracker::new();
     let mut lexer = Lexer::from(scanner, &mut issues);

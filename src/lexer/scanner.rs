@@ -94,7 +94,7 @@ impl FileScanner {
 
     /// Clears the current substring.
     pub fn clear(&mut self) {
-        self.chars.clear();
+        self.word.clear();
     }
 
     /// Returns the current context for the current substring.
