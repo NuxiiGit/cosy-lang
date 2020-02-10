@@ -1,4 +1,4 @@
-use super::source::Context;
+use crate::common::Context;
 
 /// Stores a token and its location in the source file.
 #[derive(Debug, Clone)]

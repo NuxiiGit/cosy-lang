@@ -1,11 +1,21 @@
-use cosyc::lexer::scanner::Scanner;
-use cosyc::lexer::Lexer;
+use cosyc::lexer::scanner::FileScanner;
 use cosyc::diagnostics::IssueTracker;
 
 fn main() {
-    let src = "hello!ーあなた";
-    let scanner = Scanner::from(src);
-    let mut issues = IssueTracker::new();
+    let mut scanner = FileScanner::open("examples/tests/bleh.cosy").unwrap();
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{:?}", scanner.next());
+    println!("{}", scanner.substr());
+    println!("{}", scanner.context());
+
+    /*let mut issues = IssueTracker::new();
     let mut lexer = Lexer::from(scanner, &mut issues);
     println!("{:?}", lexer.next());
     println!("{:?}", lexer.next());
@@ -15,7 +25,7 @@ fn main() {
         for e in issues {
             println!("{}", e);
         }
-    }
+    }*/
 }
 
 /*

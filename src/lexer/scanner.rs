@@ -1,8 +1,110 @@
 use crate::syntax::token::{ Token, TokenKind};
-use crate::syntax::source::Context;
+use crate::common::Context;
 
-use std::{ str::CharIndices, iter::Peekable };
+use std::iter::Peekable;
+use std::rc::Rc;
+use std::io::{ self, BufRead, BufReader, Lines };
+use std::fs::File;
+use std::collections::VecDeque;
 
+/// A structure which reads characters of a file and returns individual `Context`s.
+pub struct FileScanner {
+    filepath : Rc<String>,
+    lines : Option<Lines<BufReader<File>>>,
+    line : usize,
+    chars : VecDeque<char>,
+    word : String
+}
+impl FileScanner {
+    /// Creates a new scanner at this file path.
+    pub fn open(filepath : &str) -> Option<Self> {
+        if let Ok(file) = File::open(filepath) {
+            Some(Self {
+                filepath : Rc::new(filepath.to_string()),
+                lines : Some(BufReader::new(file).lines()),
+                line : 0,
+                chars : VecDeque::new(),
+                word : String::new()
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Returns the kind of the next character.
+    pub fn peek(&mut self) -> CharKind {
+        if self.lines.is_none() {
+            CharKind::EoF
+        } else if let Some(chr) = self.chars.front() {
+            match chr {
+                _ => CharKind::Other
+            }
+        } else {
+            CharKind::NewLine
+        }
+    }
+
+    /// Advances the scanner.
+    pub fn next(&mut self) -> CharKind {
+        let kind = self.peek();
+        if kind == CharKind::NewLine {
+            // read in next line
+            self.readln();
+        } else {
+            if let Some(chr) = self.chars.pop_front() {
+                self.word.push(chr);
+            }
+        }
+        kind
+    }
+
+    /// Returns the current substring.
+    pub fn substr(&self) -> &str {
+        &self.word
+    }
+
+    /// Clears the current substring.
+    pub fn clear(&mut self) {
+        self.chars.clear();
+    }
+
+    /// Returns the current context for the current substring.
+    pub fn context(&self) -> Context {
+        Context {
+            filepath : Rc::clone(&self.filepath),
+            src : self.substr().to_string(),
+            line : self.line
+        }
+    }
+
+    /// Reads the next line of the file into the char queue.
+    fn readln(&mut self) {
+        if let Some(iter) = &mut self.lines {
+            match iter.next() {
+                Some(Ok(line)) => {
+                    self.line += 1;
+                    for x in line.chars() {
+                        self.chars.push_back(x);
+                    }
+                },
+                Some(_) => {},
+                None => { self.lines.take(); }
+            }
+        }
+    }
+}
+
+/// An enum which stores character kinds.
+#[derive(PartialEq, Debug, Clone)]
+pub enum CharKind {
+    EoF,
+    Epsilon,
+    NewLine,
+    Other
+}
+
+
+/*
 /// A structure over a string slice which produces individual `Token`s.
 pub struct Scanner<'a> {
     src : &'a str,
@@ -101,3 +203,4 @@ impl Cursor {
         }
     }
 }
+*/

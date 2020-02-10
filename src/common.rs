@@ -1,14 +1,15 @@
 use std::fmt;
+use std::rc::Rc;
 
 /// A struct which stores information about some substring of a source file.
 #[derive(Debug, Clone)]
 pub struct Context {
+    pub filepath : Rc<String>,
     pub src : String,
-    pub row : usize,
-    pub column : usize
+    pub line : usize
 }
 impl fmt::Display for Context {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "(row. {}, col. {})", self.row, self.column)
+        write!(out, "line {} in {}", self.line, self.filepath)
     }
 }

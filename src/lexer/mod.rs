@@ -4,8 +4,8 @@ use crate::diagnostics::IssueTracker;
 use crate::diagnostics::error::{ Error, ErrorKind };
 use crate::syntax::token::*;
 
-use scanner::Scanner;
-
+//use scanner::Scanner;
+/*
 /// An iterator over a string slice which produces `Token`s.
 pub struct Lexer<'a, 'b> {
     scanner : Scanner<'a>,
@@ -142,4 +142,4 @@ impl<'a, 'b> Lexer<'a, 'b> {
 /// The current lexer state. Is used to parse strings as character arrays.
 enum LexerState {
     Default
-}
+}*/
