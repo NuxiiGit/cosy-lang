@@ -1,29 +1,18 @@
 use cosyc::lexer::scanner::FileScanner;
 use cosyc::diagnostics::IssueTracker;
+use cosyc::lexer::scanner::CharKind;
 
 fn main() {
     let mut scanner = FileScanner::open("examples/tests/bleh.cosy").unwrap();
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{}", scanner.substr());
-    scanner.clear();
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{:?}", scanner.next());
-    println!("{}", scanner.substr());
+    println!("begin");
+    loop {
+        let kind = scanner.skip();
+        //println!("{:?} {:?}", kind, scanner.substr());
+        if kind == CharKind::EoF {
+            break;
+        }
+    }
+    println!("end");
 
     /*let mut issues = IssueTracker::new();
     let mut lexer = Lexer::from(scanner, &mut issues);
