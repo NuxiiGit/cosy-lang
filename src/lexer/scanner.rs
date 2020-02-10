@@ -1,9 +1,7 @@
-use crate::syntax::token::{ Token, TokenKind};
 use crate::common::Context;
 
-use std::iter::Peekable;
 use std::rc::Rc;
-use std::io::{ self, BufRead, BufReader, Lines };
+use std::io::{ BufRead, BufReader, Lines };
 use std::fs::File;
 use std::collections::VecDeque;
 
@@ -37,23 +35,54 @@ impl FileScanner {
             CharKind::EoF
         } else if let Some(chr) = self.chars.front() {
             match chr {
-                _ => CharKind::Other
+                x if x.is_whitespace() => CharKind::Whitespace,
+                x if x.is_ascii_digit() => CharKind::Digit,
+                x if x.is_alphanumeric() => CharKind::Graphic,
+                '(' => CharKind::LeftParen,
+                ')' => CharKind::RightParen,
+                '{' => CharKind::LeftBrace,
+                '}' => CharKind::RightBrace,
+                '[' => CharKind::LeftBox,
+                ']' => CharKind::RightBox,
+                '.' => CharKind::Dot,
+                ',' => CharKind::Comma,
+                ':' => CharKind::Colon,
+                ';' => CharKind::SemiColon,
+                '$' => CharKind::Dollar,
+                '`' => CharKind::Backtick,
+                '#' => CharKind::Hashtag,
+                '@' => CharKind::Address,
+                '"' => CharKind::DoubleQuote,
+                '\'' => CharKind::SingleQuote,
+                _ => CharKind::Operator
             }
         } else {
             CharKind::NewLine
         }
     }
 
-    /// Advances the scanner.
+    /// Advances the scanner and adds the character to the word.
     pub fn next(&mut self) -> CharKind {
+        self.advance(false)
+    }
+
+    /// Similar to `next`, except the character is ignored.
+    pub fn skip(&mut self) -> CharKind {
+        self.advance(true)
+    }
+
+    /// Advances the scanner.
+    pub fn advance(&mut self, skip : bool) -> CharKind {
         let kind = self.peek();
-        if kind == CharKind::NewLine {
+        let chr = if kind == CharKind::NewLine {
             // read in next line
             self.readln();
+            Some('\n')
         } else {
-            if let Some(chr) = self.chars.pop_front() {
-                self.word.push(chr);
-            }
+            self.chars.pop_front()
+        };
+        if !skip && chr.is_some() {
+            self.word.push(chr.unwrap());
         }
         kind
     }
@@ -97,10 +126,28 @@ impl FileScanner {
 /// An enum which stores character kinds.
 #[derive(PartialEq, Debug, Clone)]
 pub enum CharKind {
-    EoF,
-    Epsilon,
+    Whitespace,
+    Digit,
+    Graphic,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    LeftBox,
+    RightBox,
+    Dot,
+    Comma,
+    Colon,
+    SemiColon,
+    Dollar,
+    Backtick,
+    Hashtag,
+    Address,
+    DoubleQuote,
+    SingleQuote,
+    Operator,
     NewLine,
-    Other
+    EoF
 }
 
 
