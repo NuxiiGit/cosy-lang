@@ -4,6 +4,118 @@ use crate::diagnostics::IssueTracker;
 use crate::diagnostics::error::{ Error, ErrorKind };
 use crate::syntax::token::*;
 
+use scanner::{ FileScanner, CharKind };
+
+pub struct Lexer<'a> {
+    scanner : FileScanner,
+    state : LexerState,
+    issues : &'a mut IssueTracker
+}
+impl<'a> Lexer<'a> {
+    /// Creates a new lexer from this file scanner.
+    pub fn from(scanner : FileScanner, issues : &'a mut IssueTracker) -> Self {
+        Self {
+            scanner,
+            state : LexerState::Default,
+            issues
+        }
+    }
+
+    /// Tokenises the current token and returns it.
+    pub fn next(&mut self) -> Token {
+        'search:
+        loop {
+            self.scanner.clear();
+            let kind = match self.scanner.next() {
+                CharKind::Whitespace => {
+                    while let CharKind::Whitespace = self.scanner.peek() {
+                        self.scanner.next();
+                    }
+                    continue 'search;
+                }
+                CharKind::Digit => {
+                    while let x@CharKind::Digit | x@CharKind::Underscore = self.scanner.peek() {
+                        if let CharKind::Underscore = x {
+                            self.scanner.skip();
+                        } else {
+                            self.scanner.next();
+                        }
+                    }
+                    TokenKind::Literal(LiteralKind::Integer)
+                },
+                CharKind::Graphic | CharKind::Underscore => {
+                    while let CharKind::Graphic
+                            | CharKind::Underscore
+                            | CharKind::SingleQuote = self.scanner.peek() {
+                        self.scanner.next();
+                    }
+                    match self.scanner.substr() {
+                        "if" => TokenKind::Keyword(KeywordKind::If),
+                        "else" => TokenKind::Keyword(KeywordKind::Else),
+                        "then" => TokenKind::Keyword(KeywordKind::Then),
+                        "var" => TokenKind::Keyword(KeywordKind::Var),
+                        _ => TokenKind::Identifier(IdentifierKind::AlphaNumeric)
+                    }
+                },
+                CharKind::LeftParen => TokenKind::Symbol(SymbolKind::LeftParen),
+                CharKind::RightParen => TokenKind::Symbol(SymbolKind::RightParen),
+                CharKind::LeftBrace => TokenKind::Symbol(SymbolKind::LeftBrace),
+                CharKind::RightBrace => TokenKind::Symbol(SymbolKind::RightBrace),
+                CharKind::LeftBox => continue 'search,
+                CharKind::RightBox => continue 'search,
+                CharKind::Dot => continue 'search,
+                CharKind::Comma => continue 'search,
+                CharKind::Colon => continue 'search,
+                CharKind::SemiColon => TokenKind::Symbol(SymbolKind::SemiColon),
+                CharKind::Dollar => TokenKind::Symbol(SymbolKind::Dollar),
+                CharKind::Backtick => TokenKind::Symbol(SymbolKind::Backtick),
+                CharKind::Hashtag => {
+                    if let CharKind::Graphic = self.scanner.peek() {
+                        self.scanner.next();
+                        while let CharKind::Graphic = self.scanner.peek() {
+                            self.scanner.next();
+                        }
+                        TokenKind::Directive
+                    } else {
+                        self.error(ErrorKind::Fatal, "expected graphic after hashtag symbol");
+                        continue 'search;
+                    }
+                },
+                CharKind::Address => TokenKind::Symbol(SymbolKind::Address),
+                CharKind::DoubleQuote => continue 'search,
+                CharKind::SingleQuote => continue 'search,
+                CharKind::Operator => {
+                    while let CharKind::Operator = self.scanner.peek() {
+                        self.scanner.next();
+                    }
+                    match self.scanner.substr() {
+                        _ => TokenKind::Identifier(IdentifierKind::Other)
+                    }
+                },
+                CharKind::NewLine => continue 'search,
+                CharKind::EoF => TokenKind::EoF
+            };
+            let context = self.scanner.context();
+            break Token { context, kind };
+        }
+    }
+
+    /// Reports a new error with this reason.
+    pub fn error(&mut self, kind : ErrorKind, reason : &'static str) {
+        let context = self.scanner.context();
+        let token = Token {
+            context,
+            kind : TokenKind::Unknown
+        };
+        self.issues.report(Error { reason, token, kind });
+    }
+}
+
+/// The state of the lexer. This is used to parse strings as character arrays.
+enum LexerState {
+    Default
+}
+
 //use scanner::Scanner;
 /*
 /// An iterator over a string slice which produces `Token`s.
