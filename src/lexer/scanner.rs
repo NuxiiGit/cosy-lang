@@ -40,14 +40,14 @@ impl FileScanner {
     }
 
     /// Returns the next character in the file, or `None` if you have reached the EOF.
-    pub fn chr(&self) -> Option<&char> {
+    pub fn chr(&self) -> Option<char> {
         if self.lines.is_none() {
             None
         } else {
-            if let x@Some(..) = self.chars.front() {
-                x
+            if let Some(chr) = self.chars.front() {
+                Some(*chr)
             } else {
-                Some(&'\n')
+                Some('\n')
             }
         }
     }
@@ -64,7 +64,7 @@ impl FileScanner {
 
     /// Advances the scanner.
     pub fn advance(&mut self, skip : bool) -> CharKind {
-        if let Some(&chr) = self.chr() {
+        if let Some(chr) = self.chr() {
             if let '\n' = chr {
                 self.readln();
             } else {
@@ -73,7 +73,7 @@ impl FileScanner {
             if !skip {
                 self.word.push(chr);
             }
-            CharKind::identify(&chr)
+            CharKind::identify(chr)
         } else {
             CharKind::EoF
         }

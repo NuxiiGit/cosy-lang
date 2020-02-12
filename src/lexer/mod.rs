@@ -31,9 +31,11 @@ impl<'a> Lexer<'a> {
                         self.scanner.next();
                     }
                     continue 'search;
-                }
+                },
                 CharKind::Digit => {
-                    while let x@CharKind::Digit | x@CharKind::Underscore = self.scanner.peek() {
+                    while let
+                    | x@CharKind::Digit
+                    | x@CharKind::Underscore = self.scanner.peek() {
                         if let CharKind::Underscore = x {
                             self.scanner.skip();
                         } else {
@@ -42,10 +44,12 @@ impl<'a> Lexer<'a> {
                     }
                     TokenKind::Literal(LiteralKind::Integer)
                 },
-                CharKind::Graphic | CharKind::Underscore => {
-                    while let CharKind::Graphic
-                            | CharKind::Underscore
-                            | CharKind::SingleQuote = self.scanner.peek() {
+                | CharKind::Graphic
+                | CharKind::Underscore => {
+                    while let
+                    | CharKind::Graphic
+                    | CharKind::Underscore
+                    | CharKind::SingleQuote = self.scanner.peek() {
                         self.scanner.next();
                     }
                     match self.scanner.substr() {
@@ -88,6 +92,16 @@ impl<'a> Lexer<'a> {
                         self.scanner.next();
                     }
                     match self.scanner.substr() {
+                        "//" => {
+                            loop {
+                                if let
+                                | CharKind::NewLine
+                                | CharKind::EoF = self.scanner.peek() {
+                                    continue 'search;
+                                }
+                                self.scanner.skip();
+                            }
+                        }
                         _ => TokenKind::Identifier(IdentifierKind::Other)
                     }
                 },

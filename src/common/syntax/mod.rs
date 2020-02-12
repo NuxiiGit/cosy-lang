@@ -135,7 +135,7 @@ pub enum CharKind {
 }
 impl CharKind {
     /// Converts a character into its respective `CharKind`.
-    pub fn identify(c : &char) -> CharKind {
+    pub fn identify(c : char) -> CharKind {
         match c {
             '\n' => CharKind::NewLine,
             x if x.is_whitespace() => CharKind::Whitespace,
