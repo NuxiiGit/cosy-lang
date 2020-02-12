@@ -1,19 +1,10 @@
 use cosyc::common::diagnostics::IssueTracker;
 use cosyc::lexer::scanner::{ FileScanner, CharKind };
+use cosyc::lexer::Lexer;
 
 fn main() {
-    let mut scanner = FileScanner::open("examples/tests/bleh.cosy").unwrap();
-    println!("begin");
-    loop {
-        let kind = scanner.skip();
-        println!("{:?} {:?}", kind, scanner.substr());
-        if kind == CharKind::EoF {
-            break;
-        }
-    }
-    println!("end");
-
-    /*let mut issues = IssueTracker::new();
+    let scanner = FileScanner::open("examples/tests/bleh.cosy").unwrap();
+    let mut issues = IssueTracker::new();
     let mut lexer = Lexer::from(scanner, &mut issues);
     println!("{:?}", lexer.next());
     println!("{:?}", lexer.next());
@@ -23,7 +14,7 @@ fn main() {
         for e in issues {
             println!("{}", e);
         }
-    }*/
+    }
 }
 
 /*
