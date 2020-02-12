@@ -1,9 +1,9 @@
 pub mod scanner;
 
 use crate::common::diagnostics::{ IssueTracker, Error, ErrorKind };
-use crate::syntax::token::*;
+use crate::common::syntax::*;
 
-use scanner::{ FileScanner, CharKind };
+use scanner::FileScanner;
 
 pub struct Lexer<'a> {
     scanner : FileScanner,

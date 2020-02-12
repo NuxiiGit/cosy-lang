@@ -1,5 +1,5 @@
 use cosyc::common::diagnostics::IssueTracker;
-use cosyc::lexer::scanner::{ FileScanner, CharKind };
+use cosyc::lexer::scanner::FileScanner;
 use cosyc::lexer::Lexer;
 
 fn main() {

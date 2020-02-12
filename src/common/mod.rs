@@ -1,3 +1,4 @@
+pub mod syntax;
 pub mod diagnostics;
 
 use std::fmt;

@@ -1,4 +1,4 @@
-use crate::syntax::token::Token;
+use super::syntax::Token;
 
 use std::{ fmt, error };
 use std::vec;

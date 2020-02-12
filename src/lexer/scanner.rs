@@ -1,4 +1,5 @@
 use crate::common::Context;
+use crate::common::syntax::CharKind;
 
 use std::rc::Rc;
 use std::io::{ BufRead, BufReader, Lines };
@@ -122,32 +123,4 @@ impl FileScanner {
             }
         }
     }
-}
-
-/// An enum which stores character kinds.
-#[derive(PartialEq, Debug, Clone)]
-pub enum CharKind {
-    Whitespace,
-    Digit,
-    Graphic,
-    Underscore,
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    LeftBox,
-    RightBox,
-    Dot,
-    Comma,
-    Colon,
-    SemiColon,
-    Dollar,
-    Backtick,
-    Hashtag,
-    Address,
-    DoubleQuote,
-    SingleQuote,
-    Operator,
-    NewLine,
-    EoF
 }

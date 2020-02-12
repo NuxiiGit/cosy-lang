@@ -1,4 +1,4 @@
-use crate::common::Context;
+use super::Context;
 
 /// Stores a token and its location in the source file.
 #[derive(Debug, Clone)]
@@ -104,4 +104,32 @@ pub enum LiteralKind {
     Character,
     Integer,
     Real
+}
+
+/// An enum which stores character kinds.
+#[derive(PartialEq, Debug, Clone)]
+pub enum CharKind {
+    Whitespace,
+    Digit,
+    Graphic,
+    Underscore,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    LeftBox,
+    RightBox,
+    Dot,
+    Comma,
+    Colon,
+    SemiColon,
+    Dollar,
+    Backtick,
+    Hashtag,
+    Address,
+    DoubleQuote,
+    SingleQuote,
+    Operator,
+    NewLine,
+    EoF
 }
