@@ -109,6 +109,7 @@ pub enum LiteralKind {
 /// An enum which stores character kinds.
 #[derive(PartialEq, Debug, Clone)]
 pub enum CharKind {
+    NewLine,
     Whitespace,
     Digit,
     Graphic,
@@ -129,9 +130,23 @@ pub enum CharKind {
     Address,
     DoubleQuote,
     SingleQuote,
-    Operator,
-    NewLine,
-    EoF
+    Bar,
+    Caret,
+    Ampersand,
+    Bang,
+    Question,
+    Equals,
+    LessThan,
+    GreaterThan,
+    Plus,
+    Minus,
+    Tilde,
+    Asterisk,
+    ForwardSlash,
+    BackSlash,
+    Percent,
+    EoF,
+    Other
 }
 impl CharKind {
     /// Converts a character into its respective `CharKind`.
@@ -158,7 +173,82 @@ impl CharKind {
             '@' => CharKind::Address,
             '"' => CharKind::DoubleQuote,
             '\'' => CharKind::SingleQuote,
-            _ => CharKind::Operator
+            | '|'
+            | '¦' => CharKind::Bar,
+            '^' => CharKind::Caret,
+            '&' => CharKind::Ampersand,
+            '!' => CharKind::Bang,
+            '?' => CharKind::Question,
+            '=' => CharKind::Equals,
+            '<' => CharKind::LessThan,
+            '>' => CharKind::GreaterThan,
+            '+' => CharKind::Plus,
+            '-' => CharKind::Minus,
+            '~' => CharKind::Tilde,
+            '*' => CharKind::Asterisk,
+            '/' => CharKind::ForwardSlash,
+            '\\' => CharKind::BackSlash,
+            '%' => CharKind::Percent,
+            _ => CharKind::Other
+        }
+    }
+
+    /// Returns whether the char is valid whitespace.
+    pub fn is_valid_whitespace(&self) -> bool {
+        if let
+        | CharKind::NewLine
+        | CharKind::Whitespace = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Returns whether the char is a valid digit.
+    pub fn is_valid_digit(&self) -> bool {
+        if let
+        | CharKind::Digit
+        | CharKind::Underscore = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Returns whether the char is a valid graphic.
+    pub fn is_valid_graphic(&self) -> bool {
+        if let
+        | CharKind::Graphic
+        | CharKind::Underscore
+        | CharKind::SingleQuote = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Returns whether the char is a valid operator.
+    pub fn is_valid_operator(&self) -> bool {
+        if let
+        | CharKind::Bar
+        | CharKind::Caret
+        | CharKind::Ampersand
+        | CharKind::Bang
+        | CharKind::Question
+        | CharKind::Equals
+        | CharKind::LessThan
+        | CharKind::GreaterThan
+        | CharKind::Plus
+        | CharKind::Minus
+        | CharKind::Tilde
+        | CharKind::Asterisk
+        | CharKind::ForwardSlash
+        | CharKind::BackSlash
+        | CharKind::Percent
+        | CharKind::Other = self {
+            true
+        } else {
+            false
         }
     }
 }
