@@ -133,3 +133,32 @@ pub enum CharKind {
     NewLine,
     EoF
 }
+impl CharKind {
+    /// Converts a character into its respective `CharKind`.
+    pub fn identify(c : &char) -> CharKind {
+        match c {
+            '\n' => CharKind::NewLine,
+            x if x.is_whitespace() => CharKind::Whitespace,
+            x if x.is_ascii_digit() => CharKind::Digit,
+            x if x.is_alphanumeric() => CharKind::Graphic,
+            '_' => CharKind::Underscore,
+            '(' => CharKind::LeftParen,
+            ')' => CharKind::RightParen,
+            '{' => CharKind::LeftBrace,
+            '}' => CharKind::RightBrace,
+            '[' => CharKind::LeftBox,
+            ']' => CharKind::RightBox,
+            '.' => CharKind::Dot,
+            ',' => CharKind::Comma,
+            ':' => CharKind::Colon,
+            ';' => CharKind::SemiColon,
+            '$' => CharKind::Dollar,
+            '`' => CharKind::Backtick,
+            '#' => CharKind::Hashtag,
+            '@' => CharKind::Address,
+            '"' => CharKind::DoubleQuote,
+            '\'' => CharKind::SingleQuote,
+            _ => CharKind::Operator
+        }
+    }
+}

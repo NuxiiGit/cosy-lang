@@ -32,34 +32,23 @@ impl FileScanner {
 
     /// Returns the kind of the next character.
     pub fn peek(&mut self) -> CharKind {
-        if self.lines.is_none() {
-            CharKind::EoF
-        } else if let Some(chr) = self.chars.front() {
-            match chr {
-                x if x.is_whitespace() => CharKind::Whitespace,
-                x if x.is_ascii_digit() => CharKind::Digit,
-                x if x.is_alphanumeric() => CharKind::Graphic,
-                '_' => CharKind::Underscore,
-                '(' => CharKind::LeftParen,
-                ')' => CharKind::RightParen,
-                '{' => CharKind::LeftBrace,
-                '}' => CharKind::RightBrace,
-                '[' => CharKind::LeftBox,
-                ']' => CharKind::RightBox,
-                '.' => CharKind::Dot,
-                ',' => CharKind::Comma,
-                ':' => CharKind::Colon,
-                ';' => CharKind::SemiColon,
-                '$' => CharKind::Dollar,
-                '`' => CharKind::Backtick,
-                '#' => CharKind::Hashtag,
-                '@' => CharKind::Address,
-                '"' => CharKind::DoubleQuote,
-                '\'' => CharKind::SingleQuote,
-                _ => CharKind::Operator
-            }
+        if let Some(chr) = self.chr() {
+            CharKind::identify(chr)
         } else {
-            CharKind::NewLine
+            CharKind::EoF
+        }
+    }
+
+    /// Returns the next character in the file, or `None` if you have reached the EOF.
+    pub fn chr(&self) -> Option<&char> {
+        if self.lines.is_none() {
+            None
+        } else {
+            if let x@Some(..) = self.chars.front() {
+                x
+            } else {
+                Some(&'\n')
+            }
         }
     }
 
@@ -75,18 +64,19 @@ impl FileScanner {
 
     /// Advances the scanner.
     pub fn advance(&mut self, skip : bool) -> CharKind {
-        let kind = self.peek();
-        let chr = if kind == CharKind::NewLine {
-            // read in next line
-            self.readln();
-            Some('\n')
+        if let Some(&chr) = self.chr() {
+            if let '\n' = chr {
+                self.readln();
+            } else {
+                self.chars.pop_front();
+            }
+            if !skip {
+                self.word.push(chr);
+            }
+            CharKind::identify(&chr)
         } else {
-            self.chars.pop_front()
-        };
-        if !skip && chr.is_some() {
-            self.word.push(chr.unwrap());
+            CharKind::EoF
         }
-        kind
     }
 
     /// Returns the current substring.
@@ -119,7 +109,7 @@ impl FileScanner {
                     }
                 },
                 Some(_) => {},
-                None => { self.lines.take(); }
+                None => self.lines = None
             }
         }
     }
