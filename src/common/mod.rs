@@ -1,3 +1,5 @@
+pub mod diagnostics;
+
 use std::fmt;
 use std::rc::Rc;
 

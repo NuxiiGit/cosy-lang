@@ -1,7 +1,6 @@
 pub mod scanner;
 
-use crate::diagnostics::IssueTracker;
-use crate::diagnostics::error::{ Error, ErrorKind };
+use crate::common::diagnostics::{ IssueTracker, Error, ErrorKind };
 use crate::syntax::token::*;
 
 use scanner::{ FileScanner, CharKind };

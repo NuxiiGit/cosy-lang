@@ -1,13 +1,12 @@
-use cosyc::lexer::scanner::FileScanner;
-use cosyc::diagnostics::IssueTracker;
-use cosyc::lexer::scanner::CharKind;
+use cosyc::common::diagnostics::IssueTracker;
+use cosyc::lexer::scanner::{ FileScanner, CharKind };
 
 fn main() {
     let mut scanner = FileScanner::open("examples/tests/bleh.cosy").unwrap();
     println!("begin");
     loop {
         let kind = scanner.skip();
-        //println!("{:?} {:?}", kind, scanner.substr());
+        println!("{:?} {:?}", kind, scanner.substr());
         if kind == CharKind::EoF {
             break;
         }

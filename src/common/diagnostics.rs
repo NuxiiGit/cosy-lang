@@ -1,7 +1,6 @@
-pub mod error;
+use crate::syntax::token::Token;
 
-use error::{ Error, ErrorKind };
-
+use std::{ fmt, error };
 use std::vec;
 
 /// A struct which keeps track of errors.
@@ -40,4 +39,26 @@ impl IntoIterator for IssueTracker {
     fn into_iter(self) -> Self::IntoIter {
         self.errors.into_iter()
     }
+}
+
+/// A struct which stores error information.
+#[derive(Debug)]
+pub struct Error {
+    pub reason : &'static str,
+    pub token : Token,
+    pub kind : ErrorKind
+}
+impl fmt::Display for Error {
+    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+        write!(out, "{}: {}. got {:?}",
+                self.token.context, self.reason, self.token.kind)
+    }
+}
+impl error::Error for Error {}
+
+/// An enum which describes available error types.
+#[derive(PartialOrd, PartialEq, Debug, Clone)]
+pub enum ErrorKind {
+    Warning,
+    Fatal
 }
