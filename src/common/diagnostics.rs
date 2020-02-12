@@ -50,8 +50,8 @@ pub struct Error {
 }
 impl fmt::Display for Error {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}: {}. got {:?}",
-                self.token.context, self.reason, self.token.kind)
+        write!(out, "{:?}! {}: {}. got {:?}",
+                self.kind, self.token.context, self.reason, self.token.kind)
     }
 }
 impl error::Error for Error {}

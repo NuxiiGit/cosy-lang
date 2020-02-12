@@ -31,7 +31,7 @@ impl FileScanner {
     }
 
     /// Returns the kind of the next character.
-    pub fn peek(&mut self) -> CharKind {
+    pub fn peek(&self) -> CharKind {
         if let Some(chr) = self.chr() {
             CharKind::identify(chr)
         } else {

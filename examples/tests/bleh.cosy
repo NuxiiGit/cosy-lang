@@ -1,6 +1,8 @@
 // else clause
+
+/**/
 if condition {
-    stuff();
-} else {
+    /* /*stuff();
+} else {*/
     other_stuff();
 }

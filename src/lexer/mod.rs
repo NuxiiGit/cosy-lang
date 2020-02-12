@@ -25,31 +25,62 @@ impl<'a> Lexer<'a> {
         'search:
         loop {
             self.scanner.clear();
-            let kind = match self.scanner.next() {
-                CharKind::Whitespace => {
-                    while let CharKind::Whitespace = self.scanner.peek() {
+            let next = self.scanner.next();
+            let peek = self.scanner.peek();
+            let kind = match next {
+                x if x.is_valid_whitespace() => {
+                    while self.scanner.peek()
+                            .is_valid_whitespace() {
                         self.scanner.next();
                     }
                     continue 'search;
                 },
-                CharKind::Digit => {
-                    while let
-                    | x@CharKind::Digit
-                    | x@CharKind::Underscore = self.scanner.peek() {
-                        if let CharKind::Underscore = x {
-                            self.scanner.skip();
-                        } else {
-                            self.scanner.next();
+                CharKind::ForwardSlash if peek == CharKind::ForwardSlash => {
+                    // line comments
+                    while !self.scanner.peek()
+                            .is_valid_ending() {
+                        self.scanner.next();
+                    }
+                    continue 'search;
+                },
+                CharKind::ForwardSlash if peek == CharKind::Asterisk => {
+                    // block comments
+                    self.scanner.next();
+                    let mut nests = 1;
+                    loop {
+                        let next = self.scanner.next();
+                        let peek = self.scanner.peek();
+                        match (next, peek) {
+                            (_, CharKind::EoF) => {
+                                self.error(ErrorKind::Warning, "unterminated block comment");
+                                continue 'search;
+                            },
+                            (CharKind::ForwardSlash, CharKind::Asterisk) => {
+                                self.scanner.next();
+                                nests += 1
+                            },
+                            (CharKind::Asterisk, CharKind::ForwardSlash) => {
+                                self.scanner.next();
+                                if nests == 1 {
+                                    continue 'search;
+                                } else {
+                                    nests -= 1;
+                                }
+                            },
+                            _ => ()
                         }
+                    }
+                },
+                x if x.is_valid_digit() => {
+                    while self.scanner.peek()
+                            .is_valid_digit() {
+                        self.scanner.next();
                     }
                     TokenKind::Literal(LiteralKind::Integer)
                 },
-                | CharKind::Graphic
-                | CharKind::Underscore => {
-                    while let
-                    | CharKind::Graphic
-                    | CharKind::Underscore
-                    | CharKind::SingleQuote = self.scanner.peek() {
+                x if x.is_valid_graphic() => {
+                    while self.scanner.peek()
+                            .is_valid_graphic() {
                         self.scanner.next();
                     }
                     match self.scanner.substr() {
@@ -60,15 +91,19 @@ impl<'a> Lexer<'a> {
                         _ => TokenKind::Identifier(IdentifierKind::AlphaNumeric)
                     }
                 },
+                x if x.is_valid_operator() => {
+                    while self.scanner.peek()
+                            .is_valid_operator() {
+                        self.scanner.next();
+                    }
+                    match self.scanner.substr() {
+                        _ => TokenKind::Identifier(IdentifierKind::Other)
+                    }
+                },
                 CharKind::LeftParen => TokenKind::Symbol(SymbolKind::LeftParen),
                 CharKind::RightParen => TokenKind::Symbol(SymbolKind::RightParen),
                 CharKind::LeftBrace => TokenKind::Symbol(SymbolKind::LeftBrace),
                 CharKind::RightBrace => TokenKind::Symbol(SymbolKind::RightBrace),
-                CharKind::LeftBox => continue 'search,
-                CharKind::RightBox => continue 'search,
-                CharKind::Dot => continue 'search,
-                CharKind::Comma => continue 'search,
-                CharKind::Colon => continue 'search,
                 CharKind::SemiColon => TokenKind::Symbol(SymbolKind::SemiColon),
                 CharKind::Dollar => TokenKind::Symbol(SymbolKind::Dollar),
                 CharKind::Backtick => TokenKind::Symbol(SymbolKind::Backtick),
@@ -85,28 +120,11 @@ impl<'a> Lexer<'a> {
                     }
                 },
                 CharKind::Address => TokenKind::Symbol(SymbolKind::Address),
-                CharKind::DoubleQuote => continue 'search,
-                CharKind::SingleQuote => continue 'search,
-                CharKind::Operator => {
-                    while let CharKind::Operator = self.scanner.peek() {
-                        self.scanner.next();
-                    }
-                    match self.scanner.substr() {
-                        "//" => {
-                            loop {
-                                if let
-                                | CharKind::NewLine
-                                | CharKind::EoF = self.scanner.peek() {
-                                    continue 'search;
-                                }
-                                self.scanner.skip();
-                            }
-                        }
-                        _ => TokenKind::Identifier(IdentifierKind::Other)
-                    }
-                },
-                CharKind::NewLine => continue 'search,
-                CharKind::EoF => TokenKind::EoF
+                CharKind::EoF => TokenKind::EoF,
+                _ => {
+                    self.error(ErrorKind::Fatal, "unknown symbol");
+                    continue 'search;
+                }
             };
             let context = self.scanner.context();
             break Token { context, kind };

@@ -6,10 +6,13 @@ fn main() {
     let scanner = FileScanner::open("examples/tests/bleh.cosy").unwrap();
     let mut issues = IssueTracker::new();
     let mut lexer = Lexer::from(scanner, &mut issues);
-    println!("{:?}", lexer.next());
-    println!("{:?}", lexer.next());
-    println!("{:?}", lexer.next());
-    println!("{:?}", lexer.next());
+    loop {
+        let token = lexer.next();
+        if let cosyc::common::syntax::TokenKind::EoF = token.kind {
+            break;
+        }
+        println!("{:?}", token);
+    }
     if issues.level().is_some() {
         for e in issues {
             println!("{}", e);

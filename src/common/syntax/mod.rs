@@ -207,8 +207,7 @@ impl CharKind {
     /// Returns whether the char is a valid digit.
     pub fn is_valid_digit(&self) -> bool {
         if let
-        | CharKind::Digit
-        | CharKind::Underscore = self {
+        | CharKind::Digit = self {
             true
         } else {
             false
@@ -246,6 +245,17 @@ impl CharKind {
         | CharKind::BackSlash
         | CharKind::Percent
         | CharKind::Other = self {
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Returns whether the char is a valid line ending.
+    pub fn is_valid_ending(&self) -> bool {
+        if let
+        | CharKind::NewLine
+        | CharKind::EoF = self {
             true
         } else {
             false
