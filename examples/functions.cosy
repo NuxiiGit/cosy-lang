@@ -12,12 +12,12 @@ def max (a : Int) (b : Int) : Int {
  *
  * For example:
  * |
- * | def Vec2::get_x(Vec2 v) : Float = v.x;
+ * | def Vec2::get_x(v : Vec2) : Float = v.x;
  * |
  * 
  * would get compiled into:
  * |
- * | def Vec2::get_x = \(Vec2 v) -> v.x : Float;
+ * | def Vec2::get_x = \(v : Vec2) -> v.x : Float;
  * |
  * 
  * which shows that `def` is similar to `var`, except
