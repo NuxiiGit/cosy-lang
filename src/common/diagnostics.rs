@@ -60,5 +60,7 @@ impl error::Error for Error {}
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
 pub enum ErrorKind {
     Warning,
+    NonFatal,
+    Issue,
     Fatal
 }
