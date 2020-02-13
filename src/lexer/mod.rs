@@ -92,12 +92,27 @@ impl<'a> Lexer<'a> {
                     }
                 },
                 x if x.is_valid_operator() => {
+                    let kind = match x {
+                        CharKind::Bar => IdentifierKind::Bar,
+                        CharKind::Caret => IdentifierKind::Caret,
+                        CharKind::Ampersand => IdentifierKind::Ampersand,
+                        CharKind::Bang => IdentifierKind::Bang,
+                        CharKind::Equals => IdentifierKind::Equals,
+                        CharKind::LessThan => IdentifierKind::LessThan,
+                        CharKind::GreaterThan => IdentifierKind::GreaterThan,
+                        CharKind::Plus => IdentifierKind::Plus,
+                        CharKind::Minus => IdentifierKind::Minus,
+                        CharKind::Asterisk => IdentifierKind::Asterisk,
+                        CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
+                        CharKind::Percent => IdentifierKind::Percent,
+                        _ => IdentifierKind::Other
+                    };
                     while self.scanner.peek()
                             .is_valid_operator() {
                         self.scanner.next();
                     }
                     match self.scanner.substr() {
-                        _ => TokenKind::Identifier(IdentifierKind::Other)
+                        _ => TokenKind::Identifier(kind)
                     }
                 },
                 CharKind::LeftParen => TokenKind::Symbol(SymbolKind::LeftParen),

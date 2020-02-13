@@ -93,7 +93,6 @@ pub enum IdentifierKind {
     Minus,
     Asterisk,
     ForwardSlash,
-    BackSlash,
     Percent,
     Other
 }
@@ -134,7 +133,7 @@ pub enum CharKind {
     Caret,
     Ampersand,
     Bang,
-    Question,
+    Hook,
     Equals,
     LessThan,
     GreaterThan,
@@ -178,7 +177,7 @@ impl CharKind {
             '^' => CharKind::Caret,
             '&' => CharKind::Ampersand,
             '!' => CharKind::Bang,
-            '?' => CharKind::Question,
+            '?' => CharKind::Hook,
             '=' => CharKind::Equals,
             '<' => CharKind::LessThan,
             '>' => CharKind::GreaterThan,
@@ -233,7 +232,7 @@ impl CharKind {
         | CharKind::Caret
         | CharKind::Ampersand
         | CharKind::Bang
-        | CharKind::Question
+        | CharKind::Hook
         | CharKind::Equals
         | CharKind::LessThan
         | CharKind::GreaterThan
