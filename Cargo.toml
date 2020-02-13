@@ -1,8 +1,4 @@
-[package]
-name = "cosy-lang"
-version = "0.0.1"
-authors = ["Nuxii"]
-edition = "2018"
-
-[lib]
-name = "cosyc"
+[workspace]
+members = [
+    "src/cosyc"
+]

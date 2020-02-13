@@ -1,9 +1,9 @@
 pub mod scanner;
 
-use crate::common::diagnostics::{ IssueTracker, Error, ErrorKind };
-use crate::common::syntax::*;
+use libcosyc_diagnostics::{ IssueTracker, Error, ErrorKind };
+use libcosyc_syntax::token::*;
 
-use scanner::FileScanner;
+use scanner::{ FileScanner, CharKind };
 
 pub struct Lexer<'a> {
     scanner : FileScanner,
@@ -146,13 +146,26 @@ impl<'a> Lexer<'a> {
     }
 
     /// Reports a new error with this reason.
-    pub fn error(&mut self, kind : ErrorKind, reason : &'static str) {
+    fn error(&mut self, kind : ErrorKind, reason : &'static str) {
         let context = self.scanner.context();
         let token = Token {
             context,
             kind : TokenKind::Unknown
         };
         self.issues.report(Error { reason, token, kind });
+    }
+}
+impl Into<Vec<Token>> for Lexer<'_> {
+    fn into(mut self) -> Vec<Token> {
+        let mut vec = Vec::new();
+        loop {
+            let token = self.next();
+            let exit = TokenKind::EoF == token.kind;
+            vec.push(token);
+            if exit {
+                break vec;
+            }
+        }
     }
 }
 

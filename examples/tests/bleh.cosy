@@ -1,8 +1,14 @@
-// else clause
 
-/**/
-if condition {
-    /* /*stuff();
-} else {*/
-    other_stuff();
+
+//var f(x, y, z) = x + y + z;
+//var a ~ b = a - b;
+
+if nice + 2 * 3 {
+    nice();
 }
+if condition {
+    ok();
+} else {
+    otherwise();
+}
+

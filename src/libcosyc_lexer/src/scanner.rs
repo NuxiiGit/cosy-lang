@@ -1,129 +1,119 @@
-use super::Context;
+use libcosyc_syntax::Context;
 
-/// Stores a token and its location in the source file.
-#[derive(Debug, Clone)]
-pub struct Token {
-    pub kind : TokenKind,
-    pub context : Context
+use std::rc::Rc;
+use std::io::{ BufRead, BufReader, Lines };
+use std::fs::File;
+use std::collections::VecDeque;
+
+/// A structure which reads characters of a file and returns individual `Context`s.
+pub struct FileScanner {
+    filepath : Rc<String>,
+    lines : Option<Lines<BufReader<File>>>,
+    line : usize,
+    chars : VecDeque<char>,
+    word : String
+}
+impl FileScanner {
+    /// Creates a new scanner at this file path.
+    pub fn open(filepath : &str) -> Option<Self> {
+        if let Ok(file) = File::open(filepath) {
+            Some(Self {
+                filepath : Rc::new(filepath.to_string()),
+                lines : Some(BufReader::new(file).lines()),
+                line : 0,
+                chars : VecDeque::new(),
+                word : String::new()
+            })
+        } else {
+            None
+        }
+    }
+
+    /// Returns the kind of the next character.
+    pub fn peek(&self) -> CharKind {
+        if let Some(chr) = self.chr() {
+            CharKind::identify(chr)
+        } else {
+            CharKind::EoF
+        }
+    }
+
+    /// Returns the next character in the file, or `None` if you have reached the EOF.
+    pub fn chr(&self) -> Option<char> {
+        if self.lines.is_none() {
+            None
+        } else {
+            if let Some(chr) = self.chars.front() {
+                Some(*chr)
+            } else {
+                Some('\n')
+            }
+        }
+    }
+
+    /// Advances the scanner and adds the character to the word.
+    pub fn next(&mut self) -> CharKind {
+        self.advance(false)
+    }
+
+    /// Similar to `next`, except the character is ignored.
+    pub fn skip(&mut self) -> CharKind {
+        self.advance(true)
+    }
+
+    /// Advances the scanner.
+    pub fn advance(&mut self, skip : bool) -> CharKind {
+        if let Some(chr) = self.chr() {
+            if let '\n' = chr {
+                self.readln();
+            } else {
+                self.chars.pop_front();
+            }
+            if !skip {
+                self.word.push(chr);
+            }
+            CharKind::identify(chr)
+        } else {
+            CharKind::EoF
+        }
+    }
+
+    /// Returns the current substring.
+    pub fn substr(&self) -> &str {
+        &self.word
+    }
+
+    /// Clears the current substring.
+    pub fn clear(&mut self) {
+        self.word.clear();
+    }
+
+    /// Returns the current context for the current substring.
+    pub fn context(&self) -> Context {
+        Context {
+            filepath : Rc::clone(&self.filepath),
+            src : self.substr().to_string(),
+            line : self.line
+        }
+    }
+
+    /// Reads the next line of the file into the char queue.
+    fn readln(&mut self) {
+        if let Some(iter) = &mut self.lines {
+            match iter.next() {
+                Some(Ok(line)) => {
+                    self.line += 1;
+                    for x in line.chars() {
+                        self.chars.push_back(x);
+                    }
+                },
+                Some(_) => {},
+                None => self.lines = None
+            }
+        }
+    }
 }
 
-/// An enum which describes available token types.
-#[derive(PartialEq, Debug, Clone)]
-pub enum TokenKind {
-    Keyword(KeywordKind),
-    Symbol(SymbolKind),
-    Identifier,
-    Operator(OperatorKind),
-    Literal(LiteralKind),
-    EoF,
-    Directive,
-    Unknown
-}
-impl TokenKind {
-    /// Returns `true` if the token is a keyword.
-    pub fn is_keyword(&self) -> bool {
-        if let TokenKind::Keyword(..) = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is a symbol.
-    pub fn is_symbol(&self) -> bool {
-        if let TokenKind::Symbol(..) = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is an identifier.
-    pub fn is_identifier(&self) -> bool {
-        if let
-        | TokenKind::Identifier
-        | TokenKind::Operator(..) = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is an operator.
-    pub fn is_operator(&self) -> bool {
-        if let TokenKind::Operator(..) = self
-                { false } else { true }
-    }
-
-    /// Returns `true` if the token is a literal.
-    pub fn is_literal(&self) -> bool {
-        if let TokenKind::Literal(..) = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is the end of the file.
-    pub fn is_eof(&self) -> bool {
-        if let TokenKind::EoF = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is a compiler directive.
-    pub fn is_directive(&self) -> bool {
-        if let TokenKind::Directive = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is unknown.
-    pub fn is_unknown(&self) -> bool {
-        if let TokenKind::Unknown = self
-                { true } else { false }
-    }
-
-    /// Returns `true` if the token is a valid non-terminal.
-    pub fn is_nonterminal(&self) -> bool {
-        self.is_identifier() ||
-        self.is_literal() ||
-        self.is_directive()
-    }
-}
-
-/// An enum which describes available keyword types.
-#[derive(PartialEq, Debug, Clone)]
-pub enum KeywordKind {
-    Var,
-    If,
-    Else
-}
-
-/// An enum which describes available symbol types.
-#[derive(PartialEq, Debug, Clone)]
-pub enum SymbolKind {
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    SemiColon,
-    Dollar,
-    Backtick,
-    Address
-}
-
-/// An enum which describes available identifier types.
-#[derive(PartialEq, Debug, Clone)]
-pub enum OperatorKind {
-    Bar,
-    Caret,
-    Ampersand,
-    Bang,
-    Equals,
-    LessThan,
-    GreaterThan,
-    Plus,
-    Minus,
-    Asterisk,
-    ForwardSlash,
-    Percent,
-    Other
-}
-
-/// An enum which describes available literal types.
-#[derive(PartialEq, Debug, Clone)]
-pub enum LiteralKind {
-    Character,
-    Integer,
-    Real
-}
 
 /// An enum which stores character kinds.
 #[derive(PartialEq, Debug, Clone)]

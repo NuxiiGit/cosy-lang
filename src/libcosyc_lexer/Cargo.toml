@@ -1,0 +1,9 @@
+[package]
+name = "libcosyc_lexer"
+version = "0.0.1"
+authors = ["Nuxii"]
+edition = "2018"
+
+[dependencies]
+libcosyc_syntax = { path = "../libcosyc_syntax" }
+libcosyc_diagnostics = { path = "../libcosyc_diagnostics" }

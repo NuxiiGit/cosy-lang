@@ -1,4 +1,4 @@
-use super::syntax::Token;
+use libcosyc_syntax::token::Token;
 
 use std::{ fmt, error };
 use std::vec;

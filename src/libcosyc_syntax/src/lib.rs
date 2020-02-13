@@ -1,5 +1,4 @@
-pub mod syntax;
-pub mod diagnostics;
+pub mod token;
 
 use std::fmt;
 use std::rc::Rc;

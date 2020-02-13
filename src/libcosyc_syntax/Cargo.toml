@@ -1,0 +1,5 @@
+[package]
+name = "libcosyc_syntax"
+version = "0.0.1"
+authors = ["Nuxii"]
+edition = "2018"
