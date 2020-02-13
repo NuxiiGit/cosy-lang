@@ -12,47 +12,69 @@ pub struct Token {
 pub enum TokenKind {
     Keyword(KeywordKind),
     Symbol(SymbolKind),
-    Identifier(IdentifierKind),
+    Identifier,
+    Operator(OperatorKind),
     Literal(LiteralKind),
     EoF,
     Directive,
     Unknown
 }
 impl TokenKind {
-    /// Returns `true` of the token is a keyword.
+    /// Returns `true` if the token is a keyword.
     pub fn is_keyword(&self) -> bool {
-        if let TokenKind::Keyword(..) = self { true } else { false }
+        if let TokenKind::Keyword(..) = self
+                { true } else { false }
     }
 
-    /// Returns `true` of the token is an identifier.
+    /// Returns `true` if the token is a symbol.
+    pub fn is_symbol(&self) -> bool {
+        if let TokenKind::Symbol(..) = self
+                { true } else { false }
+    }
+
+    /// Returns `true` if the token is an identifier.
     pub fn is_identifier(&self) -> bool {
-        if let TokenKind::Identifier(..) = self { true } else { false }
+        if let
+        | TokenKind::Identifier
+        | TokenKind::Operator(..) = self
+                { true } else { false }
     }
 
-    /// Returns `true` of the token is an operator.
+    /// Returns `true` if the token is an operator.
     pub fn is_operator(&self) -> bool {
-        if let TokenKind::Identifier(
-                IdentifierKind::AlphaNumeric) = self { false } else { true }
+        if let TokenKind::Operator(..) = self
+                { false } else { true }
     }
 
-    /// Returns `true` of the token is a literal.
+    /// Returns `true` if the token is a literal.
     pub fn is_literal(&self) -> bool {
-        if let TokenKind::Literal(..) = self { true } else { false }
+        if let TokenKind::Literal(..) = self
+                { true } else { false }
     }
 
-    /// Returns `true` of the token is the end of the file.
+    /// Returns `true` if the token is the end of the file.
     pub fn is_eof(&self) -> bool {
-        if let TokenKind::EoF = self { true } else { false }
+        if let TokenKind::EoF = self
+                { true } else { false }
     }
 
-    /// Returns `true` of the token is a compiler directive.
+    /// Returns `true` if the token is a compiler directive.
     pub fn is_directive(&self) -> bool {
-        if let TokenKind::Directive = self { true } else { false }
+        if let TokenKind::Directive = self
+                { true } else { false }
     }
 
-    /// Returns `true` of the token is unknown.
+    /// Returns `true` if the token is unknown.
     pub fn is_unknown(&self) -> bool {
-        if let TokenKind::Unknown = self { true } else { false }
+        if let TokenKind::Unknown = self
+                { true } else { false }
+    }
+
+    /// Returns `true` if the token is a valid non-terminal.
+    pub fn is_nonterminal(&self) -> bool {
+        self.is_identifier() ||
+        self.is_literal() ||
+        self.is_directive()
     }
 }
 
@@ -61,8 +83,7 @@ impl TokenKind {
 pub enum KeywordKind {
     Var,
     If,
-    Else,
-    Then
+    Else
 }
 
 /// An enum which describes available symbol types.
@@ -80,8 +101,7 @@ pub enum SymbolKind {
 
 /// An enum which describes available identifier types.
 #[derive(PartialEq, Debug, Clone)]
-pub enum IdentifierKind {
-    AlphaNumeric,
+pub enum OperatorKind {
     Bar,
     Caret,
     Ampersand,

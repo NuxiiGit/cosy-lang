@@ -84,35 +84,34 @@ impl<'a> Lexer<'a> {
                         self.scanner.next();
                     }
                     match self.scanner.substr() {
+                        "var" => TokenKind::Keyword(KeywordKind::Var),
                         "if" => TokenKind::Keyword(KeywordKind::If),
                         "else" => TokenKind::Keyword(KeywordKind::Else),
-                        "then" => TokenKind::Keyword(KeywordKind::Then),
-                        "var" => TokenKind::Keyword(KeywordKind::Var),
-                        _ => TokenKind::Identifier(IdentifierKind::AlphaNumeric)
+                        _ => TokenKind::Identifier
                     }
                 },
                 x if x.is_valid_operator() => {
                     let kind = match x {
-                        CharKind::Bar => IdentifierKind::Bar,
-                        CharKind::Caret => IdentifierKind::Caret,
-                        CharKind::Ampersand => IdentifierKind::Ampersand,
-                        CharKind::Bang => IdentifierKind::Bang,
-                        CharKind::Equals => IdentifierKind::Equals,
-                        CharKind::LessThan => IdentifierKind::LessThan,
-                        CharKind::GreaterThan => IdentifierKind::GreaterThan,
-                        CharKind::Plus => IdentifierKind::Plus,
-                        CharKind::Minus => IdentifierKind::Minus,
-                        CharKind::Asterisk => IdentifierKind::Asterisk,
-                        CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
-                        CharKind::Percent => IdentifierKind::Percent,
-                        _ => IdentifierKind::Other
+                        CharKind::Bar => OperatorKind::Bar,
+                        CharKind::Caret => OperatorKind::Caret,
+                        CharKind::Ampersand => OperatorKind::Ampersand,
+                        CharKind::Bang => OperatorKind::Bang,
+                        CharKind::Equals => OperatorKind::Equals,
+                        CharKind::LessThan => OperatorKind::LessThan,
+                        CharKind::GreaterThan => OperatorKind::GreaterThan,
+                        CharKind::Plus => OperatorKind::Plus,
+                        CharKind::Minus => OperatorKind::Minus,
+                        CharKind::Asterisk => OperatorKind::Asterisk,
+                        CharKind::ForwardSlash => OperatorKind::ForwardSlash,
+                        CharKind::Percent => OperatorKind::Percent,
+                        _ => OperatorKind::Other
                     };
                     while self.scanner.peek()
                             .is_valid_operator() {
                         self.scanner.next();
                     }
                     match self.scanner.substr() {
-                        _ => TokenKind::Identifier(kind)
+                        _ => TokenKind::Operator(kind)
                     }
                 },
                 CharKind::LeftParen => TokenKind::Symbol(SymbolKind::LeftParen),
