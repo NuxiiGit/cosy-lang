@@ -1,13 +1,11 @@
 use libcosyc_syntax::Context;
 
-use std::rc::Rc;
 use std::io::{ BufRead, BufReader, Lines };
 use std::fs::File;
 use std::collections::VecDeque;
 
 /// A structure which reads characters of a file and returns individual `Context`s.
 pub struct FileScanner {
-    filepath : Rc<String>,
     lines : Option<Lines<BufReader<File>>>,
     line : usize,
     chars : VecDeque<char>,
@@ -18,7 +16,6 @@ impl FileScanner {
     pub fn open(filepath : &str) -> Option<Self> {
         if let Ok(file) = File::open(filepath) {
             Some(Self {
-                filepath : Rc::new(filepath.to_string()),
                 lines : Some(BufReader::new(file).lines()),
                 line : 0,
                 chars : VecDeque::new(),
@@ -91,7 +88,6 @@ impl FileScanner {
     /// Returns the current context for the current substring.
     pub fn context(&self) -> Context {
         Context {
-            filepath : Rc::clone(&self.filepath),
             src : self.substr().to_string(),
             line : self.line
         }

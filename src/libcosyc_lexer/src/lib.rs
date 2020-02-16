@@ -35,7 +35,7 @@ impl<'a> Lexer<'a> {
                     }
                     continue 'search;
                 },
-                CharKind::ForwardSlash if peek == CharKind::ForwardSlash => {
+                CharKind::Minus if peek == CharKind::Minus => {
                     // line comments
                     while !self.scanner.peek()
                             .is_valid_ending() {
@@ -43,7 +43,7 @@ impl<'a> Lexer<'a> {
                     }
                     continue 'search;
                 },
-                CharKind::ForwardSlash if peek == CharKind::Asterisk => {
+                CharKind::Minus if peek == CharKind::Minus => {
                     // block comments
                     self.scanner.next();
                     let mut nests = 1;
@@ -55,11 +55,11 @@ impl<'a> Lexer<'a> {
                                 self.error(ErrorKind::Warning, "unterminated block comment");
                                 continue 'search;
                             },
-                            (CharKind::ForwardSlash, CharKind::Asterisk) => {
+                            (CharKind::LeftBrace, CharKind::Minus) => {
                                 self.scanner.next();
                                 nests += 1
                             },
-                            (CharKind::Asterisk, CharKind::ForwardSlash) => {
+                            (CharKind::Minus, CharKind::RightBrace) => {
                                 self.scanner.next();
                                 if nests == 1 {
                                     continue 'search;
@@ -129,14 +129,14 @@ impl<'a> Lexer<'a> {
                         }
                         TokenKind::Directive
                     } else {
-                        self.error(ErrorKind::NonFatal, "expected graphic after hashtag symbol");
+                        self.error(ErrorKind::Issue, "expected graphic after hashtag symbol");
                         continue 'search;
                     }
                 },
                 CharKind::Address => TokenKind::Symbol(SymbolKind::Address),
                 CharKind::EoF => TokenKind::EoF,
                 _ => {
-                    self.error(ErrorKind::NonFatal, "unknown symbol");
+                    self.error(ErrorKind::Issue, "unknown symbol");
                     continue 'search;
                 }
             };
