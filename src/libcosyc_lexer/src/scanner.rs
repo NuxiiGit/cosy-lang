@@ -1,119 +1,73 @@
 use libcosyc_syntax::Context;
 
-use std::rc::Rc;
-use std::io::{ BufRead, BufReader, Lines };
-use std::fs::File;
-use std::collections::VecDeque;
+use std::str::CharIndices;
+use std::iter::Peekable;
 
-/// A structure which reads characters of a file and returns individual `Context`s.
-pub struct FileScanner {
-    filepath : Rc<String>,
-    lines : Option<Lines<BufReader<File>>>,
+/// A structure over a string slice which produces individual `Context`s.
+pub struct Cursor<'a> {
+    src : &'a str,
+    chars : Peekable<CharIndices<'a>>,
     line : usize,
-    chars : VecDeque<char>,
-    word : String
+    byte_start : usize,
+    byte_end : usize
 }
-impl FileScanner {
-    /// Creates a new scanner at this file path.
-    pub fn open(filepath : &str) -> Option<Self> {
-        if let Ok(file) = File::open(filepath) {
-            Some(Self {
-                filepath : Rc::new(filepath.to_string()),
-                lines : Some(BufReader::new(file).lines()),
-                line : 0,
-                chars : VecDeque::new(),
-                word : String::new()
-            })
-        } else {
-            None
+impl<'a> Cursor<'a> {
+    /// Creates a new scanner from this source.
+    pub fn from(src : &'a str) -> Self {
+        Self {
+            src,
+            chars : src.char_indices().peekable(),
+            line : 1,
+            byte_start : 0,
+            byte_end : 0
         }
     }
 
     /// Returns the kind of the next character.
-    pub fn peek(&self) -> CharKind {
-        if let Some(chr) = self.chr() {
-            CharKind::identify(chr)
+    pub fn peek(&mut self) -> CharKind {
+        if let Some((_, c)) = self.chars.peek() {
+            CharKind::identify(c)
         } else {
             CharKind::EoF
         }
-    }
-
-    /// Returns the next character in the file, or `None` if you have reached the EOF.
-    pub fn chr(&self) -> Option<char> {
-        if self.lines.is_none() {
-            None
-        } else {
-            if let Some(chr) = self.chars.front() {
-                Some(*chr)
-            } else {
-                Some('\n')
-            }
-        }
-    }
-
-    /// Advances the scanner and adds the character to the word.
-    pub fn next(&mut self) -> CharKind {
-        self.advance(false)
-    }
-
-    /// Similar to `next`, except the character is ignored.
-    pub fn skip(&mut self) -> CharKind {
-        self.advance(true)
     }
 
     /// Advances the scanner.
-    pub fn advance(&mut self, skip : bool) -> CharKind {
-        if let Some(chr) = self.chr() {
-            if let '\n' = chr {
-                self.readln();
-            } else {
-                self.chars.pop_front();
-            }
-            if !skip {
-                self.word.push(chr);
-            }
-            CharKind::identify(chr)
+    pub fn next(&mut self) -> CharKind {
+        let kind = if let Some((_, c)) = self.chars.next() {
+            CharKind::identify(&c)
         } else {
             CharKind::EoF
+        };
+        if let CharKind::NewLine = kind {
+            self.line += 1;
         }
+        if let Some((i, _)) = self.chars.peek() {
+            self.byte_end = *i;
+        } else {
+            self.byte_end = self.src.len();
+        }
+        kind
     }
 
     /// Returns the current substring.
-    pub fn substr(&self) -> &str {
-        &self.word
+    pub fn substr(&self) -> &'a str {
+        &self.src[self.byte_start..self.byte_end]
     }
 
     /// Clears the current substring.
     pub fn clear(&mut self) {
-        self.word.clear();
+        self.byte_start = self.byte_end;
     }
 
     /// Returns the current context for the current substring.
-    pub fn context(&self) -> Context {
+    pub fn context(&self) -> Context<'a> {
         Context {
-            filepath : Rc::clone(&self.filepath),
-            src : self.substr().to_string(),
+            src : self.substr(),
             line : self.line
         }
     }
-
-    /// Reads the next line of the file into the char queue.
-    fn readln(&mut self) {
-        if let Some(iter) = &mut self.lines {
-            match iter.next() {
-                Some(Ok(line)) => {
-                    self.line += 1;
-                    for x in line.chars() {
-                        self.chars.push_back(x);
-                    }
-                },
-                Some(_) => {},
-                None => self.lines = None
-            }
-        }
-    }
 }
-
 
 /// An enum which stores character kinds.
 #[derive(PartialEq, Debug, Clone)]
@@ -159,7 +113,7 @@ pub enum CharKind {
 }
 impl CharKind {
     /// Converts a character into its respective `CharKind`.
-    pub fn identify(c : char) -> CharKind {
+    pub fn identify(c : &char) -> CharKind {
         match c {
             '\n' => CharKind::NewLine,
             x if x.is_whitespace() => CharKind::Whitespace,

@@ -2,9 +2,9 @@ use super::Context;
 
 /// Stores a token and its location in the source file.
 #[derive(Debug, Clone)]
-pub struct Token {
+pub struct Token<'a> {
     pub kind : TokenKind,
-    pub context : Context
+    pub context : Context<'a>
 }
 
 /// An enum which describes available token types.

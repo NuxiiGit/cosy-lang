@@ -4,11 +4,11 @@ use std::{ fmt, error };
 use std::vec;
 
 /// A struct which keeps track of errors.
-pub struct IssueTracker {
-    errors : Vec<Error>,
+pub struct IssueTracker<'a> {
+    errors : Vec<Error<'a>>,
     level : Option<ErrorKind>
 }
-impl IssueTracker {
+impl<'a> IssueTracker<'a> {
     /// Creates a new empty session.
     pub fn new() -> Self {
         Self {
@@ -23,7 +23,7 @@ impl IssueTracker {
     }
 
     /// Adds a new error to the session.
-    pub fn report(&mut self, error : Error) {
+    pub fn report(&mut self, error : Error<'a>) {
         let increase_level = if let Some(kind) = &self.level
                 { error.kind > *kind } else { true };
         if increase_level {
@@ -32,8 +32,8 @@ impl IssueTracker {
         self.errors.push(error);
     }
 }
-impl IntoIterator for IssueTracker {
-    type Item = Error;
+impl<'a> IntoIterator for IssueTracker<'a> {
+    type Item = Error<'a>;
     type IntoIter = vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -43,18 +43,18 @@ impl IntoIterator for IssueTracker {
 
 /// A struct which stores error information.
 #[derive(Debug)]
-pub struct Error {
+pub struct Error<'a> {
     pub reason : &'static str,
-    pub token : Token,
+    pub token : Token<'a>,
     pub kind : ErrorKind
 }
-impl fmt::Display for Error {
+impl fmt::Display for Error<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "{:?}! {}: {}. got {:?}",
                 self.kind, self.token.context, self.reason, self.token.kind)
     }
 }
-impl error::Error for Error {}
+impl error::Error for Error<'_> {}
 
 /// An enum which describes available error types.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]

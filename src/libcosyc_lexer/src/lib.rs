@@ -1,27 +1,25 @@
 pub mod scanner;
 
-use libcosyc_diagnostics::{ IssueTracker, Error, ErrorKind };
+use libcosyc_diagnostics::{ Error, ErrorKind };
 use libcosyc_syntax::token::*;
 
-use scanner::{ FileScanner, CharKind };
+use scanner::{ Cursor, CharKind };
 
 pub struct Lexer<'a> {
-    scanner : FileScanner,
-    state : LexerState,
-    issues : &'a mut IssueTracker
+    scanner : Cursor<'a>,
+    state : LexerState
 }
 impl<'a> Lexer<'a> {
-    /// Creates a new lexer from this file scanner.
-    pub fn from(scanner : FileScanner, issues : &'a mut IssueTracker) -> Self {
+    /// Creates a new lexer from this string scanner.
+    pub fn from(scanner : Cursor<'a>) -> Self {
         Self {
             scanner,
-            state : LexerState::Default,
-            issues
+            state : LexerState::Default
         }
     }
 
     /// Tokenises the current token and returns it.
-    pub fn next(&mut self) -> Token {
+    pub fn next(&mut self) -> Result<'a> {
         'search:
         loop {
             self.scanner.clear();
@@ -52,8 +50,7 @@ impl<'a> Lexer<'a> {
                         let peek = self.scanner.peek();
                         match (next, peek) {
                             (_, CharKind::EoF) => {
-                                self.error(ErrorKind::Warning, "unterminated block comment");
-                                continue 'search;
+                                return Err(self.make_error(ErrorKind::Warning, "unterminated block comment"));
                             },
                             (CharKind::ForwardSlash, CharKind::Asterisk) => {
                                 self.scanner.next();
@@ -129,43 +126,29 @@ impl<'a> Lexer<'a> {
                         }
                         TokenKind::Directive
                     } else {
-                        self.error(ErrorKind::NonFatal, "expected graphic after hashtag symbol");
-                        continue 'search;
+                        return Err(self.make_error(ErrorKind::NonFatal, "expected graphic after hashtag symbol"));
                     }
                 },
                 CharKind::Address => TokenKind::Symbol(SymbolKind::Address),
                 CharKind::EoF => TokenKind::EoF,
                 _ => {
-                    self.error(ErrorKind::NonFatal, "unknown symbol");
-                    continue 'search;
+                    return Err(self.make_error(ErrorKind::NonFatal, "unknown symbol"));
                 }
             };
-            let context = self.scanner.context();
-            break Token { context, kind };
+            return Ok(self.make_token(kind));
         }
     }
 
-    /// Reports a new error with this reason.
-    fn error(&mut self, kind : ErrorKind, reason : &'static str) {
-        let context = self.scanner.context();
-        let token = Token {
-            context,
-            kind : TokenKind::Unknown
-        };
-        self.issues.report(Error { reason, token, kind });
+    /// Creates a new error of this kind and reason.
+    pub fn make_error(&self, kind : ErrorKind, reason : &'static str) -> Error<'a> {
+        let token = self.make_token(TokenKind::Unknown);
+        Error { reason, token, kind }
     }
-}
-impl Into<Vec<Token>> for Lexer<'_> {
-    fn into(mut self) -> Vec<Token> {
-        let mut vec = Vec::new();
-        loop {
-            let token = self.next();
-            let exit = TokenKind::EoF == token.kind;
-            vec.push(token);
-            if exit {
-                break vec;
-            }
-        }
+
+    /// Creates a new token of this kind.
+    pub fn make_token(&self, kind : TokenKind) -> Token<'a> {
+        let context = self.scanner.context();
+        Token { context, kind }
     }
 }
 
@@ -173,3 +156,5 @@ impl Into<Vec<Token>> for Lexer<'_> {
 enum LexerState {
     Default
 }
+
+pub type Result<'a> = std::result::Result<Token<'a>, Error<'a>>;
