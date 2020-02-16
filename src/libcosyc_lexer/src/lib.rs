@@ -3,16 +3,16 @@ pub mod scanner;
 use libcosyc_diagnostics::{ IssueTracker, Error, ErrorKind };
 use libcosyc_syntax::token::*;
 
-use scanner::{ FileScanner, CharKind };
+use scanner::{ Scanner, CharKind };
 
 pub struct Lexer<'a> {
-    scanner : FileScanner,
+    scanner : Scanner,
     state : LexerState,
     issues : &'a mut IssueTracker
 }
 impl<'a> Lexer<'a> {
     /// Creates a new lexer from this file scanner.
-    pub fn from(scanner : FileScanner, issues : &'a mut IssueTracker) -> Self {
+    pub fn from(scanner : Scanner, issues : &'a mut IssueTracker) -> Self {
         Self {
             scanner,
             state : LexerState::Default,
@@ -147,12 +147,14 @@ impl<'a> Lexer<'a> {
 
     /// Reports a new error with this reason.
     fn error(&mut self, kind : ErrorKind, reason : &'static str) {
-        let context = self.scanner.context();
-        let token = Token {
-            context,
-            kind : TokenKind::Unknown
-        };
+        let token = self.tokenise(TokenKind::Unknown);
         self.issues.report(Error { reason, token, kind });
+    }
+
+    /// Creates a new token with this kind.
+    pub fn tokenise(&self, kind : TokenKind) -> Token {
+        let context = self.scanner.context();
+        Token { context, kind }
     }
 }
 impl Into<Vec<Token>> for Lexer<'_> {

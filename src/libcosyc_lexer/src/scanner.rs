@@ -1,29 +1,26 @@
 use libcosyc_syntax::Context;
 
-use std::io::{ BufRead, BufReader, Lines };
+use std::io::{ self, BufRead, BufReader, Lines };
 use std::fs::File;
 use std::collections::VecDeque;
 
 /// A structure which reads characters of a file and returns individual `Context`s.
-pub struct FileScanner {
+pub struct Scanner {
     lines : Option<Lines<BufReader<File>>>,
     line : usize,
     chars : VecDeque<char>,
     word : String
 }
-impl FileScanner {
+impl Scanner {
     /// Creates a new scanner at this file path.
-    pub fn open(filepath : &str) -> Option<Self> {
-        if let Ok(file) = File::open(filepath) {
-            Some(Self {
-                lines : Some(BufReader::new(file).lines()),
-                line : 0,
-                chars : VecDeque::new(),
-                word : String::new()
-            })
-        } else {
-            None
-        }
+    pub fn open(filepath : &str) -> io::Result<Self> {
+        let file = File::open(filepath)?;
+        Ok(Self {
+            lines : Some(BufReader::new(file).lines()),
+            line : 0,
+            chars : VecDeque::new(),
+            word : String::new()
+        })
     }
 
     /// Returns the kind of the next character.
@@ -103,8 +100,7 @@ impl FileScanner {
                         self.chars.push_back(x);
                     }
                 },
-                Some(_) => {},
-                None => self.lines = None
+                _ => self.lines = None
             }
         }
     }
