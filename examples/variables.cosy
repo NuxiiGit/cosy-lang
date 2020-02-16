@@ -1,16 +1,16 @@
-// variable
+-- variable
 var a = 3;
 
-// constant
+-- constant
 def B = 3.0;
 
-// character
+-- character
 var ch = 'a';
 
-// string
+-- string
 var str = "abc";
 var str' = ['a', 'b', 'c'];
 
-// delayed variable instantiation
+-- delayed variable instantiation
 var i : Int;
 i = 1;
