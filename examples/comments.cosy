@@ -1,10 +1,7 @@
-// normal comment
+-- normal comment
 
-//| documentation comment
-//| docs can be continued to new lines like so
+{- block comment -}
 
-/* block comment */
-
-/* nested block comment
- * /* nice */
- */
+{- nested block comment
+ - {- nice -}
+ -}
