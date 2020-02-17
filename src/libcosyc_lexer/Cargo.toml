@@ -1,7 +1,7 @@
 [package]
 name = "libcosyc_lexer"
 version = "0.0.1"
-authors = ["Nuxii"]
+authors = ["NuxiiGit"]
 edition = "2018"
 
 [dependencies]

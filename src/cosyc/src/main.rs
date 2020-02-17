@@ -12,7 +12,7 @@ fn main() {
     let scanner = Scanner::open("examples/tests/bleh.cosy")
             .expect("unable to load file for reading");
     let mut issues = IssueTracker::new();
-    let lexer = Lexer::from(scanner, &mut issues);
+    let lexer = Lexer::new(scanner, &mut issues);
     let tokens : Vec<_> = lexer.into();
     for token in tokens {
         println!("{} {:?} ({:?})", token.context, token.kind, token.context.src);

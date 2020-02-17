@@ -12,7 +12,7 @@ pub struct Lexer<'a> {
 }
 impl<'a> Lexer<'a> {
     /// Creates a new lexer from this file scanner.
-    pub fn from(scanner : Scanner, issues : &'a mut IssueTracker) -> Self {
+    pub fn new(scanner : Scanner, issues : &'a mut IssueTracker) -> Self {
         Self {
             scanner,
             state : LexerState::Default,
