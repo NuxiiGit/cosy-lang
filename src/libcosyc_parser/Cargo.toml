@@ -1,9 +1,10 @@
 [package]
-name = "cosyc"
+name = "libcosyc_parser"
 version = "0.0.1"
 authors = ["Nuxii"]
 edition = "2018"
 
 [dependencies]
 libcosyc_lexer = { path = "../libcosyc_lexer" }
+libcosyc_syntax = { path = "../libcosyc_syntax" }
 libcosyc_diagnostics = { path = "../libcosyc_diagnostics" }

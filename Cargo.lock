@@ -4,14 +4,9 @@
 name = "cosyc"
 version = "0.0.1"
 dependencies = [
- "libcosyc_common 0.0.1",
  "libcosyc_diagnostics 0.0.1",
  "libcosyc_lexer 0.0.1",
 ]
-
-[[package]]
-name = "libcosyc_common"
-version = "0.0.1"
 
 [[package]]
 name = "libcosyc_diagnostics"
