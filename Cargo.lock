@@ -6,7 +6,6 @@ version = "0.0.1"
 dependencies = [
  "libcosyc_diagnostics 0.0.1",
  "libcosyc_lexer 0.0.1",
- "libcosyc_parser 0.0.1",
 ]
 
 [[package]]
@@ -21,15 +20,6 @@ name = "libcosyc_lexer"
 version = "0.0.1"
 dependencies = [
  "libcosyc_diagnostics 0.0.1",
- "libcosyc_syntax 0.0.1",
-]
-
-[[package]]
-name = "libcosyc_parser"
-version = "0.0.1"
-dependencies = [
- "libcosyc_diagnostics 0.0.1",
- "libcosyc_lexer 0.0.1",
  "libcosyc_syntax 0.0.1",
 ]
 

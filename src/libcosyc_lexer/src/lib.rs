@@ -1,27 +1,38 @@
-pub mod scanner;
+mod scanner;
 
-use libcosyc_diagnostics::{ IssueTracker, Error, ErrorKind };
+use scanner::*;
+
+use libcosyc_diagnostics::{ Error, ErrorKind };
 use libcosyc_syntax::token::*;
 
-use scanner::{ Scanner, CharKind };
-
+/// An iterator over a string slice which produces `lexer::Result`s.
 pub struct Lexer<'a> {
-    scanner : Scanner,
-    state : LexerState,
-    issues : &'a mut IssueTracker
+    scanner : Scanner<'a>,
+    state : LexerState
 }
 impl<'a> Lexer<'a> {
-    /// Creates a new lexer from this file scanner.
-    pub fn new(scanner : Scanner, issues : &'a mut IssueTracker) -> Self {
+    /// Creates a new lexer from this string slice.
+    pub fn from(src : &'a str) -> Self {
         Self {
-            scanner,
-            state : LexerState::Default,
-            issues
+            scanner : Scanner::from(src),
+            state : LexerState::Default
         }
     }
 
-    /// Tokenises the current token and returns it.
-    pub fn next(&mut self) -> Token {
+    /// Creates a new error of this kind and reason.
+    pub fn make_error(&self, kind : ErrorKind, reason : &'static str) -> Error<'a> {
+        let token = self.make_token(TokenKind::Unknown);
+        Error { reason, token, kind }
+    }
+
+    /// Creates a new token of this kind.
+    pub fn make_token(&self, kind : TokenKind) -> Token<'a> {
+        let context = self.scanner.context();
+        Token { context, kind }
+    }
+    
+    /// Returns the next result.
+    pub fn next(&mut self) -> Result<'a> {
         'search:
         loop {
             self.scanner.clear();
@@ -52,8 +63,7 @@ impl<'a> Lexer<'a> {
                         let peek = self.scanner.peek();
                         match (next, peek) {
                             (_, CharKind::EoF) => {
-                                self.error(ErrorKind::Warning, "unterminated block comment");
-                                continue 'search;
+                                break 'search Err(self.make_error(ErrorKind::Warning, "unterminated block comment"));
                             },
                             (CharKind::LeftBrace, CharKind::Minus) => {
                                 self.scanner.next();
@@ -129,44 +139,16 @@ impl<'a> Lexer<'a> {
                         }
                         TokenKind::Directive
                     } else {
-                        self.error(ErrorKind::Issue, "expected graphic after hashtag symbol");
-                        continue 'search;
+                        break 'search Err(self.make_error(ErrorKind::Issue, "expected graphic after hashtag symbol"));
                     }
                 },
                 CharKind::Address => TokenKind::Symbol(SymbolKind::Address),
                 CharKind::EoF => TokenKind::EoF,
                 _ => {
-                    self.error(ErrorKind::Issue, "unknown symbol");
-                    continue 'search;
+                    break 'search Err(self.make_error(ErrorKind::Issue, "unknown symbol"));
                 }
             };
-            let context = self.scanner.context();
-            break Token { context, kind };
-        }
-    }
-
-    /// Reports a new error with this reason.
-    fn error(&mut self, kind : ErrorKind, reason : &'static str) {
-        let token = self.tokenise(TokenKind::Unknown);
-        self.issues.report(Error { reason, token, kind });
-    }
-
-    /// Creates a new token with this kind.
-    pub fn tokenise(&self, kind : TokenKind) -> Token {
-        let context = self.scanner.context();
-        Token { context, kind }
-    }
-}
-impl Into<Vec<Token>> for Lexer<'_> {
-    fn into(mut self) -> Vec<Token> {
-        let mut vec = Vec::new();
-        loop {
-            let token = self.next();
-            let exit = TokenKind::EoF == token.kind;
-            vec.push(token);
-            if exit {
-                break vec;
-            }
+            break 'search Ok(self.make_token(kind));
         }
     }
 }
@@ -175,3 +157,6 @@ impl Into<Vec<Token>> for Lexer<'_> {
 enum LexerState {
     Default
 }
+
+/// A type which specifies the return result of the lexer.
+pub type Result<'a> = std::result::Result<Token<'a>, Error<'a>>;
