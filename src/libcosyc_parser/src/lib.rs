@@ -1,17 +1,23 @@
 use libcosyc_syntax::Context;
+use libcosyc_diagnostics::{ Error, ErrorKind, IssueTracker };
 
 use std::str::CharIndices;
 use std::iter::Peekable;
 
+pub struct Parser<'a, 'b> {
+    scanner : StringReader<'a>,
+    issues : &'b IssueTracker<'a>
+}
+
 /// A structure over a string slice which produces individual `Context`s.
-pub struct Scanner<'a> {
+pub struct StringReader<'a> {
     src : &'a str,
     chars : Peekable<CharIndices<'a>>,
     line : usize,
     byte_start : usize,
     byte_end : usize
 }
-impl<'a> Scanner<'a> {
+impl<'a> StringReader<'a> {
     /// Creates a new scanner from this source.
     pub fn from(src : &'a str) -> Self {
         Self {

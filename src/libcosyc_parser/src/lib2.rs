@@ -7,15 +7,13 @@ use libcosyc_syntax::token::*;
 
 /// An iterator over a string slice which produces `lexer::Result`s.
 pub struct Lexer<'a> {
-    scanner : Scanner<'a>,
-    state : LexerState
+    scanner : Scanner<'a>
 }
 impl<'a> Lexer<'a> {
     /// Creates a new lexer from this string slice.
     pub fn from(src : &'a str) -> Self {
         Self {
-            scanner : Scanner::from(src),
-            state : LexerState::Default
+            scanner : Scanner::from(src)
         }
     }
 
@@ -151,11 +149,6 @@ impl<'a> Lexer<'a> {
             break 'search Ok(self.make_token(kind));
         }
     }
-}
-
-/// The state of the lexer. This is used to parse strings as character arrays.
-enum LexerState {
-    Default
 }
 
 /// A type which specifies the return result of the lexer.
