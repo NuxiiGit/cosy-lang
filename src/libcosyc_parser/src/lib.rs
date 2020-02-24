@@ -1,12 +1,30 @@
-use libcosyc_syntax::Context;
+use libcosyc_syntax::{ Context, token::* };
 use libcosyc_diagnostics::{ Error, ErrorKind, IssueTracker };
 
 use std::str::CharIndices;
 use std::iter::Peekable;
 
 pub struct Parser<'a, 'b> {
-    scanner : StringReader<'a>,
+    reader : StringReader<'a>,
     issues : &'b IssueTracker<'a>
+}
+impl<'a, 'b> Parser<'a, 'b> {
+    /// Creates a new parser from this string reader and issue tracker.
+    pub fn new(reader : StringReader<'a>, issues : &'b mut IssueTracker<'a>) -> Self {
+        Self { reader, issues }
+    }
+
+    /// Creates a new error of this kind and reason.
+    pub fn make_error(&self, kind : ErrorKind, reason : &'static str) -> Error<'a> {
+        let token = self.make_token(TokenKind::Unknown);
+        Error { reason, token, kind }
+    }
+
+    /// Creates a new token of this kind.
+    pub fn make_token(&self, kind : TokenKind) -> Token<'a> {
+        let context = self.reader.context();
+        Token { context, kind }
+    }
 }
 
 /// A structure over a string slice which produces individual `Context`s.
