@@ -2,8 +2,6 @@
 //use cosyc::lexer::scanner::FileScanner;
 //use cosyc::lexer::Lexer;
 
-use libcosyc_parser::{ StringReader, Parser };
-
 use std::fs;
 use std::time::Instant;
 
@@ -11,7 +9,6 @@ fn main() {
     let now = Instant::now();
     let src = fs::read_to_string("examples/tests/bleh.cosy")
             .expect("unable to read file");
-    let reader = StringReader::from(&src);
     /*let mut lexer = Lexer::from(&src);
     loop {
         match lexer.next() {

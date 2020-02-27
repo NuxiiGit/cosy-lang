@@ -4,11 +4,11 @@ use libcosyc_diagnostics::{ Error, ErrorKind, IssueTracker };
 use std::str::CharIndices;
 use std::iter::Peekable;
 
-pub struct Parser<'a, 'b> {
+pub struct Lexer<'a, 'b> {
     reader : StringReader<'a>,
     issues : &'b mut IssueTracker<'a>
 }
-impl<'a, 'b> Parser<'a, 'b> {
+impl<'a, 'b> Lexer<'a, 'b> {
     /// Creates a new parser from this string reader and issue tracker.
     pub fn new(reader : StringReader<'a>, issues : &'b mut IssueTracker<'a>) -> Self {
         Self { reader, issues }
