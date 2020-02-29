@@ -4,18 +4,31 @@ use libcosyc_diagnostics::{ Error, ErrorKind, IssueTracker };
 use std::str::CharIndices;
 use std::iter::Peekable;
 
-pub struct Lexer<'a, 'b> {
-    reader : StringReader<'a>,
-    issues : &'b mut IssueTracker<'a>
+pub struct Lexer<'a> {
+    reader : StringReader<'a>
 }
-impl<'a, 'b> Lexer<'a, 'b> {
-    /// Creates a new parser from this string reader and issue tracker.
-    pub fn new(reader : StringReader<'a>, issues : &'b mut IssueTracker<'a>) -> Self {
-        Self { reader, issues }
+impl<'a> Lexer<'a> {
+    /// Creates a new lexer from this string reader.
+    pub fn new(reader : StringReader<'a>) -> Self {
+        Self { reader }
     }
 
-    /// Returns the next token.
-    fn next(&mut self) -> Option<Token<'a>> {
+    /// Creates a new error of this kind and reason.
+    fn make_error(&self, kind : ErrorKind, reason : &'static str) -> Error<'a> {
+        let token = self.make_token(TokenKind::Unknown);
+        Error { reason, token, kind }
+    }
+
+    /// Creates a new token of this kind.
+    fn make_token(&self, kind : TokenKind) -> Token<'a> {
+        let context = self.reader.context();
+        Token { context, kind }
+    }
+}
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Result<Token<'a>, Error<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
         'search:
         loop {
             self.reader.reset_context();
@@ -136,18 +149,6 @@ impl<'a, 'b> Lexer<'a, 'b> {
             };
             break 'search Some(self.make_token(kind));
         }
-    }
-
-    /// Creates a new error of this kind and reason.
-    fn make_error(&self, kind : ErrorKind, reason : &'static str) -> Error<'a> {
-        let token = self.make_token(TokenKind::Unknown);
-        Error { reason, token, kind }
-    }
-
-    /// Creates a new token of this kind.
-    fn make_token(&self, kind : TokenKind) -> Token<'a> {
-        let context = self.reader.context();
-        Token { context, kind }
     }
 }
 

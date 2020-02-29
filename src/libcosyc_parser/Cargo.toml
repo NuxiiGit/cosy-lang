@@ -1,5 +1,5 @@
 [package]
-name = "libcosyc_lexer"
+name = "libcosyc_parser"
 version = "0.0.1"
 authors = ["NuxiiGit"]
 edition = "2018"
