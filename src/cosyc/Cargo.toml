@@ -5,5 +5,5 @@ authors = ["NuxiiGit"]
 edition = "2018"
 
 [dependencies]
-libcosyc_parser = { path = "../libcosyc_parser" }
+libcosyc_lexer = { path = "../libcosyc_lexer" }
 libcosyc_diagnostics = { path = "../libcosyc_diagnostics" }
