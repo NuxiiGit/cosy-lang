@@ -1,42 +1,30 @@
-mod tokeniser;
+mod reader;
 
-use tokeniser::{ CharClump, Tokeniser };
+use reader::{ CharKind, StringReader };
 
-use libcosyc_diagnostics::{ Error, ErrorKind };
+use libcosyc_diagnostics::{ Error, ErrorKind, IssueTracker };
+use libcosyc_syntax::{ token::*, Context };
 
-pub struct Lexer<'a> {
-    tokeniser : Tokeniser<'a>,
+pub struct Lexer<'a, 'b> {
+    reader : StringReader<'a>,
+    issues : &'b mut IssueTracker<'a>
 }
-impl<'a> Lexer<'a> {
+impl<'a, 'b> Lexer<'a, 'b> {
     /// Creates a new lexer from this string slice.
-    pub fn from(src : &'a str) -> Self {
+    pub fn from(src : &'a str, issues : &'b mut IssueTracker<'a>) -> Self {
         Self {
-            tokeniser : Tokeniser::from(src)
+            reader : StringReader::from(src),
+            issues
         }
     }
 
-    /// Creates a new error of this kind and reason.
-    fn make_error(&self, reason : &'static str) -> Error<'a> {
-        let token = self.make_token(TokenKind::Unknown);
-        let kind = ErrorKind::Fatal;
-        Error { reason, token, kind }
-    }
-
-    /// Creates a new token of this kind.
-    fn make_token(&self, kind : TokenKind) -> Token<'a> {
-        let context = self.reader.context();
-        Token { context, kind }
-    }
-}
-impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>, Error<'a>>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        Some('search: loop {
-            self.reader.reset_context();
+    /// Returns the next token in the string.
+    pub fn next(&mut self) -> Token<'a> {
+        'search: loop {
+            self.reader.clear_selection();
             let next = self.reader.next();
             let peek = self.reader.peek();
-            let result = match next {
+            let kind = match next {
                 x if x.is_valid_whitespace() => {
                     while self.reader.peek()
                             .is_valid_whitespace() {
@@ -61,7 +49,8 @@ impl<'a> Iterator for Lexer<'a> {
                         let peek = self.reader.peek();
                         match (next, peek) {
                             (_, CharKind::EoF) => {
-                                break Err("unterminated block comment");
+                                self.report_error(ErrorKind::Warning, "unterminated block comment");
+                                continue 'search;
                             },
                             (CharKind::LeftBrace, CharKind::Minus) => {
                                 self.reader.next();
@@ -84,19 +73,19 @@ impl<'a> Iterator for Lexer<'a> {
                             .is_valid_digit() {
                         self.reader.next();
                     }
-                    Ok(TokenKind::Literal(LiteralKind::Integer))
+                    TokenKind::Literal(LiteralKind::Integer)
                 },
                 x if x.is_valid_graphic() => {
                     while self.reader.peek()
                             .is_valid_graphic() {
                         self.reader.next();
                     }
-                    Ok(match self.reader.substr() {
+                    match self.reader.substr() {
                         "var" => TokenKind::Keyword(KeywordKind::Var),
                         "if" => TokenKind::Keyword(KeywordKind::If),
                         "else" => TokenKind::Keyword(KeywordKind::Else),
                         _ => TokenKind::Identifier
-                    })
+                    }
                 },
                 x if x.is_valid_operator() => {
                     let kind = match x {
@@ -118,36 +107,49 @@ impl<'a> Iterator for Lexer<'a> {
                             .is_valid_operator() {
                         self.reader.next();
                     }
-                    Ok(match self.reader.substr() {
+                    match self.reader.substr() {
                         _ => TokenKind::Operator(kind)
-                    })
-                },
-                CharKind::LeftParen => Ok(TokenKind::Symbol(SymbolKind::LeftParen)),
-                CharKind::RightParen => Ok(TokenKind::Symbol(SymbolKind::RightParen)),
-                CharKind::LeftBrace => Ok(TokenKind::Symbol(SymbolKind::LeftBrace)),
-                CharKind::RightBrace => Ok(TokenKind::Symbol(SymbolKind::RightBrace)),
-                CharKind::SemiColon => Ok(TokenKind::Symbol(SymbolKind::SemiColon)),
-                CharKind::Dollar => Ok(TokenKind::Symbol(SymbolKind::Dollar)),
-                CharKind::Backtick => Ok(TokenKind::Symbol(SymbolKind::Backtick)),
-                CharKind::Hashtag => {
-                    if let CharKind::Graphic = self.reader.peek() {
-                        self.reader.next();
-                        while let CharKind::Graphic = self.reader.peek() {
-                            self.reader.next();
-                        }
-                        Ok(TokenKind::Directive)
-                    } else {
-                        Err("expected graphic after hashtag symbol")
                     }
                 },
-                CharKind::Address => Ok(TokenKind::Symbol(SymbolKind::Address)),
-                CharKind::EoF => Ok(TokenKind::EoF),
-                _ => Err("unexpected symbol")
+                CharKind::LeftParen => TokenKind::Symbol(SymbolKind::LeftParen),
+                CharKind::RightParen => TokenKind::Symbol(SymbolKind::RightParen),
+                CharKind::LeftBrace => TokenKind::Symbol(SymbolKind::LeftBrace),
+                CharKind::RightBrace => TokenKind::Symbol(SymbolKind::RightBrace),
+                CharKind::SemiColon => TokenKind::Symbol(SymbolKind::SemiColon),
+                CharKind::Dollar => TokenKind::Symbol(SymbolKind::Dollar),
+                CharKind::Backtick => TokenKind::Symbol(SymbolKind::Backtick),
+                CharKind::Hashtag => TokenKind::Symbol(SymbolKind::Hashtag),
+                CharKind::Address => TokenKind::Symbol(SymbolKind::Address),
+                CharKind::EoF => TokenKind::EoF,
+                _ => {
+                    self.report_error(ErrorKind::Fatal, "unexpected symbol");
+                    continue 'search;
+                }
             };
-            break 'search match result {
-                Ok(kind) => Ok(self.make_token(kind)),
-                Err(reason) => Err(self.make_error(reason))
-            }
-        })
+            break 'search self.make_token(kind);
+        }
+    }
+
+    /// Creates a new error of this kind and reason.
+    fn report_error(&mut self, kind : ErrorKind, reason : &'static str) {
+        let token = self.make_token(TokenKind::Unknown);
+        self.issues.report(Error { reason, token, kind });
+    }
+
+    /// Creates a new token of this kind.
+    fn make_token(&self, kind : TokenKind) -> Token<'a> {
+        let line = self.reader.line();
+        let context = Context {
+            src : self.reader.substr(),
+            line
+        };
+        Token { context, kind }
     }
 }
+/*impl<'a> Iterator for Lexer<'a> {
+    type Item = Result<Token<'a>, Error<'a>>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        Some()
+    }
+}*/

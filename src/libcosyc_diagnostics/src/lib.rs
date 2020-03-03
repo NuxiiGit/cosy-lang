@@ -59,8 +59,6 @@ impl error::Error for Error<'_> {}
 /// An enum which describes available error types.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
 pub enum ErrorKind {
-    Note,
     Warning,
-    Issue,
     Fatal
 }

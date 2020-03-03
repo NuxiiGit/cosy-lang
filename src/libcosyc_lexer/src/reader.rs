@@ -59,7 +59,7 @@ impl<'a> StringReader<'a> {
     }
 
     /// Clears the current substring.
-    pub fn reset_context(&mut self) {
+    pub fn clear_selection(&mut self) {
         self.byte_start = self.byte_end;
     }
 }

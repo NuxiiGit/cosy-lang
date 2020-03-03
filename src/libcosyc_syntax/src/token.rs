@@ -96,6 +96,7 @@ pub enum SymbolKind {
     SemiColon,
     Dollar,
     Backtick,
+    Hashtag,
     Address
 }
 
