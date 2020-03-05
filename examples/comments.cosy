@@ -1,7 +1,6 @@
 -- normal comment
 
-{- block comment -}
+-- escaped comment \
+   to multiple lines
 
-{- nested block comment
- - {- nice -}
- -}
+-- single-line block comment >--

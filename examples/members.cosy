@@ -4,8 +4,6 @@ object Vec2 {
     y : Float = 0.0
 }
 
-{- Finds the dot product of two vectors.
- -}
 def (a : Vec2) ∙ (b : Vec2) : Vec2 = a.x * b.x + a.y * b.y;
 
 -- object construction

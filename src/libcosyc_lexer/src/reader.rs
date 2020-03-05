@@ -1,7 +1,7 @@
 use std::str::CharIndices;
 use std::iter::Peekable;
 
-/// A structure over a string slice which produces individual `Context`s.
+/// A structure over a string slice which produces individual `CharKind`s.
 pub struct StringReader<'a> {
     src : &'a str,
     chars : Peekable<CharIndices<'a>>,

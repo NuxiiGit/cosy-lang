@@ -1,4 +1,4 @@
-use libcosyc_syntax::token::Token;
+use libcosyc_common::source::SourcePos;
 
 use std::{ fmt, error };
 use std::vec;
@@ -45,13 +45,13 @@ impl<'a> IntoIterator for IssueTracker<'a> {
 #[derive(Debug)]
 pub struct Error<'a> {
     pub reason : &'static str,
-    pub token : Token<'a>,
+    pub src_pos : SourcePos<'a>,
     pub kind : ErrorKind
 }
 impl fmt::Display for Error<'_> {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{:?}! {}: {}. got {:?}",
-                self.kind, self.token.context, self.reason, self.token.kind)
+        write!(out, "{:?}! line {}: {}",
+                self.kind, self.src_pos.line, self.reason)
     }
 }
 impl error::Error for Error<'_> {}
