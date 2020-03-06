@@ -1,14 +1,14 @@
-use libcosyc_common::source::SourcePos;
+use libcosyc_span::Span;
 
 use std::{ fmt, error };
 use std::vec;
 
 /// A struct which keeps track of errors.
-pub struct IssueTracker<'a> {
-    errors : Vec<Error<'a>>,
+pub struct IssueTracker {
+    errors : Vec<Error>,
     level : Option<ErrorKind>
 }
-impl<'a> IssueTracker<'a> {
+impl IssueTracker {
     /// Creates a new empty session.
     pub fn new() -> Self {
         Self {
@@ -23,7 +23,7 @@ impl<'a> IssueTracker<'a> {
     }
 
     /// Adds a new error to the session.
-    pub fn report(&mut self, error : Error<'a>) {
+    pub fn report(&mut self, error : Error) {
         let increase_level = if let Some(kind) = &self.level
                 { error.kind > *kind } else { true };
         if increase_level {
@@ -32,8 +32,8 @@ impl<'a> IssueTracker<'a> {
         self.errors.push(error);
     }
 }
-impl<'a> IntoIterator for IssueTracker<'a> {
-    type Item = Error<'a>;
+impl IntoIterator for IssueTracker {
+    type Item = Error;
     type IntoIter = vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -43,18 +43,18 @@ impl<'a> IntoIterator for IssueTracker<'a> {
 
 /// A struct which stores error information.
 #[derive(Debug)]
-pub struct Error<'a> {
+pub struct Error {
     pub reason : &'static str,
-    pub src_pos : SourcePos<'a>,
-    pub kind : ErrorKind
+    pub kind : ErrorKind,
+    pub span : Span
 }
-impl fmt::Display for Error<'_> {
+impl fmt::Display for Error {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{:?}! line {}: {}",
-                self.kind, self.src_pos.line, self.reason)
+        write!(out, "{:?}! {}: {}",
+                self.kind, self.span, self.reason)
     }
 }
-impl error::Error for Error<'_> {}
+impl error::Error for Error {}
 
 /// An enum which describes available error types.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]

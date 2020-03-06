@@ -16,7 +16,7 @@ version = "0.0.1"
 name = "libcosyc_diagnostics"
 version = "0.0.1"
 dependencies = [
- "libcosyc_common 0.0.1",
+ "libcosyc_span 0.0.1",
 ]
 
 [[package]]
@@ -26,4 +26,8 @@ dependencies = [
  "libcosyc_common 0.0.1",
  "libcosyc_diagnostics 0.0.1",
 ]
+
+[[package]]
+name = "libcosyc_span"
+version = "0.0.1"
 

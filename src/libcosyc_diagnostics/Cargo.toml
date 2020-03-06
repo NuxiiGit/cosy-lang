@@ -5,4 +5,4 @@ authors = ["NuxiiGit"]
 edition = "2018"
 
 [dependencies]
-libcosyc_common = { path = "../libcosyc_common" }
+libcosyc_span = { path = "../libcosyc_span" }
