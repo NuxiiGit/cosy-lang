@@ -1,4 +1,4 @@
-use libcosyc_span::Span;
+use crate::span::Span;
 
 use std::{ fmt, error };
 use std::vec;

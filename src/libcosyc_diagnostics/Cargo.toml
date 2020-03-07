@@ -1,8 +1,0 @@
-[package]
-name = "libcosyc_diagnostics"
-version = "0.0.1"
-authors = ["NuxiiGit"]
-edition = "2018"
-
-[dependencies]
-libcosyc_span = { path = "../libcosyc_span" }

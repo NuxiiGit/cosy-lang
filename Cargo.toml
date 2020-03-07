@@ -1,4 +1,9 @@
-[workspace]
-members = [
-    "src/cosyc"
-]
+[package]
+name = "cosy"
+version = "0.0.1"
+authors = ["NuxiiGit"]
+edition = "2018"
+
+[lib]
+name = "cosyc"
+path = "lib_cosyc/lib.rs"

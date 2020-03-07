@@ -1,9 +1,0 @@
-[package]
-name = "libcosyc_lexer"
-version = "0.0.1"
-authors = ["NuxiiGit"]
-edition = "2018"
-
-[dependencies]
-libcosyc_common = { path = "../libcosyc_common" }
-libcosyc_diagnostics = { path = "../libcosyc_diagnostics" }

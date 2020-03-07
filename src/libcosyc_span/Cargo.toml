@@ -1,7 +1,0 @@
-[package]
-name = "libcosyc_span"
-version = "0.0.1"
-authors = ["NuxiiGit"]
-edition = "2018"
-
-[dependencies]
