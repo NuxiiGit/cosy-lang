@@ -1,5 +1,17 @@
+use crate::diagnostics::IssueTracker;
+
 use std::str::CharIndices;
 use std::iter::Peekable;
+
+/// A struct which stores session information, such as:
+/// - Source code
+/// - Character stream
+/// - Errors
+pub struct Session<'a> {
+    pub src : &'a str,
+    pub reader : StringReader<'a>,
+    pub issues : IssueTracker
+}
 
 /// A structure over a string slice which produces individual `CharKind`s.
 pub struct StringReader<'a> {

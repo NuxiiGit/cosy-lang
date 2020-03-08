@@ -1,5 +1,3 @@
-mod reader;
-
 /// An enum which describes available token types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum TokenKind {
