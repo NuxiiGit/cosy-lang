@@ -1,78 +1,75 @@
 use crate::diagnostics::IssueTracker;
+use crate::span::Span;
 
 use std::str::CharIndices;
-use std::iter::Peekable;
+use std::mem;
 
 /// A struct which stores session information, such as:
 /// - Source code
 /// - Character stream
 /// - Errors
 pub struct Session<'a> {
-    pub src : &'a str,
-    pub reader : StringReader<'a>,
+    src : &'a str,
+    chars : CharIndices<'a>,
+    peek : CharKind,
+    span : Span,
+    /// Used to log any errors encountered during the session.
     pub issues : IssueTracker
 }
-
-/// A structure over a string slice which produces individual `CharKind`s.
-pub struct StringReader<'a> {
-    src : &'a str,
-    chars : Peekable<CharIndices<'a>>,
-    line : usize,
-    byte_start : usize,
-    byte_end : usize
-}
-impl<'a> StringReader<'a> {
-    /// Creates a new scanner from this source.
+impl<'a> Session<'a> {
+    /// Creates a new parser session from this source code.
     pub fn from(src : &'a str) -> Self {
+        let mut chars = src.char_indices();
+        let first = chars
+                .next()
+                .map(|(_, c)| CharKind::identify(c))
+                .unwrap_or(CharKind::EoF);
         Self {
             src,
-            chars : src.char_indices().peekable(),
-            line : 1,
-            byte_start : 0,
-            byte_end : 0
+            chars,
+            peek : first,
+            span : Span {
+                line : 1,
+                begin : 0,
+                end : 0
+            },
+            issues : IssueTracker::new()
         }
     }
 
-    /// Returns the kind of the next character.
-    pub fn peek(&mut self) -> CharKind {
-        if let Some((_, c)) = self.chars.peek() {
+    /// Returns the current peeked character.
+    pub fn peek(&self) -> &CharKind {
+        &self.peek
+    }
+
+    /// Advances the session scanner.
+    pub fn next(&mut self) -> CharKind {
+        if let CharKind::NewLine = &self.peek {
+            self.span.line += 1;
+        }
+        let next = if let Some((i, c)) = self.chars.next() {
+            self.span.end = i;
             CharKind::identify(c)
         } else {
-            CharKind::EoF
-        }
-    }
-
-    /// Advances the scanner.
-    pub fn next(&mut self) -> CharKind {
-        let kind = if let Some((_, c)) = self.chars.next() {
-            CharKind::identify(&c)
-        } else {
+            self.span.end = self.src.len();
             CharKind::EoF
         };
-        if let CharKind::NewLine = kind {
-            self.line += 1;
-        }
-        if let Some((i, _)) = self.chars.peek() {
-            self.byte_end = *i;
-        } else {
-            self.byte_end = self.src.len();
-        }
-        kind
+        mem::replace(&mut self.peek, next)
     }
 
     /// Returns the current substring.
     pub fn substr(&self) -> &'a str {
-        &self.src[self.byte_start..self.byte_end]
+        &self.src[self.span.begin..self.span.end]
     }
     
-    /// Returns the current line of the scanner.
-    pub fn line(&self) -> usize {
-        self.line
+    /// Returns the current span.
+    pub fn span(&self) -> Span {
+        self.span.clone()
     }
 
     /// Clears the current substring.
-    pub fn clear_selection(&mut self) {
-        self.byte_start = self.byte_end;
+    pub fn clear_substr(&mut self) {
+        self.span.begin = self.span.end;
     }
 }
 
@@ -120,7 +117,7 @@ pub enum CharKind {
 }
 impl CharKind {
     /// Converts a character into its respective `CharKind`.
-    pub fn identify(c : &char) -> CharKind {
+    pub fn identify(c : char) -> CharKind {
         match c {
             '\n' => CharKind::NewLine,
             x if x.is_whitespace() => CharKind::Whitespace,
