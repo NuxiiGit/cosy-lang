@@ -44,7 +44,7 @@ impl<'a> Session<'a> {
 
     /// Advances the session scanner.
     pub fn next(&mut self) -> CharKind {
-        if let CharKind::NewLine = &self.peek {
+        if self.peek.is_valid_newline() {
             self.span.line += 1;
         }
         let next = if let Some((i, c)) = self.chars.next() {
@@ -61,23 +61,28 @@ impl<'a> Session<'a> {
     pub fn substr(&self) -> &'a str {
         &self.src[self.span.begin..self.span.end]
     }
-    
-    /// Returns the current span.
-    pub fn span(&self) -> Span {
-        self.span.clone()
-    }
 
     /// Clears the current substring.
     pub fn clear_substr(&mut self) {
         self.span.begin = self.span.end;
+    }
+
+    /// Returns the source code as a slice.
+    pub fn src(&self) -> &'a str {
+        &self.src
+    }
+    
+    /// Returns the current span.
+    pub fn span(&self) -> Span {
+        self.span.clone()
     }
 }
 
 /// An enum which stores character kinds.
 #[derive(PartialEq, Debug, Clone)]
 pub enum CharKind {
-    NewLine,
-    Whitespace,
+    Lf,
+    Space,
     Digit,
     Graphic,
     Underscore,
@@ -119,8 +124,8 @@ impl CharKind {
     /// Converts a character into its respective `CharKind`.
     pub fn identify(c : char) -> CharKind {
         match c {
-            '\n' => CharKind::NewLine,
-            x if x.is_whitespace() => CharKind::Whitespace,
+            '\n' => CharKind::Lf,
+            x if x.is_whitespace() => CharKind::Space,
             x if x.is_ascii_digit() => CharKind::Digit,
             x if x.is_alphanumeric() => CharKind::Graphic,
             '_' => CharKind::Underscore,
@@ -163,8 +168,27 @@ impl CharKind {
     /// Returns whether the char is valid whitespace.
     pub fn is_valid_whitespace(&self) -> bool {
         if let
-        | CharKind::NewLine
-        | CharKind::Whitespace = self {
+        | CharKind::Space = self {
+            true
+        } else {
+            self.is_valid_newline()
+        }
+    }
+
+    /// Returns whether the char is a valid line ending.
+    pub fn is_valid_ending(&self) -> bool {
+        if let
+        | CharKind::EoF = self {
+            true
+        } else {
+            self.is_valid_newline()
+        }
+    }
+
+    /// Returns whether the char is valid new line character.
+    pub fn is_valid_newline(&self) -> bool {
+        if let
+        | CharKind::Lf = self {
             true
         } else {
             false
@@ -212,17 +236,6 @@ impl CharKind {
         | CharKind::BackSlash
         | CharKind::Percent
         | CharKind::Other = self {
-            true
-        } else {
-            false
-        }
-    }
-
-    /// Returns whether the char is a valid line ending.
-    pub fn is_valid_ending(&self) -> bool {
-        if let
-        | CharKind::NewLine
-        | CharKind::EoF = self {
             true
         } else {
             false
