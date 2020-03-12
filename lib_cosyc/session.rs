@@ -1,8 +1,8 @@
 use crate::diagnostics::IssueTracker;
-use crate::span::Span;
+use crate::span::Context;
+use crate::token::TokenKind;
 
-use std::str::CharIndices;
-use std::mem;
+use std::collections::VecDeque;
 
 /// A struct which stores session information, such as:
 /// - Source code
@@ -11,6 +11,8 @@ use std::mem;
 pub struct Session<'a> {
     /// The source code of the script you want o compile.
     pub src : &'a str,
+    /// Stores tokens and their position in the source file.
+    pub tokens : VecDeque<Context<TokenKind>>,
     /// Used to log any errors encountered during the session.
     pub issues : IssueTracker
 }
@@ -19,6 +21,7 @@ impl<'a> Session<'a> {
     pub fn from(src : &'a str) -> Self {
         Self {
             src,
+            tokens : VecDeque::new(),
             issues : IssueTracker::new()
         }
     }
