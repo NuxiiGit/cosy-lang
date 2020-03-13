@@ -1,5 +1,38 @@
-pub mod reader;
+mod reader;
 
+use reader::*;
+
+use crate::diagnostics::*;
+use crate::span::*;
+use crate::session::Session;
+use crate::token::*;
+
+/// Tokenises this session into tokens.
+pub fn lex(sess : &mut Session) {
+    let reader = StringReader::from(&sess.src);
+    
+}
+
+fn lex_token(reader : &mut StringReader) -> Result<Context<TokenKind>> {
+    reader.clear_substr();
+    let next = reader.next();
+    let peek = reader.peek();
+    let kind = match next {
+        _ => return Err(Error {
+            reason : "unknown symbol",
+            kind : ErrorKind::Fatal,
+            span : Span::new()
+        })
+    };
+    unreachable!()
+}
+
+fn lex_whitespace(reader : &mut StringReader) -> Result<()> {
+    reader.advance_while(CharKind::is_valid_whitespace);
+    Ok(())
+}
+
+type Result<T> = std::result::Result<T, Error>;
 
 /*
 use reader::{ CharKind, StringReader };

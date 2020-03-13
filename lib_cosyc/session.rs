@@ -1,5 +1,5 @@
-use crate::diagnostics::{ IssueTracker, Error, ErrorKind };
-use crate::span::{ Span, Context };
+use crate::diagnostics::*;
+use crate::span::*;
 use crate::token::TokenKind;
 
 use std::fs;

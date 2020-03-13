@@ -30,6 +30,13 @@ impl<'a> StringReader<'a> {
         }
     }
 
+    /// Advances the scanner whilst some predicate `p` holds.
+    pub fn advance_while(&mut self, p : fn(&CharKind) -> bool) {
+        while p(&self.peek) {
+            self.next();
+        }
+    }
+
     /// Returns the current peeked character.
     pub fn peek(&self) -> &CharKind {
         &self.peek
