@@ -15,6 +15,15 @@ pub struct Span {
     pub line : usize
 }
 impl Span {
+    /// Creates a default span
+    pub fn new() -> Self {
+        Span {
+            begin : 0,
+            end : 0,
+            line : 1
+        }
+    }
+
     /// Joins two spans together to produce a new span.
     pub fn join(a : Self, b : Self) -> Self {
         Span {
