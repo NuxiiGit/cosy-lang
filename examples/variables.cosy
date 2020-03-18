@@ -2,7 +2,7 @@
 var a = 3;
 
 -- constant
-def B = 3.0;
+let b = 3.0;
 
 -- character
 var ch = 'a';

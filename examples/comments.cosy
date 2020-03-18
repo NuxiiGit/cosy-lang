@@ -3,4 +3,6 @@
 -- escaped comment \
    to multiple lines
 
--- single-line block comment >--
+{-
+    block comment
+-}

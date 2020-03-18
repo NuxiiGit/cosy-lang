@@ -1,5 +1,5 @@
 -- function definition
-def max (a : Int) (b : Int) : Int {
+let max (a : Int) (b : Int) : Int {
     if a > b {
         return a;
     } else {
@@ -7,32 +7,14 @@ def max (a : Int) (b : Int) : Int {
     }
 }
 
-{- Note: the `def` keyword is used because it will
- - allow for more options than simply `function`.
- -
- - For example:
- - |
- - | def Vec2::get_x(v : Vec2) : Float = v.x;
- - |
- - 
- - would get compiled into:
- - |
- - | def Vec2::get_x = \(v : Vec2) -> v.x : Float;
- - |
- - 
- - which shows that `def` is similar to `var`, except
- - values will be immutable and include the ability to
- - add scope to functions/values.
- -}
-
 -- function application
-var greatest = max 3 4;
+let greatest = max 3 4;
 
 -- lambda function
-var lambda : Int -> Int = \x -> x * 2;
+let lambda : Int -> Int = \x -> x * 2;
 
 -- block lambda function
-var lambda' : Int -> Int = \x -> {
+let lambda' : Int -> Int = \x -> {
     return x + x;
 };
 
@@ -41,10 +23,10 @@ var max' : Int -> Int -> Int;
 max' = \a -> \b -> max a b;
 
 -- currying
-var positive : Int -> Int = max 1;
+let positive : Int -> Int = max 1;
 
 -- procedural style functions
-def izard(a : String, b : String) : String {
+let izard(a : String, b : String) : String {
     return a ++ " fo' " ++ b ++ "izard";
 }
 
