@@ -24,3 +24,48 @@ if 2 <=> 3 == -1 {
  - (note, the requried parenthesis around the `<>` identifier).
  -
  -}
+
+-- special function application "operator"
+var xs = filter (!= 'a') $ "animal" ++ "izard";
+
+
+{- This special `$` operator is not actually a valid operator
+ - symbol and cannot be used in identifiers.
+ - 
+ - This symbol lets you omit brackets from an expression. The
+ - previous example would otherwise look like:
+ - | 
+ - | filter (!= 'a') ("animal" ++ "izard")
+ - |
+ - 
+ - which looks terrible in comparrison.
+ -
+ - The `$` operator can be chained to convert expressions such as:
+ - |
+ - | this (long (expression might (get difficult to (understand || not))))
+ - |
+ - 
+ - into the relatively simpler form of:
+ - |
+ - | this $ long $ expression might $ get difficult to $ understand || not
+ - |
+ -
+ - All you have to remember is that `$` has the highest precedence
+ - and is right associative.
+ - 
+ - Another important use is being able to pass lambda functions
+ - as parameters without requiring then to be in parenthesis.
+ - Consider the example `filter (\x -> x % 2 == 0)` which filters
+ - all even numbers from a list. The parenthesis around the lambda
+ - function `\x -> x % 2 == 0` are required under the syntax rules.
+ - However, we can remove them by using `$` instead:
+ - |
+ - | let filter_even = filter (\x -> x % 2 == 0);
+ - |
+ - 
+ - becomes
+ - |
+ - | let filter_even = filter $ \x -> x % 2 == 0;
+ - |
+ -
+ -}
