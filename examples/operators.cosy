@@ -1,0 +1,26 @@
+-- operator definition
+let a <=> b = Math::sign(a - b);
+
+if 2 <=> 3 == -1 {
+    print("2 less than 3");
+}
+
+{- Operators are simply functions with special predcedence.
+ - For example:
+ - |
+ - | let (a : Int) <> (b : Int) : Bool = a != b;
+ - |
+ - 
+ - is equivalent to the following function definition:
+ - |
+ - | let <> : Bool = \(a : Int) -> \(b : Int) -> a != b;
+ - |
+ - 
+ - or literally:
+ - |
+ - | let (<>) (a : Int) (b : Int) : Bool = a != b;
+ - |
+ - 
+ - (note, the requried parenthesis around the `<>` identifier).
+ -
+ -}
