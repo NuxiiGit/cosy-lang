@@ -1,0 +1,14 @@
+-- object class
+class Truthy 'A {
+    truthy : 'A -> Bool
+}
+
+-- object implementation
+instance Truthy Integer {
+    truthy x = x != 0
+}
+
+if truthy $ 12 - 3 {
+    -- 12 - 3 = 9
+    -- 9 is not truthy
+}
