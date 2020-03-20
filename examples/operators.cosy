@@ -69,3 +69,29 @@ var xs = filter (!= 'a') $ "animal" ++ "izard";
  - |
  -
  -}
+
+-- special postfix operator
+var a?+ = a + 1;
+
+{- Any operator which begins with `?` will be parsed as a postfix
+ - operator.
+ -
+ - This could be used for the factorial operator `?!` or any other
+ - operator where postfix is prefered.
+ -
+ - A specific use is for the option type, where `?` will be its
+ - name. Illustration:
+ - |
+ - | enum 'A? {
+ - |   Some 'A,
+ - |   None
+ - | }
+ - |
+ - 
+ - and hence we should be able to write:
+ - |
+ - | var nullable_int : Int? = None;
+ - | nullable_int = Some 3;
+ - |
+ -
+ -}
