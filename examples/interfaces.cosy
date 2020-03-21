@@ -3,12 +3,28 @@ class Truthy 'A {
     truthy : 'A -> Bool
 }
 
--- object implementation
+-- object implementations
 instance Truthy Integer {
     truthy x = x != 0
+}
+
+instance Truthy Boolean {
+    truthy x = x
+}
+
+instance Truthy String {
+    truthy x = x != ""
 }
 
 if truthy $ 12 - 3 {
     -- 12 - 3 = 9
     -- 9 is not truthy
+}
+
+if truthy false {
+    -- false is not truthy
+}
+
+if truthy $ "" {
+    -- the empty string is not truthy
 }
