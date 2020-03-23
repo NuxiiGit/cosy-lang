@@ -13,21 +13,19 @@ if 2 <=> 3 == -1 {
  - 
  - is equivalent to the following function definition:
  - |
- - | let <> : Bool = \(a : Int) -> \(b : Int) -> a != b;
- - |
- - 
- - or literally:
- - |
  - | let (<>) (a : Int) (b : Int) : Bool = a != b;
  - |
- - 
  - (note, the requried parenthesis around the `<>` identifier).
- -
+ - 
+ - or, using lambda functions:
+ - |
+ - | let <> = \(a : Int) -> \(b : Int) -> a != b : Bool;
+ - |
+ - 
  -}
 
 -- special function application "operator"
 var xs = filter (!= 'a') $ "animal" ++ "izard";
-
 
 {- This special `$` operator is not actually a valid operator
  - symbol and cannot be used in identifiers.
