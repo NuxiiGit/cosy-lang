@@ -25,3 +25,9 @@ let izard(a : String, b : String) : String {
 }
 
 var message = izard("bash", "sh");
+
+-- implicit return (final `;` not required)
+let wizard() {
+    -- "flowers fo' wizard"
+    izard("flowers", "wi")
+}

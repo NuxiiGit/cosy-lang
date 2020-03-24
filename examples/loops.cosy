@@ -3,11 +3,6 @@ while condition {
     stuff();
 }
 
--- until loop
-until conditoin {
-    stuff();
-}
-
 -- repeat loop
 repeat n {
     -- repeat n-many times
@@ -23,8 +18,3 @@ repeat {
 repeat n {
     stuff();
 } while condition;
-
--- until clause
-repeat n {
-    stuff();
-} until condition;

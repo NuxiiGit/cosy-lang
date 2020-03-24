@@ -1,6 +1,6 @@
 -- object class
-class Truthy 'A {
-    truthy : 'A -> Bool
+class Truthy 'a {
+    truthy : 'a -> Bool
 }
 
 -- object implementations
@@ -25,6 +25,6 @@ if truthy false {
     -- false is not truthy
 }
 
-if truthy $ "" {
+if truthy "" {
     -- the empty string is not truthy
 }

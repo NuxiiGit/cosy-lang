@@ -1,5 +1,5 @@
 -- generic function which just returns the value itself
-let id (x : 'A) : 'A = x
+let id (x : 'a) : 'a = x
 
 -- operator overloading
 let a - b : Int = .. ;
