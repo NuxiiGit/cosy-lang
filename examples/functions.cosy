@@ -31,3 +31,11 @@ let wizard() {
     -- "flowers fo' wizard"
     izard("flowers", "wi")
 }
+
+-- sequent style formatting seen in proof languages
+let sequent_style
+    (n : Int)
+    (s : String)
+    ------------
+    : Bool
+    = length s == n
