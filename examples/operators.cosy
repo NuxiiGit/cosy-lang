@@ -24,6 +24,11 @@ if 2 <=> 3 == -1 {
  - 
  -}
 
+-- operator blocks
+if (a `Math::mahalanobis(X)` b) > 5.0 {
+    print("too far");
+}
+
 -- special function application "operator"
 var xs = filter (!= 'a') $ "animal" ++ "izard";
 
@@ -93,3 +98,6 @@ var a?+ = a + 1;
  - |
  -
  -}
+
+-- using these, a ternary operator can be created
+let ternary = condition ?? default $ otherwise
