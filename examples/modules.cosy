@@ -1,16 +1,2 @@
 -- import module
 import prelude::Math;
-
--- privacy
-
-{- Foo.cosy -}
-let str = "test";
-
-pub let foo() : String = str;
-
-{- Bar.cosy -}
-import Foo;
-
-print(foo()); -- no error, foo is exposed
-
-print(str); -- error, str is not in scope
