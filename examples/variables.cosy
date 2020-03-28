@@ -14,3 +14,20 @@ var str' = ['a', 'b', 'c'];
 -- delayed variable instantiation
 var i : Int;
 i = 1;
+
+-- block declaration
+var {
+    a = 1,
+    b = "nice"
+};
+
+-- where clause
+let {
+    public_function() : String = secret_value(secret_key)
+} where {
+    secret_value(key : String) : String = "shh, it's " ++ key,
+    secret_key = "baby"
+}
+
+let result = Secrets::public_function(); -- compiles
+let key = Secrets::secret_key; -- does not compile
