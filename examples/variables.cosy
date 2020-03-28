@@ -29,5 +29,24 @@ let {
     secret_key = "baby"
 }
 
-let result = Secrets::public_function(); -- compiles
-let key = Secrets::secret_key; -- does not compile
+let result = public_function(); -- compiles
+let key = secret_key; -- does not compile
+
+-- mutual recursion
+let {
+    is_even(n) = if n == 0 then true  else is_odd(n),
+    is_odd(n)  = if n == 0 then false else is_even(n)
+}
+
+{- Note:
+ - This would not be possible if you did it like
+ - |
+ - | let is_even(n) = .. ;
+ - | let is_odd(n) = .. ;
+ - |
+ - 
+ - because `is_even` doesn't know about `is_odd` until later.
+ - 
+ - Using a block declaration, both identifiers can be known at the same time.
+ -
+ -}
