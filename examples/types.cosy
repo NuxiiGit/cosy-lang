@@ -24,3 +24,7 @@ var result = -1 - 3;
  - |
  -
  -}
+
+-- class constraints
+let boolean_eval : Truthy 'a => (Bool -> Bool -> Bool) -> 'a -> 'a -> Bool;
+boolean_eval (~) a b = truthy a ~ truthy b;
