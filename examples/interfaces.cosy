@@ -28,3 +28,15 @@ if truthy false {
 if truthy "" {
     -- the empty string is not truthy
 }
+
+-- implementations
+instance String {
+    -- public methods here
+    (a : String) + (b : String) = a ++ b
+} where {
+    -- private methods here
+}
+
+-- method call
+var hello_world = "hello ".+("world");
+var hello_world' = String::+("hello ")("world"); -- equivalent
