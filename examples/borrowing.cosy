@@ -9,3 +9,18 @@ var b : -> Int = irandom(32);
 print(b); -- 29, random number
 print(b); -- 8
 print(b); -- 13, etc.
+
+-- without type annotation
+var a' = &2;
+
+var b' = -> irandom(32);
+
+{- In fact, calling by-name is simply a nullary function, 
+ - so, the following code is valid:
+ - 
+ - | 
+ - | var block_null : -> () = -> {
+ - |     print("hello");
+ - | }
+ - | 
+ -}
