@@ -5,7 +5,7 @@ let max (a : Int) (b : Int) : Int = if a > b then a else b
 var greatest = max 3 4;
 
 -- lambda function
-let lambda : Int -> Int = \x => x * 2;
+let lambda : Int -> Int = \x -> x * 2;
 
 -- block lambda function
 let lambda' : Int -> Int = \x {
@@ -14,7 +14,7 @@ let lambda' : Int -> Int = \x {
 
 -- delayed function definition
 var max' : Int -> Int -> Int;
-max' = \a \b => max a b;
+max' = \a \b -> max a b;
 
 -- currying
 let positive : Int -> Int = max 1;
