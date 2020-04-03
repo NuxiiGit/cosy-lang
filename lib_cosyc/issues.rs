@@ -18,8 +18,12 @@ impl IssueTracker {
     }
 
     /// Returns the error level, if one exists.
-    pub fn level(&self) -> Option<ErrorKind> {
-        self.level.clone()
+    pub fn level(&self) -> Option<&ErrorKind> {
+        if let Some(error) = &self.level {
+            Some(error)
+        } else {
+            None
+        }
     }
 
     /// Adds a new error to the session.

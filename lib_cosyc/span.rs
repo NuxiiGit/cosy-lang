@@ -1,12 +1,5 @@
 use std::fmt;
 
-/// A struct which pairs data with its position in the source code.
-#[derive(Debug)]
-pub struct Context<T> {
-    value : T,
-    span : Span
-}
-
 /// A struct which stores information about some substring of a source file.
 #[derive(Debug, Clone)]
 pub struct Span {
