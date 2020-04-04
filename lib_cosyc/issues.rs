@@ -48,7 +48,7 @@ impl IntoIterator for IssueTracker {
 /// A struct which stores error information.
 #[derive(Debug)]
 pub struct Error {
-    pub reason : &'static str,
+    pub reason : String,
     pub kind : ErrorKind,
     pub span : Span
 }

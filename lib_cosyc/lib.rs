@@ -1,6 +1,7 @@
 pub mod span;
 pub mod issues;
 pub mod name_table;
+pub mod lexer;
 
 use issues::IssueTracker;
 use name_table::NameTable;
