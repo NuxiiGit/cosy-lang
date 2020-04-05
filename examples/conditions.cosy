@@ -1,11 +1,11 @@
 -- if statement
 if condition {
-    stuff();
+	stuff();
 }
 
 -- else clause
 if condition {
-    stuff();
+	stuff();
 } else {
-    other_stuff();
+	other_stuff();
 }

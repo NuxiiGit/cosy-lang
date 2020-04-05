@@ -19,8 +19,8 @@ var b' = -> irandom(32);
  - so, the following code is valid:
  - 
  - | 
- - | var block_null : -> () = -> {
- - |     print("hello");
- - | }
+ - | 	var block_null : -> () = -> {
+ - | 		print("hello");
+ - | 	}
  - | 
  -}

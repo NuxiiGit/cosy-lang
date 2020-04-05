@@ -1,22 +1,22 @@
 -- anonymous structs
 var user = {
-    name = "frank",
-    score = 103
+	name = "frank",
+	score = 103
 };
 
 -- new type
 data Vec2 = {
-    x : Float,
-    y : Float
+	x : Float,
+	y : Float
 };
 
 data Point = (Float, Float);
 
 -- type variants / tagged unions
 data Error {
-    Note (String),
-    Warning,
-    Fatal
+	Note (String),
+	Warning,
+	Fatal
 }
 
 -- type alias

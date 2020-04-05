@@ -9,7 +9,7 @@ let lambda : Int -> Int = \x -> x * 2;
 
 -- block lambda function
 let lambda' : Int -> Int = \x {
-    return x + x;
+	return x + x;
 };
 
 -- delayed function definition
@@ -21,21 +21,21 @@ let positive : Int -> Int = max 1;
 
 -- procedural style functions
 let izard(a : String, b : String) : String {
-    return a ++ " fo' " ++ b ++ "izard";
+	return a ++ " fo' " ++ b ++ "izard";
 }
 
 var message = izard("bash", "sh");
 
 -- implicit return (final `;` not required)
 let wizard() {
-    -- "flowers fo' wizard"
-    izard("flowers", "wi")
+	-- "flowers fo' wizard"
+	izard("flowers", "wi")
 }
 
 -- sequent style formatting seen in proof languages
 let sequent_style
-    (n : Int)
-    (s : String)
-    ------------
-    : Bool
-    = length s == n
+		(n : Int)
+		(s : String)
+		------------
+		: Bool
+	= length s == n

@@ -2,31 +2,31 @@
 let a <=> b = Math::sign(a - b);
 
 if 2 <=> 3 == -1 {
-    print("2 less than 3");
+	print("2 less than 3");
 }
 
 {- Operators are simply functions with special predcedence.
  - For example:
  - |
- - | let (a : Int) <> (b : Int) : Bool = a != b;
+ - |	let (a : Int) <> (b : Int) : Bool = a != b;
  - |
  - 
  - is equivalent to the following function definition:
  - |
- - | let (<>) (a : Int) (b : Int) : Bool = a != b;
+ - |	let (<>) (a : Int) (b : Int) : Bool = a != b;
  - |
  - (note, the requried parenthesis around the `<>` identifier).
  - 
  - or, using lambda functions:
  - |
- - | let <> = \(a : Int) -> \(b : Int) -> a != b : Bool;
+ - |	let <> = \(a : Int) -> \(b : Int) -> a != b : Bool;
  - |
  - 
  -}
 
 -- operator blocks
 if (a `Math::mahalanobis(X)` b) > 5.0 {
-    print("too far");
+	print("too far");
 }
 
 -- special function application "operator"
@@ -38,19 +38,19 @@ var xs = filter (!= 'a') $ "animal" ++ "izard";
  - This symbol lets you omit brackets from an expression. The
  - previous example would otherwise look like:
  - | 
- - | filter (!= 'a') ("animal" ++ "izard")
+ - |	filter (!= 'a') ("animal" ++ "izard")
  - |
  - 
  - which looks terrible in comparrison.
  -
  - The `$` operator can be chained to convert expressions such as:
  - |
- - | this (long (expression might (get difficult to (understand || not))))
+ - |	this (long (expression might (get difficult to (understand || not))))
  - |
  - 
  - into the relatively simpler form of:
  - |
- - | this $ long $ expression might $ get difficult to $ understand || not
+ - |	this $ long $ expression might $ get difficult to $ understand || not
  - |
  -
  - All you have to remember is that `$` has the highest precedence
@@ -63,12 +63,12 @@ var xs = filter (!= 'a') $ "animal" ++ "izard";
  - function `\x -> x % 2 == 0` are required under the syntax rules.
  - However, we can remove them by using `$` instead:
  - |
- - | let filter_even = filter (\x -> x % 2 == 0);
+ - |	let filter_even = filter (\x -> x % 2 == 0);
  - |
  - 
  - becomes
  - |
- - | let filter_even = filter $ \x -> x % 2 == 0;
+ - |	let filter_even = filter $ \x -> x % 2 == 0;
  - |
  -
  -}
@@ -85,16 +85,16 @@ var a?+ = a + 1;
  - A specific use is for the option type, where `?` will be its
  - name. Illustration:
  - |
- - | enum 'A? {
- - |   Some 'A,
- - |   None
- - | }
+ - |	enum 'A? {
+ - |		Some 'A,
+ - |		None
+ - |	}
  - |
  - 
  - and hence we should be able to write:
  - |
- - | var nullable_int : Int? = None;
- - | nullable_int = Some 3;
+ - |	var nullable_int : Int? = None;
+ - |	nullable_int = Some 3;
  - |
  -
  -}

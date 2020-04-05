@@ -8,5 +8,5 @@ let title = #ifdef DEBUG_ENABLE "debug mode" "release mode";
 
 #const SCALE 2;
 if SCALE > 1 {
-    print("big boy");
+	print("big boy");
 }

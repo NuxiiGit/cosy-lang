@@ -5,7 +5,7 @@ class Truthy 'a {
 
 -- object implementations
 instance Truthy Integer {
-    truthy x = x != 0
+	truthy x = x != 0
 }
 
 instance Truthy Boolean {
@@ -13,28 +13,28 @@ instance Truthy Boolean {
 }
 
 instance Truthy String {
-    truthy x = x != ""
+	truthy x = x != ""
 }
 
 if truthy $ 12 - 3 {
-    -- 12 - 3 = 9
-    -- 9 is not truthy
+	-- 12 - 3 = 9
+	-- 9 is not truthy
 }
 
 if truthy false {
-    -- false is not truthy
+	-- false is not truthy
 }
 
 if truthy "" {
-    -- the empty string is not truthy
+	-- the empty string is not truthy
 }
 
 -- implementations
 instance String {
-    -- public methods here
-    (a : String) + (b : String) = a ++ b
+	-- public methods here
+	(a : String) + (b : String) = a ++ b
 } where {
-    -- private methods here
+	-- private methods here
 }
 
 -- method call

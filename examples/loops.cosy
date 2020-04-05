@@ -1,20 +1,20 @@
 -- while loop
 while condition {
-    stuff();
+	stuff();
 }
 
 -- repeat loop
 repeat n {
-    -- repeat n-many times
-    stuff();
+	-- repeat n-many times
+	stuff();
 }
 
 -- infinite loops
 repeat {
-    stuff();
+	stuff();
 }
 
 -- while clause
 repeat n {
-    stuff();
+	stuff();
 } while condition;
