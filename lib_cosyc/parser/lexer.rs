@@ -40,20 +40,21 @@ impl<'a> Lexer<'a> {
 					}
 					continue 'search
 				},
+				CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
 				CharKind::LeftParen => TokenKind::LeftParen,
-                CharKind::RightParen => TokenKind::RightParen,
-                CharKind::LeftBrace => TokenKind::LeftBrace,
-                CharKind::RightBrace => TokenKind::RightBrace,
-                CharKind::SemiColon => TokenKind::SemiColon,
-                CharKind::Dollar => TokenKind::Dollar,
-                CharKind::Backtick => TokenKind::Backtick,
-                CharKind::Hashtag => TokenKind::Hashtag,
-                CharKind::Address => TokenKind::Address,
+				CharKind::RightParen => TokenKind::RightParen,
+				CharKind::LeftBrace => TokenKind::LeftBrace,
+				CharKind::RightBrace => TokenKind::RightBrace,
+				CharKind::SemiColon => TokenKind::SemiColon,
+				CharKind::Dollar => TokenKind::Dollar,
+				CharKind::Backtick => TokenKind::Backtick,
+				CharKind::Hashtag => TokenKind::Hashtag,
+				CharKind::Address => TokenKind::Address,
 				CharKind::EoF => TokenKind::EoF,
 				_ => return Err("unexpected symbol")
 			};
 			break Ok(kind)
-        }
+		}
 	}
 
 	/// Returns the substring of the previously returned `Result`.
@@ -76,6 +77,7 @@ pub enum TokenKind {
 	Var,
 	If,
 	Else,
+	Assign,
 	LeftParen,
 	RightParen,
 	LeftBrace,
@@ -92,12 +94,12 @@ pub enum TokenKind {
 impl TokenKind {
 	/// Returns `true` if the token is an identifier.
 	pub fn is_identifier(&self) -> bool {
-		matches!(self, TokenKind::Identifier(..))
+		matches!(self, Self::Identifier(..))
 	}
 
 	/// Returns `true` if the token is an alphabetic identifier.
 	pub fn is_alphabetic(&self) -> bool {
-		matches!(self, TokenKind::Identifier(IdentifierKind::Alphabetic))
+		matches!(self, Self::Identifier(IdentifierKind::Alphabetic))
 	}
 
 	/// Returns `true` if the token is an operator identifier.
@@ -107,21 +109,19 @@ impl TokenKind {
 
 	/// Returns `true` if the token is a value.
 	pub fn is_value(&self) -> bool {
-		matches!(self, TokenKind::Value(..))
+		matches!(self, Self::Value(..))
 	}
 
 	/// Returns `true` if the token is the end of the file.
 	pub fn is_eof(&self) -> bool {
-		matches!(self, TokenKind::EoF)
+		matches!(self, Self::EoF)
 	}
 
 	/// Returns `true` if the token can start an expression.
 	pub fn is_nonterminal(&self) -> bool {
-		self.is_alphabetic()
-				|| self.is_value()
-				|| matches!(self,
-						Self::LeftParen |
-						Self::Hashtag)
+		self.is_alphabetic() || self.is_value() || matches!(self,
+				Self::LeftParen |
+				Self::Hashtag)
 	}
 }
 

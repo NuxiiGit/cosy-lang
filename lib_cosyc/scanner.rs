@@ -207,8 +207,7 @@ impl CharKind {
 			'@' => Address,
 			'"' => DoubleQuote,
 			'\'' => SingleQuote,
-			| '|'
-			| '¦' => Bar,
+			'|' | '¦' => Bar,
 			'^' => Caret,
 			'&' => Ampersand,
 			'!' => Bang,
@@ -235,70 +234,51 @@ impl CharKind {
 	/// Returns whether the char is valid whitespace.
 	pub fn is_valid_whitespace(&self) -> bool {
 		use CharKind::*;
-		if let
-		| Space
-		| BoF = self {
-			true
-		} else {
-			self.is_valid_newline()
-		}
+		matches!(self, Space | BoF) || self.is_valid_newline()
 	}
 
 	/// Returns whether the char is a valid line ending.
 	pub fn is_valid_ending(&self) -> bool {
-		if let CharKind::EoF = self {
-			true
-		} else {
-			self.is_valid_newline()
-		}
+		matches!(self, CharKind::EoF) || self.is_valid_newline()
 	}
 
 	/// Returns whether the char is valid new line character.
 	pub fn is_valid_newline(&self) -> bool {
 		use CharKind::*;
-		if let
-		| Cr
-		| Lf
-		| CrLf = self
-				{ true } else { false }
+		matches!(self, Cr | Lf | CrLf)
 	}
 
 	/// Returns whether the char is a valid digit.
 	pub fn is_valid_digit(&self) -> bool {
-		if let CharKind::Digit = self
-				{ true } else { false }
+		matches!(self, CharKind::Digit)
 	}
 
 	/// Returns whether the char is a valid graphic.
 	pub fn is_valid_graphic(&self) -> bool {
 		use CharKind::*;
-		if let
-		| Graphic
-		| Underscore
-		| SingleQuote = self
-				{ true } else { false }
+		matches!(self, Graphic | Underscore | SingleQuote)
 	}
 
 	/// Returns whether the char is a valid operator.
 	pub fn is_valid_operator(&self) -> bool {
 		use CharKind::*;
-		if let
-		| Bar
-		| Caret
-		| Ampersand
-		| Bang
-		| Hook
-		| Equals
-		| LessThan
-		| GreaterThan
-		| Plus
-		| Minus
-		| Tilde
-		| Asterisk
-		| ForwardSlash
-		| BackSlash
-		| Percent
-		| Other = self
-				{ true } else { false }
+		matches!(self,
+				Bar |
+				Caret |
+				Ampersand |
+				Bang |
+				Hook |
+				Equals |
+				LessThan |
+				GreaterThan |
+				Plus |
+				Minus |
+				Tilde |
+				Asterisk |
+				ForwardSlash |
+				BackSlash |
+				Percent |
+				SingleQuote |
+				Other)
 	}
 }
