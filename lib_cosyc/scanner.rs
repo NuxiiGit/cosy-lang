@@ -35,8 +35,17 @@ impl<'a> Scanner<'a> {
 	}
 
 	/// Advances the scanner whilst some predicate holds.
+	/// Potentially dangerous if the `EoF` character always satisfies your predicate.
 	pub fn advance_while(&mut self, f : fn(&CharKind) -> bool) {
 		while f(self.peek()) {
+			self.next();
+		}
+	}
+
+	/// Advances the scanner until some predicate holds.
+	/// Potentially dangerous if the `EoF` character token does not satisfy your predicate.
+	pub fn advance_until(&mut self, f : fn(&CharKind) -> bool) {
+		while !f(self.peek()) {
 			self.next();
 		}
 	}
@@ -60,12 +69,15 @@ impl<'a> Scanner<'a> {
 			CharKind::EoF
 		};
 		let option = match (&self.current, &next) {
-			(CharKind::Cr, CharKind::Lf) => Some(CharKind::CrLf),
+			(CharKind::Minus, CharKind::Minus) => Some(CharKind::DoubleDash),
+			(CharKind::LeftBrace, CharKind::Minus) => Some(CharKind::LeftBrash),
+			(CharKind::Minus, CharKind::RightBrace) => Some(CharKind::RightBrash),
 			(CharKind::Minus, CharKind::GreaterThan) => Some(CharKind::RightArrow),
 			(CharKind::LessThan, CharKind::Minus) => Some(CharKind::LeftArrow),
 			(CharKind::Equals, CharKind::GreaterThan) => Some(CharKind::RightImply),
 			(CharKind::LessThan, CharKind::Equals) => Some(CharKind::LeftImply),
 			(CharKind::Colon, CharKind::Colon) => Some(CharKind::SquaredFourDots),
+			(CharKind::Cr, CharKind::Lf) => Some(CharKind::CrLf),
 			_ => None
 		};
 		let current = if let Some(kind) = option {
@@ -135,6 +147,12 @@ pub enum CharKind {
 	ForwardSlash,
 	BackSlash,
 	Percent,
+	/// Double dash, `--`.
+	DoubleDash,
+	/// Left brace followed by a minus sign, `{-`.
+	LeftBrash,
+	/// Right brace following a minus sign, `-}`.
+	RightBrash,
 	/// Left arrow, specifically `←`.
 	LeftArrow,
 	/// Right arrow, specifically `→`.

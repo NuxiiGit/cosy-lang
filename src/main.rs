@@ -4,19 +4,25 @@
 
 //use cosyc::session::Session;
 
-use cosyc::parser::lexer::Lexer;
+use cosyc::parser::lexer::*;
 
 use std::fs;
 use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let mut lexer = Lexer::from("he-->⸬::><=llo\r\n\n\rworld");
-	for i in 0..9 {
+	let mut lexer = Lexer::from("he->⸬-+---*::><=llo\r\n2\n3\r4world");
+	let mut i = 0;
+	loop {
+		i += 1;
+		let result = lexer.next();
 		println!("{}.)", i);
-		println!("  kind:    {:?}", lexer.next());
+		println!("  kind:    {:?}", result);
 		println!("  context: {:?}", lexer.context());
-		println!("  span:    {:?}", lexer.span());
+		println!("  span:    {}\n", lexer.span());
+		if let Ok(TokenKind::EoF) = result {
+			break;
+		}
 	}
 
 	//let sess = Session::read("examples/tests/bleh.cosy");

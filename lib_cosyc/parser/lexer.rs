@@ -17,18 +17,33 @@ impl<'a> Lexer<'a> {
 	pub fn next(&mut self) -> Result {
 		'search: loop {
 			self.reader.clear_substr();
-			let next = self.reader.next();
-			let peek = self.reader.peek();
-			let kind = match next {
+			let kind = match self.reader.next() {
 				x if x.is_valid_whitespace() => {
 					self.reader.advance_while(CharKind::is_valid_whitespace);
-					continue 'search;
+					continue 'search
 				},
-				_ => {
-					return Err("unexpected symbol")
+				CharKind::DoubleDash => {
+					// line comments
+					self.reader.advance_until(CharKind::is_valid_ending);
+					continue 'search
+				},
+				CharKind::LeftBrash => {
+					// block comments
+					let mut depth = 1;
+					while depth >= 1 {
+						match self.reader.next() {
+							CharKind::LeftBrash => depth += 1,
+							CharKind::RightBrash => depth -= 1,
+							CharKind::EoF => return Err("unterminated block comment"),
+							_ => ()
+						}
+					}
+					continue 'search
 				}
+				CharKind::EoF => TokenKind::EoF,
+				_ => return Err("unexpected symbol")
 			};
-			break Ok(kind);
+			break Ok(kind)
         }
 	}
 
