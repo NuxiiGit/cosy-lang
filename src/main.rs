@@ -11,23 +11,11 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let mut scanner = Scanner::from("hello\r\n\n\rworld");
-	println!("{:?}", scanner.next()); // BOF
-	println!("{:?}", scanner.next()); // h
-	println!("{:?}", scanner.next()); // e
-	println!("{:?}", scanner.next()); // l
-	println!("{:?}", scanner.next()); // l
-	println!("{:?}", scanner.next()); // o
-	println!("{:?}", scanner.next()); // \r\n
-	println!("{:?}", scanner.next()); // \n
-	println!("{:?}", scanner.next()); // \r
-	println!("{:?}", scanner.next()); // w
-	println!("{:?}", scanner.next()); // o
-	println!("{:?}", scanner.next()); // r
-	println!("{:?}", scanner.next()); // l
-	println!("{:?}", scanner.next()); // d
-	println!("{:?}", scanner.next()); // EOF
-	println!("{:?}", scanner.next()); // EOF
+	let mut scanner = Scanner::from("he-->><=llo\r\n\n\rworld");
+	for _ in 0..9 {
+		println!("{:?}", scanner.next());
+	}
+	println!("{:?}", scanner.substr());
 	//let sess = Session::read("examples/tests/bleh.cosy");
 	/*let mut lexer = Lexer::from(&src);
 	loop {

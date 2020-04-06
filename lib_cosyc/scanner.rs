@@ -1,25 +1,29 @@
 use crate::span::Span;
 
 use std::str::CharIndices;
-use std::iter::Peekable;
 use std::mem;
 
 /// A struct which converts a script into individual character spans.
 pub struct Scanner<'a> {
 	src : &'a str,
-	chars : Peekable<CharIndices<'a>>,
-	peek : CharKind,
+	chars : CharIndices<'a>,
+	previous : CharKind,
+	current : CharKind,
 	span : Span
 }
 impl<'a> Scanner<'a> {
 	/// Creates a new parser session from this source code.
 	pub fn from(src : &'a str) -> Self {
+		let mut chars = src.char_indices();
+		let current = chars
+				.next()
+				.map(|(_, x)| CharKind::identify(x))
+				.unwrap_or(CharKind::EoF);
 		Self {
 			src,
-			chars : src
-					.char_indices()
-					.peekable(),
-			peek : CharKind::BoF,
+			chars,
+			previous : CharKind::BoF,
+			current,
 			span : Span {
 				line : 1,
 				begin : 0,
@@ -28,41 +32,43 @@ impl<'a> Scanner<'a> {
 		}
 	}
 
-	/// Advances the scanner whilst some predicate `p` holds.
-	pub fn advance_while(&mut self, p : fn(&CharKind) -> bool) {
-		while p(&self.peek) {
-			self.next();
-		}
-	}
-
 	/// Returns the current peeked character.
 	pub fn peek(&self) -> &CharKind {
-		&self.peek
+		&self.previous
 	}
 
 	/// Advances the session scanner.
 	pub fn next(&mut self) -> CharKind {
-		if self.peek.is_valid_newline() {
+		if self.previous.is_valid_newline() {
 			self.span.line += 1;
 		}
 		let next = if let Some((i, c)) = self.chars.next() {
 			self.span.end = i;
-			match c {
-				'\r' if match self.chars.peek() {
-					Some((_, '\n')) => true,
-					_ => false
-				} => {
-					// windows newline
-					self.chars.next();
-					CharKind::CrLf
-				},
-				_ => CharKind::identify(c)
-			}
+			CharKind::identify(c)
 		} else {
 			self.span.end = self.src.len();
 			CharKind::EoF
 		};
-		mem::replace(&mut self.peek, next)
+		let option = match (&self.current, &next) {
+			(CharKind::Cr, CharKind::Lf) => Some(CharKind::CrLf),
+			(CharKind::Minus, CharKind::GreaterThan) => Some(CharKind::RightArrow),
+			(CharKind::LessThan, CharKind::Minus) => Some(CharKind::LeftArrow),
+			(CharKind::Equals, CharKind::GreaterThan) => Some(CharKind::RightImply),
+			(CharKind::LessThan, CharKind::Equals) => Some(CharKind::LeftImply),
+			_ => None
+		};
+		let current = if let Some(kind) = option {
+			let (i, current) = self.chars
+				.next()
+				.map(|(i, x)| (i, CharKind::identify(x)))
+				.unwrap_or((self.src.len(), CharKind::EoF));
+			self.span.end = i;
+			self.current = current;
+			kind
+		} else {
+			mem::replace(&mut self.current, next)
+		};
+		mem::replace(&mut self.previous, current)
 	}
 
 	/// Returns the current substring.
@@ -118,6 +124,10 @@ pub enum CharKind {
 	ForwardSlash,
 	BackSlash,
 	Percent,
+	RightArrow,
+	LeftArrow,
+	RightImply,
+	LeftImply,
 	/// Carriage return, `\r`.
 	Cr,
 	/// Line feed, `\n`.
