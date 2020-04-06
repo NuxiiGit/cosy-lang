@@ -4,7 +4,7 @@
 
 //use cosyc::session::Session;
 
-use cosyc::lexer::Scanner;
+use cosyc::scanner::Scanner;
 
 use std::fs;
 use std::time::Instant;

@@ -76,8 +76,8 @@ impl<'a> Scanner<'a> {
 	}
 	
 	/// Returns the current span.
-	pub fn span(&self) -> Span {
-		self.span.clone()
+	pub fn span(&self) -> &Span {
+		&self.span
 	}
 }
 
