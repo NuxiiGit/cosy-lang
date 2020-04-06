@@ -70,13 +70,13 @@ impl<'a> Scanner<'a> {
 		};
 		let option = match (&self.current, &next) {
 			(CharKind::Minus, CharKind::Minus) => Some(CharKind::DoubleDash),
-			(CharKind::LeftBrace, CharKind::Minus) => Some(CharKind::LeftBrash),
-			(CharKind::Minus, CharKind::RightBrace) => Some(CharKind::RightBrash),
+			(CharKind::LeftBrace, CharKind::Minus) => Some(CharKind::LeftDashedBrace),
+			(CharKind::Minus, CharKind::RightBrace) => Some(CharKind::RightDashedBrace),
 			(CharKind::Minus, CharKind::GreaterThan) => Some(CharKind::RightArrow),
 			(CharKind::LessThan, CharKind::Minus) => Some(CharKind::LeftArrow),
 			(CharKind::Equals, CharKind::GreaterThan) => Some(CharKind::RightImply),
 			(CharKind::LessThan, CharKind::Equals) => Some(CharKind::LeftImply),
-			(CharKind::Colon, CharKind::Colon) => Some(CharKind::SquaredFourDots),
+			(CharKind::Colon, CharKind::Colon) => Some(CharKind::DoubleColon),
 			(CharKind::Cr, CharKind::Lf) => Some(CharKind::CrLf),
 			_ => None
 		};
@@ -150,9 +150,9 @@ pub enum CharKind {
 	/// Double dash, `--`.
 	DoubleDash,
 	/// Left brace followed by a minus sign, `{-`.
-	LeftBrash,
+	LeftDashedBrace,
 	/// Right brace following a minus sign, `-}`.
-	RightBrash,
+	RightDashedBrace,
 	/// Left arrow, specifically `←`.
 	LeftArrow,
 	/// Right arrow, specifically `→`.
@@ -162,7 +162,7 @@ pub enum CharKind {
 	/// Right implication, specifically `⇒`.
 	RightImply,
 	/// Double colon, specifically `⸬`.
-	SquaredFourDots,
+	DoubleColon,
 	/// Carriage return, `\r`.
 	Cr,
 	/// Line feed, `\n`.
@@ -227,7 +227,7 @@ impl CharKind {
 			'→' => RightArrow,
 			'⇐' => LeftImply,
 			'⇒' => RightImply,
-			'⸬' => SquaredFourDots,
+			'⸬' => DoubleColon,
 			_ => Other
 		}
 	}

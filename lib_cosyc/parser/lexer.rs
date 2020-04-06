@@ -27,13 +27,13 @@ impl<'a> Lexer<'a> {
 					self.reader.advance_until(CharKind::is_valid_ending);
 					continue 'search
 				},
-				CharKind::LeftBrash => {
+				CharKind::LeftDashedBrace => {
 					// block comments
 					let mut depth = 1;
 					while depth >= 1 {
 						match self.reader.next() {
-							CharKind::LeftBrash => depth += 1,
-							CharKind::RightBrash => depth -= 1,
+							CharKind::LeftDashedBrace => depth += 1,
+							CharKind::RightDashedBrace => depth -= 1,
 							CharKind::EoF => return Err("unterminated block comment"),
 							_ => ()
 						}
