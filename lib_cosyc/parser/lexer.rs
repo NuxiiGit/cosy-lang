@@ -18,28 +18,7 @@ impl<'a> Lexer<'a> {
 		'search: loop {
 			self.reader.clear_substr();
 			let kind = match self.reader.next() {
-				x if x.is_valid_whitespace() => {
-					self.reader.advance_while(CharKind::is_valid_whitespace);
-					continue 'search
-				},
-				CharKind::DoubleDash => {
-					// line comments
-					self.reader.advance_until(CharKind::is_valid_ending);
-					continue 'search
-				},
-				CharKind::LeftDashedBrace => {
-					// block comments
-					let mut depth = 1;
-					while depth >= 1 {
-						match self.reader.next() {
-							CharKind::LeftDashedBrace => depth += 1,
-							CharKind::RightDashedBrace => depth -= 1,
-							CharKind::EoF => return Err("unterminated block comment"),
-							_ => ()
-						}
-					}
-					continue 'search
-				},
+				// parse symbols
 				CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
 				CharKind::LeftParen => TokenKind::LeftParen,
 				CharKind::RightParen => TokenKind::RightParen,
@@ -51,6 +30,59 @@ impl<'a> Lexer<'a> {
 				CharKind::Hashtag => TokenKind::Hashtag,
 				CharKind::Address => TokenKind::Address,
 				CharKind::EoF => TokenKind::EoF,
+				// skip whitespace
+				x if x.is_valid_whitespace() => {
+					self.reader.advance_while(CharKind::is_valid_whitespace);
+					continue 'search
+				},
+				// skip line comments
+				CharKind::DoubleDash => {
+					self.reader.advance_until(CharKind::is_valid_ending);
+					continue 'search
+				},
+				// skip block comments
+				CharKind::LeftDashedBrace => {
+					let mut depth = 1;
+					while depth >= 1 {
+						match self.reader.next() {
+							CharKind::LeftDashedBrace => depth += 1,
+							CharKind::RightDashedBrace => depth -= 1,
+							CharKind::EoF => return Err("unterminated block comment"),
+							_ => ()
+						}
+					}
+					continue 'search
+				},
+				// parse numbers
+				x if x.is_valid_digit() => {
+					self.reader.advance_while(CharKind::is_valid_digit);
+					TokenKind::Literal(LiteralKind::Integer)
+				},
+				// parse alphabetic identifiers
+				x if x.is_valid_graphic() => {
+					self.reader.advance_while(CharKind::is_valid_digit);
+					TokenKind::Identifier(IdentifierKind::Alphabetic)
+				},
+				// parse operator identifiers
+				x if x.is_valid_operator() => {
+					let kind = match x {
+						CharKind::Bar => IdentifierKind::Bar,
+						CharKind::Caret => IdentifierKind::Caret,
+						CharKind::Ampersand => IdentifierKind::Ampersand,
+						CharKind::Bang => IdentifierKind::Bang,
+						CharKind::Equals => IdentifierKind::Equals,
+						CharKind::LessThan => IdentifierKind::LessThan,
+						CharKind::GreaterThan => IdentifierKind::GreaterThan,
+						CharKind::Plus => IdentifierKind::Plus,
+						CharKind::Minus => IdentifierKind::Minus,
+						CharKind::Asterisk => IdentifierKind::Asterisk,
+						CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
+						CharKind::Percent => IdentifierKind::Percent,
+						_ => IdentifierKind::Other
+					};
+					self.reader.advance_while(CharKind::is_valid_operator);
+					TokenKind::Identifier(kind)
+				}
 				_ => return Err("unexpected symbol")
 			};
 			break Ok(kind)
@@ -88,7 +120,7 @@ pub enum TokenKind {
 	Hashtag,
 	Address,
 	Identifier(IdentifierKind),
-	Value(ValueKind),
+	Literal(LiteralKind),
 	EoF
 }
 impl TokenKind {
@@ -107,9 +139,9 @@ impl TokenKind {
 		self.is_identifier() && !self.is_alphabetic()
 	}
 
-	/// Returns `true` if the token is a value.
-	pub fn is_value(&self) -> bool {
-		matches!(self, Self::Value(..))
+	/// Returns `true` if the token is a literal value.
+	pub fn is_literal(&self) -> bool {
+		matches!(self, Self::Literal(..))
 	}
 
 	/// Returns `true` if the token is the end of the file.
@@ -119,7 +151,7 @@ impl TokenKind {
 
 	/// Returns `true` if the token can start an expression.
 	pub fn is_nonterminal(&self) -> bool {
-		self.is_alphabetic() || self.is_value() || matches!(self,
+		self.is_alphabetic() || self.is_literal() || matches!(self,
 				Self::LeftParen |
 				Self::Hashtag)
 	}
@@ -146,7 +178,7 @@ pub enum IdentifierKind {
 
 /// An enum which describes available literal types.
 #[derive(PartialEq, Debug, Clone)]
-pub enum ValueKind {
+pub enum LiteralKind {
 	Character,
 	Integer,
 	Real
