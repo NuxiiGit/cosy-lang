@@ -9,6 +9,7 @@ pub struct Scanner<'a> {
 	chars : CharIndices<'a>,
 	previous : CharKind,
 	current : CharKind,
+	cursor : usize,
 	span : Span
 }
 impl<'a> Scanner<'a> {
@@ -24,6 +25,7 @@ impl<'a> Scanner<'a> {
 			chars,
 			previous : CharKind::BoF,
 			current,
+			cursor : 0,
 			span : Span {
 				line : 1,
 				begin : 0,
@@ -42,11 +44,12 @@ impl<'a> Scanner<'a> {
 		if self.previous.is_valid_newline() {
 			self.span.line += 1;
 		}
+		self.span.end = self.cursor;
 		let next = if let Some((i, c)) = self.chars.next() {
-			self.span.end = i;
+			self.cursor = i;
 			CharKind::identify(c)
 		} else {
-			self.span.end = self.src.len();
+			self.cursor = self.src.len();
 			CharKind::EoF
 		};
 		let option = match (&self.current, &next) {
@@ -63,7 +66,7 @@ impl<'a> Scanner<'a> {
 				.next()
 				.map(|(i, x)| (i, CharKind::identify(x)))
 				.unwrap_or((self.src.len(), CharKind::EoF));
-			self.span.end = i;
+			self.cursor = i;
 			self.current = current;
 			kind
 		} else {

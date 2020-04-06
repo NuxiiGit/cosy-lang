@@ -12,6 +12,7 @@ use std::time::Instant;
 fn main() {
 	let now = Instant::now();
 	let mut scanner = Scanner::from("he-->⸬::><=llo\r\n\n\rworld");
+	scanner.next();
 	for _ in 0..9 {
 		println!("{:?}", scanner.next());
 	}
