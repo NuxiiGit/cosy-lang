@@ -15,7 +15,21 @@ impl<'a> Lexer<'a> {
 
 	/// Returns the next token in the source.
 	pub fn next(&mut self) -> Result {
-		unimplemented!()
+		'search: loop {
+			self.reader.clear_substr();
+			let next = self.reader.next();
+			let peek = self.reader.peek();
+			let kind = match next {
+				x if x.is_valid_whitespace() => {
+					self.reader.advance_while(CharKind::is_valid_whitespace);
+					continue 'search;
+				},
+				_ => {
+					return Err("unexpected symbol")
+				}
+			};
+			break Ok(kind);
+        }
 	}
 
 	/// Returns the substring of the previously returned `Result`.

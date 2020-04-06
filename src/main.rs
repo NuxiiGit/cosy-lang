@@ -4,19 +4,21 @@
 
 //use cosyc::session::Session;
 
-use cosyc::scanner::Scanner;
+use cosyc::parser::lexer::Lexer;
 
 use std::fs;
 use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let mut scanner = Scanner::from("he-->⸬::><=llo\r\n\n\rworld");
-	scanner.next();
-	for _ in 0..9 {
-		println!("{:?}", scanner.next());
+	let mut lexer = Lexer::from("he-->⸬::><=llo\r\n\n\rworld");
+	for i in 0..9 {
+		println!("{}.)", i);
+		println!("  kind:    {:?}", lexer.next());
+		println!("  context: {:?}", lexer.context());
+		println!("  span:    {:?}", lexer.span());
 	}
-	println!("{:?}", scanner.substr());
+
 	//let sess = Session::read("examples/tests/bleh.cosy");
 	/*let mut lexer = Lexer::from(&src);
 	loop {
