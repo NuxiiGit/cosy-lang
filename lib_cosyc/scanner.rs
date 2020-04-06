@@ -55,6 +55,7 @@ impl<'a> Scanner<'a> {
 			(CharKind::LessThan, CharKind::Minus) => Some(CharKind::LeftArrow),
 			(CharKind::Equals, CharKind::GreaterThan) => Some(CharKind::RightImply),
 			(CharKind::LessThan, CharKind::Equals) => Some(CharKind::LeftImply),
+			(CharKind::Colon, CharKind::Colon) => Some(CharKind::SquaredFourDots),
 			_ => None
 		};
 		let current = if let Some(kind) = option {
@@ -124,10 +125,16 @@ pub enum CharKind {
 	ForwardSlash,
 	BackSlash,
 	Percent,
-	RightArrow,
+	/// Left arrow, specifically `←`.
 	LeftArrow,
-	RightImply,
+	/// Right arrow, specifically `→`.
+	RightArrow,
+	/// Left implication, specifically `⇐`.
 	LeftImply,
+	/// Right implication, specifically `⇒`.
+	RightImply,
+	/// Double colon, specifically `⸬`.
+	SquaredFourDots,
 	/// Carriage return, `\r`.
 	Cr,
 	/// Line feed, `\n`.
@@ -188,6 +195,11 @@ impl CharKind {
 			'/' => ForwardSlash,
 			'\\' => BackSlash,
 			'%' => Percent,
+			'←' => LeftArrow,
+			'→' => RightArrow,
+			'⇐' => LeftImply,
+			'⇒' => RightImply,
+			'⸬' => SquaredFourDots,
 			_ => Other
 		}
 	}
