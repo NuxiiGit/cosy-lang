@@ -20,7 +20,7 @@ fn main() {
 		println!("  kind:    {:?}", result);
 		println!("  context: {:?}", lexer.context());
 		println!("  span:    {}\n", lexer.span());
-		if let Ok(TokenKind::EoF) = result {
+		if matches!(result, TokenKind::EoF) {
 			break;
 		}
 	}

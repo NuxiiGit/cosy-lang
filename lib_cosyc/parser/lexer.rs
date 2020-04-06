@@ -14,78 +14,78 @@ impl<'a> Lexer<'a> {
 	}
 
 	/// Returns the next token in the source.
-	pub fn next(&mut self) -> Result {
-		'search: loop {
-			self.reader.clear_substr();
-			let kind = match self.reader.next() {
-				// parse symbols
-				CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
-				CharKind::LeftParen => TokenKind::LeftParen,
-				CharKind::RightParen => TokenKind::RightParen,
-				CharKind::LeftBrace => TokenKind::LeftBrace,
-				CharKind::RightBrace => TokenKind::RightBrace,
-				CharKind::SemiColon => TokenKind::SemiColon,
-				CharKind::Dollar => TokenKind::Dollar,
-				CharKind::Backtick => TokenKind::Backtick,
-				CharKind::Hashtag => TokenKind::Hashtag,
-				CharKind::Address => TokenKind::Address,
-				CharKind::EoF => TokenKind::EoF,
-				// skip whitespace
-				x if x.is_valid_whitespace() => {
-					self.reader.advance_while(CharKind::is_valid_whitespace);
-					continue 'search
-				},
-				// skip line comments
-				CharKind::DoubleDash => {
-					self.reader.advance_until(CharKind::is_valid_ending);
-					continue 'search
-				},
-				// skip block comments
-				CharKind::LeftDashedBrace => {
-					let mut depth = 1;
-					while depth >= 1 {
-						match self.reader.next() {
-							CharKind::LeftDashedBrace => depth += 1,
-							CharKind::RightDashedBrace => depth -= 1,
-							CharKind::EoF => return Err("unterminated block comment"),
-							_ => ()
-						}
-					}
-					continue 'search
-				},
-				// parse numbers
-				x if x.is_valid_digit() => {
-					self.reader.advance_while(CharKind::is_valid_digit);
-					TokenKind::Literal(LiteralKind::Integer)
-				},
-				// parse alphabetic identifiers
-				x if x.is_valid_graphic() => {
-					self.reader.advance_while(CharKind::is_valid_digit);
-					TokenKind::Identifier(IdentifierKind::Alphabetic)
-				},
-				// parse operator identifiers
-				x if x.is_valid_operator() => {
-					let kind = match x {
-						CharKind::Bar => IdentifierKind::Bar,
-						CharKind::Caret => IdentifierKind::Caret,
-						CharKind::Ampersand => IdentifierKind::Ampersand,
-						CharKind::Bang => IdentifierKind::Bang,
-						CharKind::Equals => IdentifierKind::Equals,
-						CharKind::LessThan => IdentifierKind::LessThan,
-						CharKind::GreaterThan => IdentifierKind::GreaterThan,
-						CharKind::Plus => IdentifierKind::Plus,
-						CharKind::Minus => IdentifierKind::Minus,
-						CharKind::Asterisk => IdentifierKind::Asterisk,
-						CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
-						CharKind::Percent => IdentifierKind::Percent,
-						_ => IdentifierKind::Other
-					};
-					self.reader.advance_while(CharKind::is_valid_operator);
-					TokenKind::Identifier(kind)
+	pub fn next(&mut self) -> TokenKind {
+		// skip preceeding whitespace
+		self.reader.advance_while(CharKind::is_valid_whitespace);
+		self.reader.clear_substr();
+		match self.reader.next() {
+			// individual symbols
+			CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
+			CharKind::LeftParen => TokenKind::LeftParen,
+			CharKind::RightParen => TokenKind::RightParen,
+			CharKind::LeftBrace => TokenKind::LeftBrace,
+			CharKind::RightBrace => TokenKind::RightBrace,
+			CharKind::SemiColon => TokenKind::SemiColon,
+			CharKind::Dollar => TokenKind::Dollar,
+			CharKind::Backtick => TokenKind::Backtick,
+			CharKind::Hashtag => TokenKind::Hashtag,
+			CharKind::Address => TokenKind::Address,
+			CharKind::EoF => TokenKind::EoF,
+			// line comments
+			CharKind::DoubleDash => {
+				self.reader.advance_until(CharKind::is_valid_ending);
+				TokenKind::Comment {
+					documentation : false
 				}
-				_ => return Err("unexpected symbol")
-			};
-			break Ok(kind)
+			},
+			// block comments
+			CharKind::LeftDashedBrace => {
+				let mut depth : u8 = 1;
+				while depth >= 1 && depth < 255 {
+					match self.reader.next() {
+						CharKind::LeftDashedBrace => depth += 1,
+						CharKind::RightDashedBrace => depth -= 1,
+						CharKind::EoF => break,
+						_ => ()
+					}
+				}
+				TokenKind::BlockComment {
+					poorly_braced : depth >= 1,
+					exceeds_depth_limit : depth == 255
+				}
+			},
+			// number literals
+			x if x.is_valid_digit() => {
+				self.reader.advance_while(CharKind::is_valid_digit);
+				TokenKind::Literal(LiteralKind::Integer)
+			},
+			// alphabetic identifiers
+			x if x.is_valid_graphic() => {
+				self.reader.advance_while(CharKind::is_valid_graphic);
+				TokenKind::Identifier(IdentifierKind::Alphabetic)
+			},
+			// operator identifiers
+			x if x.is_valid_operator() => {
+				let kind = match x {
+					CharKind::Bar => IdentifierKind::Bar,
+					CharKind::Caret => IdentifierKind::Caret,
+					CharKind::Ampersand => IdentifierKind::Ampersand,
+					CharKind::Bang => IdentifierKind::Bang,
+					CharKind::Equals => IdentifierKind::Equals,
+					CharKind::LessThan => IdentifierKind::LessThan,
+					CharKind::GreaterThan => IdentifierKind::GreaterThan,
+					CharKind::Plus => IdentifierKind::Plus,
+					CharKind::Minus => IdentifierKind::Minus,
+					CharKind::Asterisk => IdentifierKind::Asterisk,
+					CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
+					CharKind::Percent => IdentifierKind::Percent,
+					_ => IdentifierKind::Other
+				};
+				self.reader.advance_while(CharKind::is_valid_operator);
+				TokenKind::Identifier(kind)
+			}
+			// unknown symbol
+			_ => TokenKind::Unknown
 		}
 	}
 
@@ -99,9 +99,6 @@ impl<'a> Lexer<'a> {
 		self.reader.span()
 	}
 }
-
-/// The lexer result will return `Ok(TokenKind)` if successful, or `Err(&'static str)` if a lexer error occurs.
-pub type Result = std::result::Result<TokenKind, &'static str>;
 
 /// An enum which describes available token types.
 #[derive(PartialEq, Debug, Clone)]
@@ -121,7 +118,15 @@ pub enum TokenKind {
 	Address,
 	Identifier(IdentifierKind),
 	Literal(LiteralKind),
-	EoF
+	EoF,
+	Comment {
+		documentation : bool
+	},
+	BlockComment {
+		poorly_braced : bool,
+		exceeds_depth_limit : bool
+	},
+	Unknown
 }
 impl TokenKind {
 	/// Returns `true` if the token is an identifier.
