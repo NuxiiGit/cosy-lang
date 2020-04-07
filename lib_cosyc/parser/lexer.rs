@@ -95,6 +95,9 @@ impl<'a> Lexer<'a> {
 					}
 				}
 				loop {
+					// all identifiers can end with any number of `'` (called "prime")
+					self.reader.advance_while(|x| matches!(x, CharKind::SingleQuote));
+					// join alphanumeric identifiers and operators with underscores
 					if matches!(self.reader.peek(), CharKind::Underscore) {
 						self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
 						let peeked = self.reader.peek();
