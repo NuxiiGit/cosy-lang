@@ -110,6 +110,9 @@ impl<'a> Lexer<'a> {
 				}
 				// match substring for keywords
 				match self.reader.substr() {
+					"var" => TokenKind::Var,
+					"if" => TokenKind::If,
+					"else" => TokenKind::Else,
 					_ => TokenKind::Identifier(kind)
 				}
 			}
