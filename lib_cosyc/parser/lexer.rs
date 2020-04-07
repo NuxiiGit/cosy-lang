@@ -60,7 +60,8 @@ impl<'a> Lexer<'a> {
 				TokenKind::Literal(LiteralKind::Integer)
 			},
 			// identifiers
-			x if x.is_valid_graphic() ||
+			x if matches!(x, CharKind::Underscore) ||
+					x.is_valid_graphic() ||
 					x.is_valid_operator() => {
 				let kind = match x {
 					CharKind::Graphic => IdentifierKind::Alphabetic,
@@ -78,20 +79,28 @@ impl<'a> Lexer<'a> {
 					CharKind::Percent => IdentifierKind::Percent,
 					_ => IdentifierKind::Other
 				};
-				let mut alphabetic = matches!(kind, IdentifierKind::Alphabetic);
-				loop {
-					if alphabetic {
+				if matches!(x, CharKind::Underscore) {
+					let peeked = self.reader.peek();
+					if peeked.is_valid_graphic() {
+						self.reader.advance_while(CharKind::is_valid_graphic);
+					} else if peeked.is_valid_operator() {
+						self.reader.advance_while(CharKind::is_valid_operator);
+					}
+				} else {
+					if x.is_valid_graphic() {
 						self.reader.advance_while(CharKind::is_valid_graphic);
 					} else {
 						self.reader.advance_while(CharKind::is_valid_operator);
 					}
+				}
+				loop {
 					if matches!(self.reader.peek(), CharKind::Underscore) {
 						self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
 						let peeked = self.reader.peek();
 						if peeked.is_valid_graphic() {
-							alphabetic = true;
+							self.reader.advance_while(CharKind::is_valid_graphic);
 						} else if peeked.is_valid_operator() {
-							alphabetic = false;
+							self.reader.advance_while(CharKind::is_valid_operator);
 						} else {
 							break;
 						}
@@ -99,7 +108,10 @@ impl<'a> Lexer<'a> {
 						break;
 					}
 				}
-				TokenKind::Identifier(kind)
+				// match substring for keywords
+				match self.reader.substr() {
+					_ => TokenKind::Identifier(kind)
+				}
 			}
 
 			// alphabetic identifiers
