@@ -15,106 +15,115 @@ impl<'a> Lexer<'a> {
 
 	/// Returns the next token in the source.
 	pub fn next(&mut self) -> TokenKind {
-		// skip preceeding whitespace
-		self.reader.advance_while(CharKind::is_valid_whitespace);
-		self.reader.clear_substr();
-		match self.reader.next() {
-			// individual symbols
-			CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
-			CharKind::LeftParen => TokenKind::LeftParen,
-			CharKind::RightParen => TokenKind::RightParen,
-			CharKind::LeftBrace => TokenKind::LeftBrace,
-			CharKind::RightBrace => TokenKind::RightBrace,
-			CharKind::SemiColon => TokenKind::SemiColon,
-			CharKind::Dollar => TokenKind::Dollar,
-			CharKind::Backtick => TokenKind::Backtick,
-			CharKind::Hashtag => TokenKind::Hashtag,
-			CharKind::Address => TokenKind::Address,
-			CharKind::EoF => TokenKind::EoF,
-			// line comments
-			CharKind::DoubleDash => {
-				self.reader.advance_until(CharKind::is_valid_ending);
-				TokenKind::Comment {
-					documentation : false
+		'search: loop {
+			// skip preceeding whitespace
+			self.reader.clear_substr();
+			let kind = match self.reader.next() {
+				// whitespace
+				x if x.is_valid_whitespace() => {
+					self.reader.advance_while(CharKind::is_valid_whitespace);
+					continue 'search;
 				}
-			},
-			// block comments
-			CharKind::LeftDashedBrace => {
-				let mut depth : u8 = 1;
-				while depth >= 1 && depth < 255 {
-					match self.reader.next() {
-						CharKind::LeftDashedBrace => depth += 1,
-						CharKind::RightDashedBrace => depth -= 1,
-						CharKind::EoF => break,
-						_ => ()
+				// individual symbols
+				CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
+				CharKind::LeftParen => TokenKind::LeftParen,
+				CharKind::RightParen => TokenKind::RightParen,
+				CharKind::LeftBrace => TokenKind::LeftBrace,
+				CharKind::RightBrace => TokenKind::RightBrace,
+				CharKind::SemiColon => TokenKind::SemiColon,
+				CharKind::Dollar => TokenKind::Dollar,
+				CharKind::Backtick => TokenKind::Backtick,
+				CharKind::Hashtag => TokenKind::Hashtag,
+				CharKind::Address => TokenKind::Address,
+				CharKind::EoF => TokenKind::EoF,
+				// line comments
+				CharKind::DoubleDash => {
+					self.reader.advance_until(CharKind::is_valid_ending);
+					continue 'search;
+				},
+				// block comments
+				CharKind::LeftDashedBrace => {
+					let mut depth : u8 = 1;
+					while depth >= 1 && depth < 255 {
+						match self.reader.next() {
+							CharKind::LeftDashedBrace => depth += 1,
+							CharKind::RightDashedBrace => depth -= 1,
+							CharKind::EoF => break,
+							_ => ()
+						}
 					}
-				}
-				TokenKind::BlockComment {
-					poorly_braced : depth >= 1,
-					exceeds_depth_limit : depth == 255
-				}
-			},
-			// number literals
-			x if x.is_valid_digit() => {
-				self.reader.advance_while(CharKind::is_valid_digit);
-				TokenKind::Literal(LiteralKind::Integer)
-			},
-			// identifiers
-			x if matches!(x, CharKind::Underscore) ||
-					x.is_valid_graphic() ||
-					x.is_valid_operator() => {
-				let kind = match x {
-					CharKind::Graphic |
-							CharKind::Underscore => IdentifierKind::Alphabetic,
-					CharKind::Bar => IdentifierKind::Bar,
-					CharKind::Caret => IdentifierKind::Caret,
-					CharKind::Ampersand => IdentifierKind::Ampersand,
-					CharKind::Bang => IdentifierKind::Bang,
-					CharKind::Equals => IdentifierKind::Equals,
-					CharKind::LessThan => IdentifierKind::LessThan,
-					CharKind::GreaterThan => IdentifierKind::GreaterThan,
-					CharKind::Plus => IdentifierKind::Plus,
-					CharKind::Minus => IdentifierKind::Minus,
-					CharKind::Asterisk => IdentifierKind::Asterisk,
-					CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
-					CharKind::Percent => IdentifierKind::Percent,
-					_ => IdentifierKind::Other
-				};
-				let template = if matches!(x, CharKind::Underscore)
-						{ self.reader.peek() } else { &x };
-				if template.is_valid_graphic() {
-					self.reader.advance_while(CharKind::is_valid_graphic);
-				} else if template.is_valid_operator() {
-					self.reader.advance_while(CharKind::is_valid_operator);
-				}
-				loop {
-					// all identifiers can end with any number of `'` (called "prime")
-					self.reader.advance_while(|x| matches!(x, CharKind::SingleQuote));
-					// join alphanumeric identifiers and operators with underscores
-					if matches!(self.reader.peek(), CharKind::Underscore) {
-						self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
-						let peeked = self.reader.peek();
-						if peeked.is_valid_graphic() {
-							self.reader.advance_while(CharKind::is_valid_graphic);
-						} else if peeked.is_valid_operator() {
-							self.reader.advance_while(CharKind::is_valid_operator);
+					let reason = if depth >= 1 {
+						"unterminated block comment"
+					} else if depth == 255 {
+						"nested block comment exceeds depth limit"
+					} else {
+						continue 'search
+					};
+					TokenKind::Issue { reason }
+				},
+				// number literals
+				x if x.is_valid_digit() => {
+					self.reader.advance_while(CharKind::is_valid_digit);
+					TokenKind::Literal(LiteralKind::Integer)
+				},
+				// identifiers
+				x if matches!(x, CharKind::Underscore) ||
+						x.is_valid_graphic() ||
+						x.is_valid_operator() => {
+					let kind = match x {
+						CharKind::Graphic |
+								CharKind::Underscore => IdentifierKind::Alphabetic,
+						CharKind::Bar => IdentifierKind::Bar,
+						CharKind::Caret => IdentifierKind::Caret,
+						CharKind::Ampersand => IdentifierKind::Ampersand,
+						CharKind::Bang => IdentifierKind::Bang,
+						CharKind::Equals => IdentifierKind::Equals,
+						CharKind::LessThan => IdentifierKind::LessThan,
+						CharKind::GreaterThan => IdentifierKind::GreaterThan,
+						CharKind::Plus => IdentifierKind::Plus,
+						CharKind::Minus => IdentifierKind::Minus,
+						CharKind::Asterisk => IdentifierKind::Asterisk,
+						CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
+						CharKind::Percent => IdentifierKind::Percent,
+						_ => IdentifierKind::Other
+					};
+					let template = if matches!(x, CharKind::Underscore)
+							{ self.reader.peek() } else { &x };
+					if template.is_valid_graphic() {
+						self.reader.advance_while(CharKind::is_valid_graphic);
+					} else if template.is_valid_operator() {
+						self.reader.advance_while(CharKind::is_valid_operator);
+					}
+					loop {
+						// all identifiers can end with any number of `'` (called "prime")
+						self.reader.advance_while(|x| matches!(x, CharKind::SingleQuote));
+						// join alphanumeric identifiers and operators with underscores
+						if matches!(self.reader.peek(), CharKind::Underscore) {
+							self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
+							let peeked = self.reader.peek();
+							if peeked.is_valid_graphic() {
+								self.reader.advance_while(CharKind::is_valid_graphic);
+							} else if peeked.is_valid_operator() {
+								self.reader.advance_while(CharKind::is_valid_operator);
+							} else {
+								break;
+							}
 						} else {
 							break;
 						}
-					} else {
-						break;
+					}
+					// match substring for keywords
+					match self.reader.substr() {
+						"var" => TokenKind::Var,
+						"if" => TokenKind::If,
+						"else" => TokenKind::Else,
+						_ => TokenKind::Identifier(kind)
 					}
 				}
-				// match substring for keywords
-				match self.reader.substr() {
-					"var" => TokenKind::Var,
-					"if" => TokenKind::If,
-					"else" => TokenKind::Else,
-					_ => TokenKind::Identifier(kind)
-				}
-			}
-			// unknown symbol
-			_ => TokenKind::Unknown
+				// unknown symbol
+				_ => TokenKind::Issue { reason : "unknown symbol" }
+			};
+			break kind;
 		}
 	}
 
@@ -143,14 +152,7 @@ pub enum TokenKind {
 	Identifier(IdentifierKind),
 	Literal(LiteralKind),
 	EoF,
-	Comment {
-		documentation : bool
-	},
-	BlockComment {
-		poorly_braced : bool,
-		exceeds_depth_limit : bool
-	},
-	Unknown
+	Issue { reason : &'static str }
 }
 impl TokenKind {
 	/// Returns `true` if the token is an identifier.
