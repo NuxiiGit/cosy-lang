@@ -113,37 +113,6 @@ impl<'a> Lexer<'a> {
 					_ => TokenKind::Identifier(kind)
 				}
 			}
-
-			// alphabetic identifiers
-			x if x.is_valid_graphic() => {
-				self.reader.advance_while(CharKind::is_valid_graphic);
-				TokenKind::Identifier(IdentifierKind::Alphabetic)
-			},
-			// operator identifiers
-			x if x.is_valid_operator() => {
-				let kind = match x {
-					CharKind::Bar => IdentifierKind::Bar,
-					CharKind::Caret => IdentifierKind::Caret,
-					CharKind::Ampersand => IdentifierKind::Ampersand,
-					CharKind::Bang => IdentifierKind::Bang,
-					CharKind::Equals => IdentifierKind::Equals,
-					CharKind::LessThan => IdentifierKind::LessThan,
-					CharKind::GreaterThan => IdentifierKind::GreaterThan,
-					CharKind::Plus => IdentifierKind::Plus,
-					CharKind::Minus => IdentifierKind::Minus,
-					CharKind::Asterisk => IdentifierKind::Asterisk,
-					CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
-					CharKind::Percent => IdentifierKind::Percent,
-					_ => IdentifierKind::Other
-				};
-				self.reader.advance_while(CharKind::is_valid_operator);
-				if matches!(self.reader.peek(), CharKind::Underscore) {
-					// operator followed by an alphanumeric identifier
-					self.reader.next();
-					self.reader.advance_while(CharKind::is_valid_graphic);
-				}
-				TokenKind::Identifier(kind)
-			}
 			// unknown symbol
 			_ => TokenKind::Unknown
 		}
