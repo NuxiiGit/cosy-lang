@@ -89,12 +89,9 @@ impl<'a> Lexer<'a> {
 				}
 				TokenKind::Identifier(kind)
 			}
+			// unknown symbol
+			_ => TokenKind::Unknown
 		}
-	}
-
-	/// Returns the substring of the previously returned `Result`.
-	pub fn context(&self) -> &'a str {
-		self.reader.substr()
 	}
 
 	/// Returns the span of the previously returned `Result`.

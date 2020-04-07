@@ -11,15 +11,17 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let mut lexer = Lexer::from("he->⸬-+_hello---*::><=llo\r\n2\n3\r4world");
+	let src = "he->⸬-+_hello---*::><=llo\r\n2\n3\r4world";
+	let mut lexer = Lexer::from(src);
 	let mut i = 0;
 	loop {
 		i += 1;
 		let result = lexer.next();
-		println!("{}.)", i);
+		let span = lexer.span();
+		println!("\n{}.)", i);
 		println!("  kind:    {:?}", result);
-		println!("  context: {:?}", lexer.context());
-		println!("  span:    {}\n", lexer.span());
+		println!("  span:    {}", span);
+		println!("  context: {:?}", span.render(src));
 		if matches!(result, TokenKind::EoF) {
 			break;
 		}
