@@ -80,19 +80,12 @@ impl<'a> Lexer<'a> {
 					CharKind::Percent => IdentifierKind::Percent,
 					_ => IdentifierKind::Other
 				};
-				if matches!(x, CharKind::Underscore) {
-					let peeked = self.reader.peek();
-					if peeked.is_valid_graphic() {
-						self.reader.advance_while(CharKind::is_valid_graphic);
-					} else if peeked.is_valid_operator() {
-						self.reader.advance_while(CharKind::is_valid_operator);
-					}
-				} else {
-					if x.is_valid_graphic() {
-						self.reader.advance_while(CharKind::is_valid_graphic);
-					} else {
-						self.reader.advance_while(CharKind::is_valid_operator);
-					}
+				let template = if matches!(x, CharKind::Underscore)
+						{ self.reader.peek() } else { &x };
+				if template.is_valid_graphic() {
+					self.reader.advance_while(CharKind::is_valid_graphic);
+				} else if template.is_valid_operator() {
+					self.reader.advance_while(CharKind::is_valid_operator);
 				}
 				loop {
 					// all identifiers can end with any number of `'` (called "prime")
