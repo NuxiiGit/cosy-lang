@@ -82,10 +82,13 @@ impl<'a> Lexer<'a> {
 					_ => IdentifierKind::Other
 				};
 				self.reader.advance_while(CharKind::is_valid_operator);
+				if matches!(self.reader.peek(), CharKind::Underscore) {
+					// operator followed by an alphanumeric identifier
+					self.reader.next();
+					self.reader.advance_while(CharKind::is_valid_graphic);
+				}
 				TokenKind::Identifier(kind)
 			}
-			// unknown symbol
-			_ => TokenKind::Unknown
 		}
 	}
 
