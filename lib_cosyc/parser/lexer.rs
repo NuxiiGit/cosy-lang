@@ -64,7 +64,8 @@ impl<'a> Lexer<'a> {
 					x.is_valid_graphic() ||
 					x.is_valid_operator() => {
 				let kind = match x {
-					CharKind::Graphic => IdentifierKind::Alphabetic,
+					CharKind::Graphic |
+							CharKind::Underscore => IdentifierKind::Alphabetic,
 					CharKind::Bar => IdentifierKind::Bar,
 					CharKind::Caret => IdentifierKind::Caret,
 					CharKind::Ampersand => IdentifierKind::Ampersand,
