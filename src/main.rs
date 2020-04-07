@@ -11,7 +11,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "he->⸬-+_hello---*::><=llo\r\n2\n3\r4world";
+	let src = "he_++_wwoo_~~_uwu->⸬-+_hello---*::><=llo\r\n2\n3\r4world";
 	let mut lexer = Lexer::from(src);
 	let mut i = 0;
 	loop {

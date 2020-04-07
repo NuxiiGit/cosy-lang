@@ -59,6 +59,49 @@ impl<'a> Lexer<'a> {
 				self.reader.advance_while(CharKind::is_valid_digit);
 				TokenKind::Literal(LiteralKind::Integer)
 			},
+			// identifiers
+			x if x.is_valid_graphic() ||
+					x.is_valid_operator() => {
+				let kind = match x {
+					CharKind::Graphic => IdentifierKind::Alphabetic,
+					CharKind::Bar => IdentifierKind::Bar,
+					CharKind::Caret => IdentifierKind::Caret,
+					CharKind::Ampersand => IdentifierKind::Ampersand,
+					CharKind::Bang => IdentifierKind::Bang,
+					CharKind::Equals => IdentifierKind::Equals,
+					CharKind::LessThan => IdentifierKind::LessThan,
+					CharKind::GreaterThan => IdentifierKind::GreaterThan,
+					CharKind::Plus => IdentifierKind::Plus,
+					CharKind::Minus => IdentifierKind::Minus,
+					CharKind::Asterisk => IdentifierKind::Asterisk,
+					CharKind::ForwardSlash => IdentifierKind::ForwardSlash,
+					CharKind::Percent => IdentifierKind::Percent,
+					_ => IdentifierKind::Other
+				};
+				let mut alphabetic = matches!(kind, IdentifierKind::Alphabetic);
+				loop {
+					if alphabetic {
+						self.reader.advance_while(CharKind::is_valid_graphic);
+					} else {
+						self.reader.advance_while(CharKind::is_valid_operator);
+					}
+					if matches!(self.reader.peek(), CharKind::Underscore) {
+						self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
+						let peeked = self.reader.peek();
+						if peeked.is_valid_graphic() {
+							alphabetic = true;
+						} else if peeked.is_valid_operator() {
+							alphabetic = false;
+						} else {
+							break;
+						}
+					} else {
+						break;
+					}
+				}
+				TokenKind::Identifier(kind)
+			}
+
 			// alphabetic identifiers
 			x if x.is_valid_graphic() => {
 				self.reader.advance_while(CharKind::is_valid_graphic);

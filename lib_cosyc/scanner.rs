@@ -248,15 +248,14 @@ impl CharKind {
 		matches!(self, Cr | Lf | CrLf)
 	}
 
+	/// Returns whether the char is a valid graphic.
+	pub fn is_valid_graphic(&self) -> bool {
+		matches!(self, CharKind::Graphic) || self.is_valid_digit()
+	}
+
 	/// Returns whether the char is a valid digit.
 	pub fn is_valid_digit(&self) -> bool {
 		matches!(self, CharKind::Digit)
-	}
-
-	/// Returns whether the char is a valid graphic.
-	pub fn is_valid_graphic(&self) -> bool {
-		use CharKind::*;
-		matches!(self, Graphic | Underscore | SingleQuote)
 	}
 
 	/// Returns whether the char is a valid operator.
@@ -278,7 +277,6 @@ impl CharKind {
 				ForwardSlash |
 				BackSlash |
 				Percent |
-				SingleQuote |
 				Other)
 	}
 }
