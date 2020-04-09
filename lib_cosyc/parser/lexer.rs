@@ -21,6 +21,7 @@ impl<'a> Lexer<'a> {
 		&self.peeked
 	}
 
+	/// Returns ownership of the peeked token.
 	pub fn next(&mut self) -> TokenKind {
 		let next = self.reader.tokenise();
 		mem::replace(&mut self.peeked, next)

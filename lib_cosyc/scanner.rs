@@ -74,8 +74,6 @@ impl<'a> Scanner<'a> {
 			(CharKind::Minus, CharKind::RightBrace) => Some(CharKind::RightDashedBrace),
 			(CharKind::Minus, CharKind::GreaterThan) => Some(CharKind::RightArrow),
 			(CharKind::LessThan, CharKind::Minus) => Some(CharKind::LeftArrow),
-			(CharKind::Equals, CharKind::GreaterThan) => Some(CharKind::RightImply),
-			(CharKind::LessThan, CharKind::Equals) => Some(CharKind::LeftImply),
 			(CharKind::Colon, CharKind::Colon) => Some(CharKind::DoubleColon),
 			(CharKind::Cr, CharKind::Lf) => Some(CharKind::CrLf),
 			_ => None
@@ -157,10 +155,6 @@ pub enum CharKind {
 	LeftArrow,
 	/// Right arrow, specifically `→`.
 	RightArrow,
-	/// Left implication, specifically `⇐`.
-	LeftImply,
-	/// Right implication, specifically `⇒`.
-	RightImply,
 	/// Double colon, specifically `⸬`.
 	DoubleColon,
 	/// Carriage return, `\r`.
@@ -224,8 +218,6 @@ impl CharKind {
 			'%' => Percent,
 			'←' => LeftArrow,
 			'→' => RightArrow,
-			'⇐' => LeftImply,
-			'⇒' => RightImply,
 			'⸬' => DoubleColon,
 			_ => Other
 		}

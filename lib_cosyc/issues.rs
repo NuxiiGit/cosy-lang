@@ -42,7 +42,6 @@ impl IntoIterator for IssueTracker {
 	}
 }
 
-/// Additional implementations of the `Span` struct to support easier conversion to errors.
 impl Span {
 	/// Creates an error of this kind and reaosn.
 	pub fn make_error(&self, kind : ErrorKind, reason : &'static str) -> Error {
