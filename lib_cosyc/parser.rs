@@ -21,11 +21,7 @@ impl<'a, 'e> Parser<'a, 'e> {
 	/// Parses tokens from a lexer, and then returns a program.
 	pub fn parse_program(&mut self) -> Prog {
 		let prog = Prog { stmts : Vec::new() };
-		self.issues.report(Error {
-			reason : "test error",
-			kind : ErrorKind::Fatal,
-			span : Span::new()
-		});
+		self.issues.report(Span::new().make_error(ErrorKind::Fatal, "test error"));
 		prog
 	}
 }
