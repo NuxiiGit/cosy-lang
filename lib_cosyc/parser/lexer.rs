@@ -1,31 +1,51 @@
 use crate::scanner::{ Scanner, CharKind };
 use crate::span::Span;
 
+use std::mem;
+
 /// A struct which converts a stream of characters into individual tokens.
 pub struct Lexer<'a> {
 	reader : Scanner<'a>,
+	peeked : TokenKind
 }
 impl<'a> Lexer<'a> {
 	/// Creates a new lexer from this source code.
 	pub fn from(src : &'a str) -> Self {
-		Self {
-			reader : Scanner::from(src)
-		}
+		let mut reader = Scanner::from(src);
+		let peeked = reader.tokenise();
+		Self { reader, peeked }
 	}
 
-	/// Returns the next token in the source.
+	/// Returns a reference to the current peeked token.
+	pub fn peek(&self) -> &TokenKind {
+		&self.peeked
+	}
+
 	pub fn next(&mut self) -> TokenKind {
+		let next = self.reader.tokenise();
+		mem::replace(&mut self.peeked, next)
+	}
+
+	/// Returns the span of the previously returned `Result`.
+	pub fn span(&self) -> &Span {
+		self.reader.span()
+	}
+}
+
+impl<'a> Scanner<'a> {
+	/// Returns the next token in the source.
+	pub fn tokenise(&mut self) -> TokenKind {
 		'search: loop {
 			// skip preceeding whitespace
-			self.reader.clear_substr();
-			let kind = match self.reader.next() {
+			self.clear_substr();
+			let kind = match self.next() {
 				// whitespace
 				x if x.is_valid_whitespace() => {
-					self.reader.advance_while(CharKind::is_valid_whitespace);
+					self.advance_while(CharKind::is_valid_whitespace);
 					continue 'search;
 				}
 				// individual symbols
-				CharKind::Equals if !self.reader.peek().is_valid_operator() => TokenKind::Assign,
+				CharKind::Equals if !self.peek().is_valid_operator() => TokenKind::Assign,
 				CharKind::LeftParen => TokenKind::LeftParen,
 				CharKind::RightParen => TokenKind::RightParen,
 				CharKind::LeftBrace => TokenKind::LeftBrace,
@@ -38,14 +58,14 @@ impl<'a> Lexer<'a> {
 				CharKind::EoF => TokenKind::EoF,
 				// line comments
 				CharKind::DoubleDash => {
-					self.reader.advance_until(CharKind::is_valid_ending);
+					self.advance_until(CharKind::is_valid_ending);
 					continue 'search;
 				},
 				// block comments
 				CharKind::LeftDashedBrace => {
 					let mut depth : u8 = 1;
 					while depth >= 1 && depth < 255 {
-						match self.reader.next() {
+						match self.next() {
 							CharKind::LeftDashedBrace => depth += 1,
 							CharKind::RightDashedBrace => depth -= 1,
 							CharKind::EoF => break,
@@ -63,7 +83,7 @@ impl<'a> Lexer<'a> {
 				},
 				// number literals
 				x if x.is_valid_digit() => {
-					self.reader.advance_while(CharKind::is_valid_digit);
+					self.advance_while(CharKind::is_valid_digit);
 					TokenKind::Literal(LiteralKind::Integer)
 				},
 				// identifiers
@@ -88,23 +108,23 @@ impl<'a> Lexer<'a> {
 						_ => IdentifierKind::Other
 					};
 					let template = if matches!(x, CharKind::Underscore)
-							{ self.reader.peek() } else { &x };
+							{ self.peek() } else { &x };
 					if template.is_valid_graphic() {
-						self.reader.advance_while(CharKind::is_valid_graphic);
+						self.advance_while(CharKind::is_valid_graphic);
 					} else if template.is_valid_operator() {
-						self.reader.advance_while(CharKind::is_valid_operator);
+						self.advance_while(CharKind::is_valid_operator);
 					}
 					loop {
 						// all identifiers can end with any number of `'` (called "prime")
-						self.reader.advance_while(|x| matches!(x, CharKind::SingleQuote));
+						self.advance_while(|x| matches!(x, CharKind::SingleQuote));
 						// join alphanumeric identifiers and operators with underscores
-						if matches!(self.reader.peek(), CharKind::Underscore) {
-							self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
-							let peeked = self.reader.peek();
+						if matches!(self.peek(), CharKind::Underscore) {
+							self.advance_while(|x| matches!(x, CharKind::Underscore));
+							let peeked = self.peek();
 							if peeked.is_valid_graphic() {
-								self.reader.advance_while(CharKind::is_valid_graphic);
+								self.advance_while(CharKind::is_valid_graphic);
 							} else if peeked.is_valid_operator() {
-								self.reader.advance_while(CharKind::is_valid_operator);
+								self.advance_while(CharKind::is_valid_operator);
 							} else {
 								break;
 							}
@@ -113,7 +133,7 @@ impl<'a> Lexer<'a> {
 						}
 					}
 					// match substring for keywords
-					match self.reader.substr() {
+					match self.substr() {
 						"var" => TokenKind::Var,
 						"if" => TokenKind::If,
 						"else" => TokenKind::Else,
@@ -125,11 +145,6 @@ impl<'a> Lexer<'a> {
 			};
 			break kind;
 		}
-	}
-
-	/// Returns the span of the previously returned `Result`.
-	pub fn span(&self) -> &Span {
-		self.reader.span()
 	}
 }
 
