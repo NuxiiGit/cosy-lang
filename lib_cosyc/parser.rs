@@ -22,6 +22,59 @@ impl<'a, 'e> Parser<'a, 'e> {
 		self.issues.report(Span::new().make_error(ErrorKind::Fatal, "test error"));
 		Some(prog)
 	}
+
+	/// Advances the parser until a stable token is found.
+	fn synchronise(&mut self) {
+		loop {
+			if self.advance_if(|x| matches!(x, TokenKind::SemiColon)).is_some() {
+				break;
+			} else if self.satisfies(|x| matches!(x,
+					TokenKind::Var |
+					TokenKind::EoF)) {
+				break;
+			}
+			self.advance();
+		}
+	}
+
+	/// Advances the parser, but reports an error if some predicate isn't held.
+	fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Option<TokenKind> {
+		if self.satisfies(p) {
+			self.advance()
+		} else {
+			self.advance()?;
+			let span = self.lexer.span();
+			self.issues.report(span.make_error(ErrorKind::Fatal, on_err));
+			None
+		}
+	}
+
+	/// Advances the parser only if the next token satisfies some predicate.
+	fn advance_if(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
+		if self.satisfies(p) {
+			self.advance()
+		} else {
+			None
+		}
+	}
+
+	/// Advances the parser, but registers any issue tokens as fatal errors.
+	/// `Option` is used to unwind.
+	fn advance(&mut self) -> Option<TokenKind> {
+		match self.lexer.next() {
+			TokenKind::Issue { reason } => {
+				let span = self.lexer.span();
+				self.issues.report(span.make_error(ErrorKind::Fatal, reason));
+				None
+			},
+			token => Some(token)
+		}
+	}
+
+	/// Returns `true` if the next token satisfies some predicate.
+	fn satisfies(&self, p : fn(&TokenKind) -> bool) -> bool {
+		p(self.lexer.peek())
+	}
 }
 
 /// A struct which stores information about the parsed program.
