@@ -14,10 +14,13 @@ use std::time::Instant;
 fn main() {
 	let now = Instant::now();
 	let src = "_+''''''he'''_+'+'_wwo''o_~~' __ if uwu var->⸬-+_hello---*::><=llo\r\n2\n3\r4world";
-	let mut lexer = Lexer::from(src);
+	let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
 	let mut parser = Parser::new(&mut issues, lexer);
-	let prog = parser.parse_program();
+	if let Some(prog) = parser.parse_program() {
+		println!("program:");
+		println!("  {:?}", prog);
+	}
 	if issues.level().is_some() {
 		println!("errors occured...");
 		for e in issues {
@@ -25,7 +28,6 @@ fn main() {
 		}
 	} else {
 		println!("all good!");
-		println!("  {:?}", prog);
 	}
 
 	/*let mut i = 0;

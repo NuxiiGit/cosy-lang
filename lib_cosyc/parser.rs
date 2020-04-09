@@ -6,8 +6,6 @@ use crate::issues::{ Error, ErrorKind, IssueTracker };
 use crate::span::Span;
 
 /// Takes a lexer and uses it to construct a parse tree.
-/// Syntax trees produced by this parser may or may not be invalid.
-/// Therefore, you should check `issues` for any errors to verify whether the syntax tree is correct.
 pub struct Parser<'a, 'e> {
 	pub issues : &'e mut IssueTracker,
 	pub lexer : Lexer<'a>
@@ -19,10 +17,10 @@ impl<'a, 'e> Parser<'a, 'e> {
 	}
 
 	/// Parses tokens from a lexer, and then returns a program.
-	pub fn parse_program(&mut self) -> Prog {
+	pub fn parse_program(&mut self) -> Option<Prog> {
 		let prog = Prog { stmts : Vec::new() };
 		self.issues.report(Span::new().make_error(ErrorKind::Fatal, "test error"));
-		prog
+		Some(prog)
 	}
 }
 
