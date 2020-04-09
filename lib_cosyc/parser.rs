@@ -6,18 +6,27 @@ use crate::issues::{ Error, ErrorKind, IssueTracker };
 use crate::span::Span;
 
 /// Takes a lexer and uses it to construct a parse tree.
-pub struct Parser<'e> {
-    issues : &'e mut IssueTracker
+/// Syntax trees produced by this parser may or may not be invalid.
+/// Therefore, you should check `issues` for any errors to verify whether the syntax tree is correct.
+pub struct Parser<'a, 'e> {
+	pub issues : &'e mut IssueTracker,
+	pub lexer : Lexer<'a>
 }
-impl<'a, 'e> Parser<'e> {
-	/// Creates a new parser from this issue tracker.
-	pub fn new(issues : &'e mut IssueTracker) -> Self {
-		Self { issues }
+impl<'a, 'e> Parser<'a, 'e> {
+	/// Creates a new parser from this issue tracker and this lexer.
+	pub fn new(issues : &'e mut IssueTracker, lexer : Lexer<'a>) -> Self {
+		Self { issues, lexer }
 	}
 
 	/// Parses tokens from a lexer, and then returns a program.
-	pub fn parse(&self, lexer : &Lexer<'a>) -> Prog {
-		unimplemented!()
+	pub fn parse_program(&mut self) -> Prog {
+		let prog = Prog { stmts : Vec::new() };
+		self.issues.report(Error {
+			reason : "test error",
+			kind : ErrorKind::Fatal,
+			span : Span::new()
+		});
+		prog
 	}
 }
 
@@ -33,28 +42,15 @@ pub type Block = Vec<Stmt>;
 /// A recursive enum which stores statement information.
 #[derive(Debug, Clone)]
 pub enum Stmt {
-    Expr {
-        expr : Expr
-    },
-    NoOp
+	Expr { expr : Expr },
+	NoOp
 }
 
 /// A recursive enum which stores expression information.
 #[derive(Debug, Clone)]
 pub enum Expr {
-    Value {
-		kind : ValueKind,
-		span : Span
-    },
-    Variable {
-        span : Span
-    },
-}
-
-/// Represents the different kinds of primitive values.
-#[derive(PartialEq, Debug, Clone)]
-pub enum ValueKind {
-	Integer,
-	Real,
-	Char
+	Integer { span : Span },
+	Real { span : Span },
+	Char { span : Span },
+	Variable { span : Span }
 }

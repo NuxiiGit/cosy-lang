@@ -5,6 +5,8 @@
 //use cosyc::session::Session;
 
 use cosyc::parser::lexer::*;
+use cosyc::parser::*;
+use cosyc::issues::*;
 
 use std::fs;
 use std::time::Instant;
@@ -13,7 +15,20 @@ fn main() {
 	let now = Instant::now();
 	let src = "_+''''''he'''_+'+'_wwo''o_~~' __ if uwu var->⸬-+_hello---*::><=llo\r\n2\n3\r4world";
 	let mut lexer = Lexer::from(src);
-	let mut i = 0;
+	let mut issues = IssueTracker::new();
+	let mut parser = Parser::new(&mut issues, lexer);
+	let prog = parser.parse_program();
+	if issues.level().is_some() {
+		println!("errors occured...");
+		for e in issues {
+			println!("  {}", e);
+		}
+	} else {
+		println!("all good!");
+		println!("  {:?}", prog);
+	}
+
+	/*let mut i = 0;
 	loop {
 		i += 1;
 		let result = lexer.next();
@@ -24,17 +39,6 @@ fn main() {
 		println!("  context: {:?}", span.render(src));
 		if matches!(result, TokenKind::EoF) {
 			break;
-		}
-	}
-
-	//let sess = Session::read("examples/tests/bleh.cosy");
-	/*let mut lexer = Lexer::from(&src);
-	loop {
-		match lexer.next() {
-			Ok(token) if token.kind.is_eof() => break,
-			_ => n += 1
-			//Ok(token) => println!("{} ({:?})", token.context, token.kind),
-			//Err(e) => println!("{}", e)
 		}
 	}*/
 	let dt = now.elapsed();
