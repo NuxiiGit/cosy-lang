@@ -1,8 +1,8 @@
 pub mod lexer;
 
-use lexer::{ Lexer, TokenKind };
+use lexer::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 
-use crate::issues::{ Error, ErrorKind, IssueTracker };
+use crate::issues::{ ErrorKind, IssueTracker };
 use crate::span::Span;
 
 /// Takes a lexer and uses it to construct a parse tree.
@@ -21,6 +21,25 @@ impl<'a, 'e> Parser<'a, 'e> {
 		let prog = Prog { stmts : Vec::new() };
 		self.issues.report(Span::new().make_error(ErrorKind::Fatal, "test error"));
 		Some(prog)
+	}
+
+	/// Parses expression literals and identifiers.
+	pub fn parse_expr_terminal(&mut self) -> Option<Expr> {
+		if let Some(literal) = self.advance_if(TokenKind::is_literal) {
+			let span = self.lexer.span().clone();
+			Some(match literal {
+				TokenKind::Literal(LiteralKind::Character) => Expr::Char { span },
+				TokenKind::Literal(LiteralKind::Integer) => Expr::Integer { span },
+				TokenKind::Literal(LiteralKind::Real) => Expr::Real { span },
+				_ => unreachable!()
+			})
+		} else if self.advance_if(TokenKind::is_identifier).is_some() {
+			let span = self.lexer.span().clone();
+			Some(Expr::Variable { span })
+		} else {
+			self.lexer.span().make_error(ErrorKind::Fatal, "malformed expression");
+			None
+		}
 	}
 
 	/// Advances the parser until a stable token is found.
