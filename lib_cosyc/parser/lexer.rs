@@ -6,14 +6,16 @@ use std::mem;
 /// A struct which converts a stream of characters into individual tokens.
 pub struct Lexer<'a> {
 	reader : Scanner<'a>,
-	peeked : TokenKind
+	peeked : TokenKind,
+	span : Span
 }
 impl<'a> Lexer<'a> {
 	/// Creates a new lexer from this source code.
 	pub fn from(src : &'a str) -> Self {
 		let mut reader = Scanner::from(src);
 		let peeked = reader.tokenise();
-		Self { reader, peeked }
+		let span = Span::new();
+		Self { reader, peeked, span }
 	}
 
 	/// Returns a reference to the current peeked token.
@@ -23,13 +25,14 @@ impl<'a> Lexer<'a> {
 
 	/// Returns ownership of the peeked token.
 	pub fn next(&mut self) -> TokenKind {
+		self.span.replicate(self.reader.span());
 		let next = self.reader.tokenise();
 		mem::replace(&mut self.peeked, next)
 	}
 
 	/// Returns the span of the previously returned `Result`.
 	pub fn span(&self) -> &Span {
-		self.reader.span()
+		&self.span
 	}
 }
 

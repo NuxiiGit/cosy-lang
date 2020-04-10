@@ -18,12 +18,19 @@ impl Span {
 	}
 
 	/// Joins two spans together to produce a new span.
-	pub fn join(a : Self, b : Self) -> Self {
+	pub fn join(&self, other: &Self) -> Self {
 		Span {
-			begin : a.begin,
-			end : b.end,
-			line : a.line
+			begin : self.begin,
+			end : other.end,
+			line : self.line
 		}
+	}
+
+	/// Copies the values of `other` into `self`
+	pub fn replicate(&mut self, other: &Self) {
+		self.begin = other.begin;
+		self.end = other.end;
+		self.line = other.line;
 	}
 
 	/// Takes a slice out of this string which corresponds to the bytes it expects.
