@@ -226,7 +226,5 @@ pub enum IdentifierKind {
 /// An enum which describes available literal types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum LiteralKind {
-	Character,
-	Integer,
-	Real
+	Integer
 }

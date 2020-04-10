@@ -19,7 +19,6 @@ impl<'a, 'e> Parser<'a, 'e> {
 	/// Parses tokens from a lexer, and then returns a program.
 	pub fn parse_program(&mut self) -> Option<Prog> {
 		let prog = Prog { stmts : Vec::new() };
-		self.issues.report(Span::new().make_error(ErrorKind::Fatal, "test error"));
 		Some(prog)
 	}
 
@@ -28,9 +27,7 @@ impl<'a, 'e> Parser<'a, 'e> {
 		if let Some(literal) = self.advance_if(TokenKind::is_literal) {
 			let span = self.lexer.span().clone();
 			Some(match literal {
-				TokenKind::Literal(LiteralKind::Character) => Expr::Char { span },
 				TokenKind::Literal(LiteralKind::Integer) => Expr::Integer { span },
-				TokenKind::Literal(LiteralKind::Real) => Expr::Real { span },
 				_ => unreachable!()
 			})
 		} else if self.advance_if(TokenKind::is_identifier).is_some() {
@@ -62,7 +59,6 @@ impl<'a, 'e> Parser<'a, 'e> {
 			self.advance()
 		} else {
 			self.advance()?;
-			let span = self.lexer.span();
 			self.report(on_err);
 			None
 		}
@@ -82,7 +78,6 @@ impl<'a, 'e> Parser<'a, 'e> {
 	fn advance(&mut self) -> Option<TokenKind> {
 		match self.lexer.next() {
 			TokenKind::Issue { reason } => {
-				let span = self.lexer.span();
 				self.report(reason);
 				None
 			},
@@ -124,7 +119,5 @@ pub enum Stmt {
 #[derive(Debug, Clone)]
 pub enum Expr {
 	Integer { span : Span },
-	Real { span : Span },
-	Char { span : Span },
 	Variable { span : Span }
 }
