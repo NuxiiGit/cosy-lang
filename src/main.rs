@@ -13,13 +13,14 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "_+''''''he'''_+'+'_wwo''o_~~' __ if uwu var->⸬-+_hello---*::><=llo\r\n2\n3\r4world";
+	let src = "1; 3; 5;";
 	let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
 	let mut parser = Parser::new(&mut issues, lexer);
 	if let Some(prog) = parser.parse_program() {
 		println!("program:");
 		println!("  {:?}", prog);
+		println!("{:?}", &src[1..2]);
 	}
 	println!("\nerrors:");
 	for e in issues {

@@ -18,8 +18,30 @@ impl<'a, 'e> Parser<'a, 'e> {
 
 	/// Parses tokens from a lexer, and then returns a program.
 	pub fn parse_program(&mut self) -> Option<Prog> {
-		let prog = Prog { stmts : Vec::new() };
-		Some(prog)
+		let mut stmts = Vec::new();
+		let mut errors_occured = false;
+		while !self.satisfies(|x| matches!(x, TokenKind::EoF)) {
+			if let Some(stmt) = self.parse_stmt() {
+				stmts.push(stmt);
+			} else {
+				errors_occured = true;
+				self.synchronise();
+			}
+		}
+		if errors_occured
+				{ None } else { Some(Prog { stmts }) }
+	}
+
+	/// Parses a single statement.
+	pub fn parse_stmt(&mut self) -> Option<Stmt> {
+		let expr = self.parse_expr()?;
+		self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semi-colon after expression statement");
+		Some(Stmt::Expr { expr })
+	}
+
+	/// Parses a single expression.
+	pub fn parse_expr(&mut self) -> Option<Expr> {
+		self.parse_expr_terminal()
 	}
 
 	/// Parses expression literals and identifiers.
