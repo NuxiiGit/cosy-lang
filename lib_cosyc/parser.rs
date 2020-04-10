@@ -2,7 +2,7 @@ pub mod lexer;
 
 use lexer::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 
-use crate::issues::{ ErrorKind, IssueTracker };
+use crate::issues::{ Error, IssueTracker };
 use crate::span::Span;
 
 /// Takes a lexer and uses it to construct a parse tree.
@@ -37,7 +37,7 @@ impl<'a, 'e> Parser<'a, 'e> {
 			let span = self.lexer.span().clone();
 			Some(Expr::Variable { span })
 		} else {
-			self.lexer.span().make_error(ErrorKind::Fatal, "malformed expression");
+			self.report("malformed expression");
 			None
 		}
 	}
@@ -63,7 +63,7 @@ impl<'a, 'e> Parser<'a, 'e> {
 		} else {
 			self.advance()?;
 			let span = self.lexer.span();
-			self.issues.report(span.make_error(ErrorKind::Fatal, on_err));
+			self.report(on_err);
 			None
 		}
 	}
@@ -83,7 +83,7 @@ impl<'a, 'e> Parser<'a, 'e> {
 		match self.lexer.next() {
 			TokenKind::Issue { reason } => {
 				let span = self.lexer.span();
-				self.issues.report(span.make_error(ErrorKind::Fatal, reason));
+				self.report(reason);
 				None
 			},
 			token => Some(token)
@@ -93,6 +93,14 @@ impl<'a, 'e> Parser<'a, 'e> {
 	/// Returns `true` if the next token satisfies some predicate.
 	fn satisfies(&self, p : fn(&TokenKind) -> bool) -> bool {
 		p(self.lexer.peek())
+	}
+
+	/// Reports an error.
+	fn report(&mut self, reason : &'static str) {
+		self.issues.report(Error {
+			reason,
+			span : self.lexer.span().clone()
+		})
 	}
 }
 

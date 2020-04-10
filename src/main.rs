@@ -21,13 +21,9 @@ fn main() {
 		println!("program:");
 		println!("  {:?}", prog);
 	}
-	if issues.level().is_some() {
-		println!("errors occured...");
-		for e in issues {
-			println!("  {}", e);
-		}
-	} else {
-		println!("all good!");
+	println!("\nerrors:");
+	for e in issues {
+		println!("  {}", e);
 	}
 
 	/*let mut i = 0;
