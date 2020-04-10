@@ -1,11 +1,11 @@
 -- anonymous structs
-var user = {
+var user = struct {
 	name = "frank",
 	score = 103
 };
 
 -- new type
-data Vec2 = {
+data Vec2 = struct {
 	x : Float,
 	y : Float
 };
@@ -14,7 +14,7 @@ data Point = (Float, Float);
 
 -- type variants / tagged unions
 data Error {
-	Note (String),
+	Note(String),
 	Warning,
 	Fatal
 }
@@ -23,7 +23,7 @@ data Error {
 type Empty = ();
 
 -- type constructors
-var vec2 = Vec2 $ { x = 2.0, y = 4.2 };
+var vec2 = Vec2 struct { x = 2.0, y = 4.2 };
 var point = Point(3.0, 2.0);
 var error = Error::Warning;
 var error' = Error::Note("something is not right");
