@@ -20,7 +20,10 @@ impl<'a, 'e> Parser<'a, 'e> {
 	pub fn parse_program(&mut self) -> Option<Prog> {
 		let mut stmts = Vec::new();
 		let mut errors_occured = false;
-		while !self.satisfies(|x| matches!(x, TokenKind::EoF)) {
+		while self.check()
+				.equals(TokenKind::EoF)
+				.not()
+				.successful() {
 			if let Some(stmt) = self.parse_stmt() {
 				stmts.push(stmt);
 			} else {
@@ -35,7 +38,10 @@ impl<'a, 'e> Parser<'a, 'e> {
 	/// Parses a single statement.
 	pub fn parse_stmt(&mut self) -> Option<Stmt> {
 		let expr = self.parse_expr()?;
-		self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semi-colon after expression statement");
+		self.check()
+				.equals(TokenKind::SemiColon)
+				.expects("expected semi-colon after expression statement")
+				.advance()?;
 		Some(Stmt::Expr { expr })
 	}
 
@@ -46,14 +52,19 @@ impl<'a, 'e> Parser<'a, 'e> {
 
 	/// Parses expression literals and identifiers.
 	pub fn parse_expr_terminal(&mut self) -> Option<Expr> {
-		if let Some(literal) = self.advance_if(TokenKind::is_literal) {
-			let span = self.lexer.span().clone();
+		if let Some(literal) = self.check()
+				.satisfies(TokenKind::is_literal)
+				.advance() {
+			let span = self.span();
 			Some(match literal {
 				TokenKind::Literal(LiteralKind::Integer) => Expr::Integer { span },
 				_ => unreachable!()
 			})
-		} else if self.advance_if(TokenKind::is_identifier).is_some() {
-			let span = self.lexer.span().clone();
+		} else if self.check()
+				.satisfies(TokenKind::is_identifier)
+				.advance()
+				.is_some() {
+			let span = self.span();
 			Some(Expr::Variable { span })
 		} else {
 			self.report("malformed expression");
@@ -64,34 +75,18 @@ impl<'a, 'e> Parser<'a, 'e> {
 	/// Advances the parser until a stable token is found.
 	fn synchronise(&mut self) {
 		loop {
-			if self.advance_if(|x| matches!(x, TokenKind::SemiColon)).is_some() {
+			if self.check()
+					.equals(TokenKind::SemiColon)
+					.advance()
+					.is_some() {
 				break;
-			} else if self.satisfies(|x| matches!(x,
-					TokenKind::Var |
-					TokenKind::EoF)) {
+			} else if self.check()
+					.equals(TokenKind::Var)
+					.equals(TokenKind::EoF)
+					.successful() {
 				break;
 			}
 			self.advance();
-		}
-	}
-
-	/// Advances the parser, but reports an error if some predicate isn't held.
-	fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Option<TokenKind> {
-		if self.satisfies(p) {
-			self.advance()
-		} else {
-			self.advance()?;
-			self.report(on_err);
-			None
-		}
-	}
-
-	/// Advances the parser only if the next token satisfies some predicate.
-	fn advance_if(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
-		if self.satisfies(p) {
-			self.advance()
-		} else {
-			None
 		}
 	}
 
@@ -107,17 +102,20 @@ impl<'a, 'e> Parser<'a, 'e> {
 		}
 	}
 
-	/// Returns `true` if the next token satisfies some predicate.
-	fn satisfies(&self, p : fn(&TokenKind) -> bool) -> bool {
-		p(self.lexer.peek())
-	}
-
 	/// Reports an error.
 	fn report(&mut self, reason : &'static str) {
-		self.issues.report(Error {
-			reason,
-			span : self.lexer.span().clone()
-		})
+		let span = self.span();
+		self.issues.report(Error { reason, span })
+	}
+
+	/// Returns a clone of the current span.
+	fn span(&mut self) -> Span {
+		self.lexer.span().clone()
+	}
+
+	/// Starts a new comparrison.
+	fn check<'p>(&'p mut self) -> ParserComparator<'p, 'a, 'e> {
+		ParserComparator::from(self)
 	}
 }
 
@@ -164,14 +162,20 @@ impl<'p, 'a, 'e> ParserComparator<'p, 'a, 'e> {
 		}
 		self
 	}
-	
-	/// Consumes the comparator and returns the token as an optional type.
-	pub fn check(self) -> Option<TokenKind> {
+
+	/// Returns the token as an optional type.
+	/// `None` is returned if the condition was not satisfied.
+	pub fn advance(self) -> Option<TokenKind> {
 		if self.satisfied {
 			self.parser.advance()
 		} else {
 			None
 		}
+	}
+	
+	/// Consumes the comparator and returns whether the condition was satisfied.
+	pub fn successful(self) -> bool {
+		self.satisfied
 	}
 }
 
