@@ -121,6 +121,60 @@ impl<'a, 'e> Parser<'a, 'e> {
 	}
 }
 
+/// A struct which provides a way of checking whether a value satisfies one or more conditions.
+pub struct ParserComparator<'p, 'a, 'e> {
+	parser : &'p mut Parser<'a, 'e>,
+	satisfied : bool
+}
+impl<'p, 'a, 'e> ParserComparator<'p, 'a, 'e> {
+	/// Creates a new comparator from this value.
+	pub fn from(parser : &'p mut Parser<'a, 'e>) -> Self {
+		Self {
+			parser,
+			satisfied : false
+		}
+	}
+
+	/// Satisfies the value if it is equal to the target value.
+	pub fn equals(mut self, token : TokenKind) -> Self {
+		if !self.satisfied {
+			self.satisfied = *self.parser.lexer.peek() == token;
+		}
+		self
+	}
+
+	/// Satisfies the value if it holds for some predicate.
+	pub fn satisfies(mut self, p : fn(&TokenKind) -> bool) -> Self {
+		if !self.satisfied {
+			self.satisfied = p(&self.parser.lexer.peek());
+		}
+		self
+	}
+
+	/// Negates the condition.
+	pub fn not(mut self) -> Self {
+		self.satisfied = !self.satisfied;
+		self
+	}
+
+	/// Reports an error if the condition is not satisfied.
+	pub fn expects(self, reason : &'static str) -> Self {
+		if !self.satisfied {
+			self.parser.report(reason);
+		}
+		self
+	}
+	
+	/// Consumes the comparator and returns the token as an optional type.
+	pub fn check(self) -> Option<TokenKind> {
+		if self.satisfied {
+			self.parser.advance()
+		} else {
+			None
+		}
+	}
+}
+
 /// A struct which stores information about the parsed program.
 #[derive(Debug)]
 pub struct Prog {
