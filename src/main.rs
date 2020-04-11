@@ -13,7 +13,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "1; 3; 5;";
+	let src = "1; var a;";
 	let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
 	let mut parser = Parser::new(&mut issues, lexer);

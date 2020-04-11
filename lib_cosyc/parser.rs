@@ -37,21 +37,34 @@ impl<'a, 'e> Parser<'a, 'e> {
 
 	/// Parses a single statement.
 	pub fn parse_stmt(&mut self) -> Option<Stmt> {
-		let expr = self.parse_expr()?;
-		self.check()
-				.equals(TokenKind::SemiColon)
-				.expects("expected semi-colon after expression statement")
-				.advance()?;
-		Some(Stmt::Expr { expr })
+		if self.check()
+				.equals(TokenKind::Var)
+				.advance()
+				.is_some() {
+			self.parse_expr_variable()?;
+			let span = self.span();
+			self.check()
+					.equals(TokenKind::SemiColon)
+					.expects("expected semi-colon after declaration statement")
+					.advance()?;
+			Some(Stmt::Decl { span })
+		} else {
+			let expr = self.parse_expr()?;
+			self.check()
+					.equals(TokenKind::SemiColon)
+					.expects("expected semi-colon after expression statement")
+					.advance()?;
+			Some(Stmt::Expr { expr })
+		}
 	}
 
 	/// Parses a single expression.
 	pub fn parse_expr(&mut self) -> Option<Expr> {
-		self.parse_expr_terminal()
+		self.parse_expr_literal()
 	}
 
-	/// Parses expression literals and identifiers.
-	pub fn parse_expr_terminal(&mut self) -> Option<Expr> {
+	/// Parses expression literals.
+	pub fn parse_expr_literal(&mut self) -> Option<Expr> {
 		if let Some(literal) = self.check()
 				.satisfies(TokenKind::is_literal)
 				.advance() {
@@ -60,7 +73,14 @@ impl<'a, 'e> Parser<'a, 'e> {
 				TokenKind::Literal(LiteralKind::Integer) => Expr::Integer { span },
 				_ => unreachable!()
 			})
-		} else if self.check()
+		} else {
+			self.parse_expr_variable()
+		}
+	}
+
+	/// Parses expression identifiers.
+	pub fn parse_expr_variable(&mut self) -> Option<Expr> {
+		if self.check()
 				.satisfies(TokenKind::is_identifier)
 				.advance()
 				.is_some() {
@@ -191,6 +211,7 @@ pub type Block = Vec<Stmt>;
 /// A recursive enum which stores statement information.
 #[derive(Debug, Clone)]
 pub enum Stmt {
+	Decl { span : Span },
 	Expr { expr : Expr },
 	NoOp
 }
