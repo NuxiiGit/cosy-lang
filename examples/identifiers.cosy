@@ -18,3 +18,8 @@ let a %_gain b = a * 100.0 / b;
 if 15 %_gain 12 > 30.0 {
 	print("more than 30% gain");
 }
+
+-- prime identifiers
+var x   = 1; -- x
+var x'  = 2; -- x prime
+var x'' = 3; -- x prime-prime
