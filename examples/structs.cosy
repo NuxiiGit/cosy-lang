@@ -4,6 +4,18 @@ var user = struct {
 	score = 103
 };
 
+-- tuples
+var tuple = (1, 2);
+
+{- Tuples are simply structs with anonymous fields:
+ - |	
+ - |	data Tuple2 'a 'b = struct {
+ - |		item1 : 'a,
+ - |		item2 : 'b
+ - |	}
+ - |	
+ -}
+
 -- new type
 data Vec2 = struct {
 	x : Float,
