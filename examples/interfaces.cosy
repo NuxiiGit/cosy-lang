@@ -38,5 +38,8 @@ instance String {
 }
 
 -- method call
-var hello_world = "hello ".+("world");
-var hello_world' = String::+("hello ")("world"); -- equivalent
+var hello_world = "hello".+("world");
+var hello_world' = String::+("hello")("world"); -- equivalent
+
+-- "pseudo operator"
+var hello_world'' = "hello" .+ "world"; -- equivalent to previous examples
