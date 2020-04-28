@@ -1,19 +1,19 @@
 -- object class
 class Truthy 'a {
-    truthy : 'a -> bool;
+    truthy : 'a -> bool
 }
 
 -- object implementations
 instance Truthy i32 {
-	truthy x = x != 0;
+	truthy x = x != 0
 }
 
 instance Truthy bool {
-    truthy x = x;
+    truthy x = x
 }
 
 instance Truthy String {
-	truthy x = x != "";
+	truthy x = x != ""
 }
 
 if truthy $ 12 - 3 {
@@ -50,17 +50,17 @@ boolean_eval (~) a b = truthy a ~ truthy b;
 
 -- casting
 class Conversion 'from 'to {
-	cast : 'from -> 'to;
+	cast : 'from -> 'to
 }
 
 instance Conversion bool i32 {
 	-- cast : bool -> i32
-	cast x = if x { 1 } else { 0 };
+	cast x = if x { 1 } else { 0 }
 }
 
 instance Conversion i32 bool {
 	-- cast : i32 -> bool
-	cast x = x > 0;
+	cast x = x > 0
 }
 
 var bool_as_int = cast true : i32;

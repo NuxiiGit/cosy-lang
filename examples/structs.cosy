@@ -12,7 +12,7 @@ var tuple = (1, 2);
  - |	data Tuple2 'a 'b = struct {
  - |		item1 : 'a,
  - |		item2 : 'b
- - |	}
+ - |	};
  - |	
  -}
 
@@ -23,7 +23,7 @@ data Point = (f32, f32);
 
 -- type variants / tagged unions
 data Error {
-	Note (String),
+	Note String,
 	Warning,
 	Fatal
 }

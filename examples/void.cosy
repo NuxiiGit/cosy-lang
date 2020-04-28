@@ -1,7 +1,7 @@
 -- void type is used for non-terminating programs
 let error (message : String) : void {
 	print message;
-	exit()
+	exit ()
 }
 
 -- some control structures may also have a type of `void`
@@ -19,9 +19,6 @@ let program () : Result void Error {
 
 -- custom exception handler using absurd
 match program () {
-	Ok x => absurd x;
-	Err exception => {
-		-- errors occured
-		report exception;
-	}
+	Ok x => absurd x,
+	Err exception => report exception
 }
