@@ -1,8 +1,8 @@
--- normal comment
+-- line comment
 
 -- escaped comment \
    to multiple lines
 
-{-
-	block comment
--}
+{- block comment -}
+
+{- {- nested -} block comment -}
