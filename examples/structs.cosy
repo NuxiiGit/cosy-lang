@@ -17,10 +17,7 @@ var tuple = (1, 2);
  -}
 
 -- new type
-data Vec2 = struct {
-	x : Float,
-	y : Float
-};
+data Vec2 = struct { x : Float, y : Float };
 
 data Point = (Float, Float);
 
