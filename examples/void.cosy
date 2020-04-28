@@ -1,0 +1,14 @@
+-- void type is used for non-terminating programs
+let error (message : String) : void {
+	print message;
+	exit()
+}
+
+-- some control structures may also have a type of `void`
+var a : void = repeat { };
+var b : void = continue;
+var c : void = return;
+var d : void = break;
+
+-- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
+let absurd (x : void) : 'a = absurd x;
