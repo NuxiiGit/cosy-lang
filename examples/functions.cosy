@@ -42,3 +42,6 @@ let sequent_style
 		------------
 		: Bool
 	= length s == n
+
+-- generic function which just returns the value itself
+let id (x : 'a) : 'a = x
