@@ -1,20 +1,23 @@
 -- function definition
-let max (a : Int) (b : Int) : Int = if a > b then a else b
+let max (a : Int) (b : Int) : Int = if a > b { a } else { b };
 
--- function application|
+-- function application
 var greatest = max 3 4;
 
 -- lambda function
 let lambda : Int -> Int = \x -> x * 2;
 
 -- block lambda function
-let lambda' : Int -> Int = \x {
+let lambda' : Int -> Int = \x -> {
 	return x + x;
 };
 
 -- delayed function definition
 var max' : Int -> Int -> Int;
 max' = \a \b -> max a b;
+
+-- nullary function (pass-by-name)
+var message : -> String = -> shuffle "hello world";
 
 -- currying
 let positive : Int -> Int = max 1;
