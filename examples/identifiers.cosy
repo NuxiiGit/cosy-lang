@@ -9,14 +9,14 @@ let £ = 12;
 let € = 3;
 
 if £ + € > 15 {
-	print("too long");
+	print "too long";
 }
 
 -- mixed identifiers
 let a %_gain b = a * 100.0 / b;
 
 if 15 %_gain 12 > 30.0 {
-	print("more than 30% gain");
+	print "more than 30% gain";
 }
 
 -- prime identifiers

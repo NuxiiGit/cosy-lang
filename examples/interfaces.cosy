@@ -1,14 +1,14 @@
 -- object class
 class Truthy 'a {
-    truthy : 'a -> Bool
+    truthy : 'a -> bool
 }
 
 -- object implementations
-instance Truthy Integer {
+instance Truthy i32 {
 	truthy x = x != 0
 }
 
-instance Truthy Boolean {
+instance Truthy bool {
     truthy x = x
 }
 
@@ -38,12 +38,12 @@ instance String {
 }
 
 -- method call
-var hello_world = "hello".+("world");
-var hello_world' = String::+("hello")("world"); -- equivalent
+var hello_world = "hello".+ "world";
+var hello_world' = String::+ "hello" "world"; -- equivalent
 
 -- "pseudo operator"
 var hello_world'' = "hello" .+ "world"; -- equivalent to previous examples
 
 -- class constraints
-let boolean_eval : {Truthy 'a} (Bool -> Bool -> Bool) -> 'a -> 'a -> Bool;
+let boolean_eval : {Truthy 'a} (bool -> bool -> bool) -> 'a -> 'a -> bool;
 boolean_eval (~) a b = truthy a ~ truthy b;

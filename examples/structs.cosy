@@ -17,13 +17,13 @@ var tuple = (1, 2);
  -}
 
 -- new type
-data Vec2 = struct { x : Float, y : Float };
+data Vec2 = struct { x : f32, y : f32 };
 
-data Point = (Float, Float);
+data Point = (f32, f32);
 
 -- type variants / tagged unions
 data Error {
-	Note(String),
+	Note (String),
 	Warning,
 	Fatal
 }
@@ -33,9 +33,9 @@ type Empty = ();
 
 -- type constructors
 var vec2 = Vec2 struct { x = 2.0, y = 4.2 };
-var point = Point(3.0, 2.0);
+var point = Point (3.0, 2.0);
 var error = Error::Warning;
-var error' = Error::Note("something is not right");
+var error' = Error::Note "something is not right";
 
 -- setting an object member
 a.x = 5.0;
