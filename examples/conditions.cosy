@@ -9,3 +9,9 @@ if condition {
 } else {
 	other_stuff();
 }
+
+-- match statement
+match condition {
+	true => thing_a();
+	false => thing_b();
+}
