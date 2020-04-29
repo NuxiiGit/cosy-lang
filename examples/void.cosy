@@ -4,6 +4,12 @@ let error (message : String) : void {
 	exit ()
 }
 
+{- Although `void` will be a primitive type, custom void types can be created using variant types:
+ - |	
+ - |	data Void { }
+ - |	
+ -}
+
 -- some control structures may also have a type of `void`
 var a : void = repeat { };
 var b : void = continue;
