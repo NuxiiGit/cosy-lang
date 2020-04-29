@@ -34,15 +34,15 @@ let key = secret_key;           -- does not compile
 
 -- mutual recursion
 let {
-	is_even(n) = if n == 0 then true  else is_odd(n),
-	is_odd(n)  = if n == 0 then false else is_even(n)
+	is_even n = if n == 0 { true  } else { is_odd  n },
+	is_odd  n = if n == 0 { false } else { is_even n }
 }
 
 {- Note:
  - This would not be possible if you did it like
  - |
- - |	let is_even(n) = .. ;
- - |	let is_odd(n) = .. ;
+ - |	let is_even n = .. ;
+ - |	let is_odd  n = .. ;
  - |
  - 
  - because `is_even` doesn't know about `is_odd` until later.
