@@ -1,5 +1,5 @@
 -- arrays are pointers paired with their lengths
-var arr = [1, 2, 3];
+var arr : [i32] = [1, 2, 3];
 
-var value = arr !! 1;
+var value : &i32 = arr !! 1;
 arr !! 1 = 3;
