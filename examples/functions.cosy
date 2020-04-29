@@ -41,7 +41,7 @@ let sequent_style
 		(s : String)
 		------------
 		: bool
-	= length s == n
+	= length s == n;
 
 -- generic function which just returns the value itself
-let id (x : 'a) : 'a = x
+let id (x : 'a) : 'a = x;

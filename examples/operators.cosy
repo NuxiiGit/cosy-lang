@@ -85,8 +85,8 @@ var a?+ = a + 1;
  - A specific use is for the option type, where `?` will be its
  - name. Illustration:
  - |
- - |	enum 'A? {
- - |		Some 'A,
+ - |	enum 'a? {
+ - |		Some 'a,
  - |		None
  - |	}
  - |

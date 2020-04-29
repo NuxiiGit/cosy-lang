@@ -13,11 +13,11 @@ var d : void = break;
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
 let absurd (x : void) : 'a = absurd x;
 
+-- custom exception handler using absurd
 let program () : Result void Error {
 	...
 }
 
--- custom exception handler using absurd
 match program () {
 	Ok x => absurd x,
 	Err exception => report exception
