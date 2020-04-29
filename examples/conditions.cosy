@@ -12,6 +12,6 @@ if condition {
 
 -- match statement
 match condition {
-	true => thing_a ();
-	false => thing_b ();
+	true = thing_a ();
+	false = thing_b ();
 }

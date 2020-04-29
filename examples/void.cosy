@@ -19,6 +19,9 @@ let program () : Result void Error {
 }
 
 match program () {
-	Ok x => absurd x,
-	Err exception => report exception
+	Ok x = absurd x,
+	Err exception {
+		-- errors occurred
+		report exception
+	}
 }
