@@ -51,3 +51,9 @@ let sequent_style
 
 -- generic function which just returns the value itself
 let id (x : 'a) : 'a = x;
+
+-- functional type functions
+let concat xss = match xss {
+	[] = [],
+	[xs, ..xss] = xs ++ concat xss
+}
