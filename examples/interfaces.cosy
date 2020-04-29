@@ -46,7 +46,7 @@ var hello_world'' = "hello" .+ "world"; -- equivalent to previous examples
 
 -- class constraints
 let boolean_eval : {Truthy 'a} (bool -> bool -> bool) -> 'a -> 'a -> bool;
-boolean_eval (~) a b = truthy a ~ truthy b;
+boolean_eval = \(~) \a \b -> truthy a ~ truthy b;
 
 -- casting
 class Conversion 'from 'to {
