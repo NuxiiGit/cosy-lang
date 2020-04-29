@@ -56,4 +56,4 @@ let id (x : 'a) : 'a = x;
 let concat xss = case xss {
 	[] => [],
 	[xs, ..xss] => xs ++ concat xss
-}
+};
