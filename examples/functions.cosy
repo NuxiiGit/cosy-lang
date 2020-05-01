@@ -36,10 +36,13 @@ let wizard () {
 }
 
 -- placeholder arguments
-var array_decrement = filter (-1);    -- this doesn't give the result you would expect; calling operators prefixed subsitutes the left-most argument first
-                                      -- so you end up with `filter (\x -> 1 - x)` which is incorrect
-var array_decrement = filter (_ - 1); -- this gives the correct result, subsituted into the second parameter of the operator section
-                                      -- so you end up with `filter (\x -> x - 1)` which is correct
+var array_decrement = filter ("prefix" + _);
+
+{- The `_` represents a location where an argument can be placed.
+ - Since operators always apply the right-hand-side parameter first, this
+ - behaviour is required to partially apply the left-hand-side of an operator
+ - instead.
+ -}
 
 -- sequent style formatting seen in proof languages
 let sequent_style
