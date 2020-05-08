@@ -25,6 +25,12 @@ data Error {
 	Fatal
 }
 
+-- either type
+data 'a | 'b {
+	Left 'a,
+	Right 'b
+}
+
 -- type alias
 type Empty = ();
 
