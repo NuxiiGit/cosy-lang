@@ -14,9 +14,12 @@ var tuple = (1, 2);
  -}
 
 -- new type
-data Vec2 = struct { x : f32, y : f32 };
+data Vec2 = Vec2 struct {
+	x : f32,
+	y : f32
+};
 
-data Point = (f32, f32);
+data Point = Point (f32, f32);
 
 -- type variants / tagged unions
 data Error {
