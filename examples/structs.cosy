@@ -6,7 +6,7 @@ var tuple = (1, 2);
 
 {- Tuples are simply structs with anonymous fields:
  - |	
- - |	data Tuple2 'a 'b = struct {
+ - |	data Tuple2 'a 'b = Tuple2 {
  - |		item1 : 'a,
  - |		item2 : 'b
  - |	};
@@ -14,7 +14,7 @@ var tuple = (1, 2);
  -}
 
 -- new type
-data Vec2 = Vec2 struct {
+data Vec2 = Vec2 {
 	x : f32,
 	y : f32
 };
