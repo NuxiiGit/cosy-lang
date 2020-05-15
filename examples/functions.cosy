@@ -9,7 +9,7 @@ let f : i32 -> i32 = \x -> x * 2;
 let f' : i32 -> i32 = \x -> {
 	print(x);
 	x + x
-}
+};
 
 -- delayed function definition
 var max' : (i32, i32) -> i32;
@@ -30,7 +30,7 @@ var greatest' = max_curried |> 2 |> 1;
 -- procedural style functions
 let izard(a : str, b : str) : str = {
 	return a ++ "izard" ++ b;
-}
+};
 
 -- sequent style functions
 let proof (n : i32)
@@ -43,7 +43,7 @@ let proof (n : i32)
 let concat(xss : [['a]]) : ['a] = case xss {
 	[]          = [],
 	[xs, ..xss] = xs ++ concat(xss)
-}
+};
 
 -- operator blocks (allow the use of expressions or non-operator identifiers as operators)
 let clamp(x : i32)(max : i32)(min : i32) : i32 = if x > max { max } else if x < min { min } else { x };
