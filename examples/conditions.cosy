@@ -9,3 +9,18 @@ if condition {
 } else {
 	other_stuff();
 }
+
+-- while loop
+while condition {
+	stuff();
+}
+
+-- infinite loops
+repeat {
+	stuff();
+}
+
+-- repeat while
+repeat {
+	stuff();
+} while condition;
