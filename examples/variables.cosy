@@ -1,0 +1,28 @@
+-- variable
+var foo : i32 = 3;
+
+-- constant
+let bar = 'A';
+
+-- delayed variable instantiation
+var i : i32;
+i = 1;
+
+-- block declaration
+var { a = 1, b = "nice" }
+
+-- block declaration mutual recursion
+let {
+	is_even(n : i32) : bool = if n == 0 { true  } else { is_odd  n },
+	is_odd(n : i32) : bool  = if n == 0 { false } else { is_even n },
+}
+
+-- hidden functions with where clause
+let {
+	public() : str = secret(secret_key),
+} where {
+	secret(key : str) : str = "shh, it's " ++ key,
+	secret_key : str = "baby"
+}
+let result = public_function();  -- compiles
+let key = secret_key;            -- does not compile
