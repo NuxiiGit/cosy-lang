@@ -1,0 +1,22 @@
+-- alphabetic
+var five = 5;
+
+-- alphanumeric
+var pi2 = 2 * 3.14;
+
+-- underscores
+var player_age = 18;
+
+-- operator identifiers
+var @~@;
+
+-- mixed identifiers
+let a %_gain b = a * 100.0 / b;
+if 15 %_gain 12 > 30.0 {
+	print("more than 30% gain");
+}
+
+-- prime identifiers
+var x   = 0;       -- x
+var x'  = x  + 1;  -- x prime
+var x'' = x' + 1;  -- x prime-prime
