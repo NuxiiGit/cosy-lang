@@ -1,37 +1,20 @@
--- anonymous structs
-var user = { name = "frank", score = 103 };
-
 -- tuples
 var tuple = (1, 2);
 
-{- Tuples are simply structs with anonymous fields:
- - |	
- - |	data Tuple2 'a 'b = Tuple2 {
- - |		item1 : 'a,
- - |		item2 : 'b
- - |	};
- - |	
- -}
-
 -- new type
-data Vec2 = Vec2 {
+postulate Vec2 = {  }
+struct Vec2 {
 	x : f32,
 	y : f32
-};
+}
 
 data Point = Point (f32, f32);
 
 -- type variants / tagged unions
-data Error {
+variant Error {
 	Note String,
 	Warning,
 	Fatal
-}
-
--- either type
-data 'a | 'b {
-	Left 'a,
-	Right 'b
 }
 
 -- type alias
