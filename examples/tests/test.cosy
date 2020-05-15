@@ -1,3 +1,0 @@
-if !$check_something(&"nice", £ $ <) {
-    // correct
-}
