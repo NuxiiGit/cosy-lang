@@ -41,8 +41,8 @@ let proof (n : i32)
 
 -- functional style functions
 let concat(xss : [['a]]) : ['a] = case xss {
-	[]          -> [],
-	[xs, ..xss] -> xs ++ concat(xss)
+	[]          = [],
+	[xs, ..xss] = xs ++ concat(xss)
 }
 
 -- operator blocks (allow the use of expressions or non-operator identifiers as operators)
