@@ -1,6 +1,6 @@
 -- void type is used for non-terminating programs
-let error(message : String) : void {
-	print message;
+let error(message : str) : void = {
+	print(message);
 	exit()
 }
 
@@ -11,4 +11,4 @@ var c : void = return;
 var d : void = break;
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
-let absurd(x : void) : 'a = absurd x;
+let absurd(x : void) : 'a = absurd(x);
