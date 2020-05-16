@@ -6,7 +6,24 @@ use std::mem;
 /// Converts a string into individual tokens.
 pub struct Lexer<'a> {
 	reader : CharReader<'a>,
-	peeked : TokenKind,
+	peeked : TokenKind
+}
+impl Lexer<'_> {
+	/// Returns a reference to the current peeked token.
+	pub fn token(&self) -> &TokenKind {
+		&self.peeked
+	}
+
+	/// Returns ownership of the peeked token.
+	pub fn advance(&mut self) -> TokenKind {
+		let next = self.reader.generate_token();
+		mem::replace(&mut self.peeked, next)
+	}
+
+	/// Returns the span of the peeked token.
+	pub fn span(&self) -> &Span {
+		self.reader.span()
+	}
 }
 impl<'a> From<&'a str> for Lexer<'a> {
 	fn from(src : &'a str) -> Self {
@@ -22,15 +39,45 @@ impl CharReader<'_> {
 	'search:
 		loop {
 			self.clear_substr();
-			let next = self.next();
-			let peek = self.peek();
-			// skip any preceding 
-			let kind = match next {
+			let kind = match self.next() {
 				// whitespace
 				x if x.is_valid_whitespace() => {
 					self.advance_while(CharKind::is_valid_whitespace);
 					continue 'search;
 				}
+				// line comments
+				CharKind::Minus if matches!(self.peek(), CharKind::Minus) => {
+					self.advance_while(|x| !CharKind::is_valid_newline(x));
+					continue 'search;
+				},
+				// block comments
+				CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => {
+					let mut depth : u8 = 1;
+					while depth >= 1 && depth < 255 {
+						match self.next() {
+							CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => depth += 1,
+							CharKind::Minus if matches!(self.peek(), CharKind::RightBrace) => depth -= 1,
+							CharKind::EoF => break,
+							_ => ()
+						}
+					}
+					let reason = if depth >= 1 {
+						"unterminated block comment"
+					} else if depth == 255 {
+						"nested block comment exceeds depth limit"
+					} else {
+						continue 'search
+					};
+					TokenKind::Issue { reason }
+				},
+				// individual symbols
+				CharKind::LeftParen => TokenKind::LeftParen,
+				CharKind::RightParen => TokenKind::RightParen,
+				CharKind::LeftBrace => TokenKind::LeftBrace,
+				CharKind::RightBrace => TokenKind::RightBrace,
+				CharKind::SemiColon => TokenKind::SemiColon,
+				CharKind::Backtick => TokenKind::Backtick,
+				CharKind::EoF => TokenKind::EoF,
 				// unknown symbol
 				_ => TokenKind::Issue { reason : "unknown symbol" }
 			};

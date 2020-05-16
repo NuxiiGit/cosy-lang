@@ -77,7 +77,7 @@ impl<'a> From<&'a str> for CharReader<'a> {
 /// Represents various kinds of character types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum CharKind {
-	NewLine,
+	EoL,
 	Tab,
 	Space,
 	Digit,
@@ -123,7 +123,7 @@ impl CharKind {
 	pub fn identify(c : char) -> CharKind {
 		use CharKind::*;
 		match c {
-			'\n' => NewLine,
+			'\n' => EoL,
 			'\t' => Tab,
 			x if x.is_whitespace() => Space,
 			x if x.is_ascii_digit() => Digit,
@@ -170,14 +170,9 @@ impl CharKind {
 		matches!(self, Tab | Space) || self.is_valid_newline()
 	}
 
-	/// Returns whether the char is a valid line ending.
-	pub fn is_valid_ending(&self) -> bool {
-		matches!(self, CharKind::EoF) || self.is_valid_newline()
-	}
-
 	/// Returns whether the char is valid new line character.
 	pub fn is_valid_newline(&self) -> bool {
-		matches!(self, CharKind::NewLine { .. })
+		matches!(self, CharKind::EoL)
 	}
 
 	/// Returns whether the char is a valid graphic.

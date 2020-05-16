@@ -4,32 +4,27 @@
 
 //use cosyc::session::Session;
 
-//use cosyc::parser::lexer::*;
+use cosyc::parser::lexer::*;
 //use cosyc::parser::*;
 //use cosyc::issues::*;
-
-use cosyc::scanner::CharReader;
 
 use std::fs;
 use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "1; var a;";
-	let mut scanner = CharReader::from(src);
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
-
+	let src = "1;``'(){} var a;";
+	let mut lexer = Lexer::from(src);
+	loop {
+		let span = lexer.span();
+		let token = lexer.token();
+		if let TokenKind::EoF = token {
+			break;
+		}
+		println!("token={:?}, span={:?}, str={:?}", token, span, &src[span.begin..span.end]);
+		lexer.advance();
+	}
+	
 	/*let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
 	let mut parser = Parser::new(&mut issues, lexer);
