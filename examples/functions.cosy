@@ -48,3 +48,8 @@ let concat(xss : [['a]]) : ['a] = case xss {
 -- operator blocks (allow the use of expressions or non-operator identifiers as operators)
 let clamp(x : i32)(max : i32)(min : i32) : i32 = if x > max { max } else if x < min { min } else { x };
 var percent = 0 `clamp(x)` 100;
+
+-- impure function
+let impure explode(msg : str) : void = {
+	print("EXPLOSION! " ++ msg);  -- printing a message is an impure side-effect
+}
