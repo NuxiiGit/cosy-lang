@@ -1,6 +1,7 @@
 use crate::span::Span;
 
 use std::str::CharIndices;
+use std::mem;
 
 pub struct CharReader<'a> {
 	src : &'a str,
@@ -9,8 +10,43 @@ pub struct CharReader<'a> {
 	span : Span
 }
 impl<'a> CharReader<'a> {
-	/// Creates a new character scanner from this string.
-	pub fn from(src : &'a str) -> Self {
+	/// Peeks at the next `CharKind` in the string.
+	pub fn peek(&self) -> &CharKind {
+		&self.current
+	}
+
+	/// Advances the scanner and returns the next `CharKind`.
+	pub fn next(&mut self) -> CharKind {
+		if self.current.is_valid_newline() {
+			self.span.line += 1;
+		}
+		let future = if let Some((i, c)) = self.chars.next() {
+			self.span.end = i;
+			CharKind::identify(c)
+		} else {
+			self.span.end = self.src.len();
+			CharKind::EoF
+		};
+		mem::replace(&mut self.current, future)
+	}
+
+	/// Returns the current substring.
+	pub fn substr(&self) -> &'a str {
+		&self.src[self.span.begin..self.span.end]
+	}
+
+	/// Clears the current substring.
+	pub fn clear_substr(&mut self) {
+		self.span.begin = self.span.end;
+	}
+	
+	/// Returns the current span.
+	pub fn span(&self) -> &Span {
+		&self.span
+	}
+}
+impl<'a> From<&'a str> for CharReader<'a> {
+	fn from(src : &'a str) -> Self {
 		let mut chars = src.char_indices();
 		let current = chars
 				.next()
@@ -28,9 +64,7 @@ impl<'a> CharReader<'a> {
 /// Represents various kinds of character types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum CharKind {
-	Cr,
-	Lf,
-	CrLf,
+	NewLine,
 	Tab,
 	Space,
 	Digit,
@@ -76,8 +110,7 @@ impl CharKind {
 	pub fn identify(c : char) -> CharKind {
 		use CharKind::*;
 		match c {
-			'\r' => Cr,
-			'\n' => Lf,
+			'\n' => NewLine,
 			'\t' => Tab,
 			x if x.is_whitespace() => Space,
 			x if x.is_ascii_digit() => Digit,
@@ -131,8 +164,7 @@ impl CharKind {
 
 	/// Returns whether the char is valid new line character.
 	pub fn is_valid_newline(&self) -> bool {
-		use CharKind::*;
-		matches!(self, Cr | Lf | CrLf)
+		matches!(self, CharKind::NewLine { .. })
 	}
 
 	/// Returns whether the char is a valid graphic.

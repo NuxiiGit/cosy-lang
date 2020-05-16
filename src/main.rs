@@ -8,12 +8,28 @@
 //use cosyc::parser::*;
 //use cosyc::issues::*;
 
+use cosyc::scanner::CharReader;
+
 use std::fs;
 use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
 	let src = "1; var a;";
+	let mut scanner = CharReader::from(src);
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+	println!("{:?}\tspan={:?}", scanner.next(), scanner.span());
+
 	/*let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
 	let mut parser = Parser::new(&mut issues, lexer);
