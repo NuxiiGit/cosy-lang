@@ -1,116 +1,38 @@
 use crate::span::Span;
 
 use std::str::CharIndices;
-use std::mem;
 
-/// A struct which converts a script into individual character spans.
-pub struct Scanner<'a> {
+pub struct CharReader<'a> {
 	src : &'a str,
 	chars : CharIndices<'a>,
-	previous : CharKind,
 	current : CharKind,
-	cursor : usize,
 	span : Span
 }
-impl<'a> Scanner<'a> {
-	/// Creates a new parser session from this source code.
+impl<'a> CharReader<'a> {
+	/// Creates a new character scanner from this string.
 	pub fn from(src : &'a str) -> Self {
 		let mut chars = src.char_indices();
 		let current = chars
 				.next()
-				.map(|(_, x)| CharKind::identify(x))
+				.map(|(_, snd)| CharKind::identify(snd))
 				.unwrap_or(CharKind::EoF);
 		Self {
 			src,
 			chars,
-			previous : CharKind::BoF,
 			current,
-			cursor : 0,
-			span : Span {
-				line : 1,
-				begin : 0,
-				end : 0
-			}
+			span : Span::new()
 		}
-	}
-
-	/// Advances the scanner whilst some predicate holds.
-	/// Potentially dangerous if the `EoF` character always satisfies your predicate.
-	pub fn advance_while(&mut self, f : fn(&CharKind) -> bool) {
-		while f(self.peek()) {
-			self.next();
-		}
-	}
-
-	/// Advances the scanner until some predicate holds.
-	/// Potentially dangerous if the `EoF` character token does not satisfy your predicate.
-	pub fn advance_until(&mut self, f : fn(&CharKind) -> bool) {
-		while !f(self.peek()) {
-			self.next();
-		}
-	}
-
-	/// Returns the current peeked character.
-	pub fn peek(&self) -> &CharKind {
-		&self.previous
-	}
-
-	/// Advances the session scanner.
-	pub fn next(&mut self) -> CharKind {
-		if self.previous.is_valid_newline() {
-			self.span.line += 1;
-		}
-		self.span.end = self.cursor;
-		let next = if let Some((i, c)) = self.chars.next() {
-			self.cursor = i;
-			CharKind::identify(c)
-		} else {
-			self.cursor = self.src.len();
-			CharKind::EoF
-		};
-		let option = match (&self.current, &next) {
-			(CharKind::Minus, CharKind::Minus) => Some(CharKind::DoubleDash),
-			(CharKind::LeftBrace, CharKind::Minus) => Some(CharKind::LeftDashedBrace),
-			(CharKind::Minus, CharKind::RightBrace) => Some(CharKind::RightDashedBrace),
-			(CharKind::Minus, CharKind::GreaterThan) => Some(CharKind::RightArrow),
-			(CharKind::LessThan, CharKind::Minus) => Some(CharKind::LeftArrow),
-			(CharKind::Colon, CharKind::Colon) => Some(CharKind::DoubleColon),
-			(CharKind::Cr, CharKind::Lf) => Some(CharKind::CrLf),
-			_ => None
-		};
-		let current = if let Some(kind) = option {
-			let (i, current) = self.chars
-				.next()
-				.map(|(i, x)| (i, CharKind::identify(x)))
-				.unwrap_or((self.src.len(), CharKind::EoF));
-			self.cursor = i;
-			self.current = current;
-			kind
-		} else {
-			mem::replace(&mut self.current, next)
-		};
-		mem::replace(&mut self.previous, current)
-	}
-
-	/// Returns the current substring.
-	pub fn substr(&self) -> &'a str {
-		&self.src[self.span.begin..self.span.end]
-	}
-
-	/// Clears the current substring.
-	pub fn clear_substr(&mut self) {
-		self.span.begin = self.span.end;
-	}
-	
-	/// Returns the current span.
-	pub fn span(&self) -> &Span {
-		&self.span
 	}
 }
 
-/// An enum which stores character kinds.
+/// Represents various kinds of character types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum CharKind {
+	Cr,
+	Lf,
+	CrLf,
+	Tab,
+	Space,
 	Digit,
 	Graphic,
 	Underscore,
@@ -142,37 +64,12 @@ pub enum CharKind {
 	Minus,
 	Tilde,
 	Asterisk,
-	ForwardSlash,
-	BackSlash,
+	Solidus,
+	ReverseSolidus,
 	Percent,
-	/// Double dash, `--`.
-	DoubleDash,
-	/// Left brace followed by a minus sign, `{-`.
-	LeftDashedBrace,
-	/// Right brace following a minus sign, `-}`.
-	RightDashedBrace,
-	/// Left arrow, specifically `←`.
-	LeftArrow,
-	/// Right arrow, specifically `→`.
-	RightArrow,
-	/// Double colon, specifically `⸬`.
-	DoubleColon,
-	/// Carriage return, `\r`.
-	Cr,
-	/// Line feed, `\n`.
-	Lf,
-	/// Used to make sure windows files dont advance two lines per new line.
-	CrLf,
-	/// Any other white space or control character.
-	Space,
-	/// Beginning of the file.
-	/// Specifically used to help detect `CrLf`.
-	BoF,
-	/// End of the file.
-	/// Specifically used when there are no more characters in the stream.
-	EoF,
 	/// Any other unicode character or symbol.
-	Other
+	Other,
+	EoF
 }
 impl CharKind {
 	/// Converts a character into its respective `CharKind`.
@@ -181,6 +78,7 @@ impl CharKind {
 		match c {
 			'\r' => Cr,
 			'\n' => Lf,
+			'\t' => Tab,
 			x if x.is_whitespace() => Space,
 			x if x.is_ascii_digit() => Digit,
 			x if x.is_alphanumeric() => Graphic,
@@ -213,12 +111,9 @@ impl CharKind {
 			'-' => Minus,
 			'~' => Tilde,
 			'*' => Asterisk,
-			'/' => ForwardSlash,
-			'\\' => BackSlash,
+			'/' => Solidus,
+			'\\' => ReverseSolidus,
 			'%' => Percent,
-			'←' => LeftArrow,
-			'→' => RightArrow,
-			'⸬' => DoubleColon,
 			_ => Other
 		}
 	}
@@ -226,7 +121,7 @@ impl CharKind {
 	/// Returns whether the char is valid whitespace.
 	pub fn is_valid_whitespace(&self) -> bool {
 		use CharKind::*;
-		matches!(self, Space | BoF) || self.is_valid_newline()
+		matches!(self, Tab | Space) || self.is_valid_newline()
 	}
 
 	/// Returns whether the char is a valid line ending.
@@ -253,22 +148,27 @@ impl CharKind {
 	/// Returns whether the char is a valid operator.
 	pub fn is_valid_operator(&self) -> bool {
 		use CharKind::*;
-		matches!(self,
-				Bar |
-				Caret |
-				Ampersand |
-				Bang |
-				Hook |
-				Equals |
-				LessThan |
-				GreaterThan |
-				Plus |
-				Minus |
-				Tilde |
-				Asterisk |
-				ForwardSlash |
-				BackSlash |
-				Percent |
-				Other)
+		matches!(self
+				, Dot
+				| Colon
+				| Dollar
+				| Hashtag
+				| Address
+				| Bar
+				| Caret
+				| Ampersand
+				| Bang
+				| Hook
+				| Equals
+				| LessThan
+				| GreaterThan
+				| Plus
+				| Minus
+				| Tilde
+				| Asterisk
+				| Solidus
+				| ReverseSolidus
+				| Percent
+				| Other)
 	}
 }

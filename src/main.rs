@@ -4,9 +4,9 @@
 
 //use cosyc::session::Session;
 
-use cosyc::parser::lexer::*;
-use cosyc::parser::*;
-use cosyc::issues::*;
+//use cosyc::parser::lexer::*;
+//use cosyc::parser::*;
+//use cosyc::issues::*;
 
 use std::fs;
 use std::time::Instant;
@@ -14,7 +14,7 @@ use std::time::Instant;
 fn main() {
 	let now = Instant::now();
 	let src = "1; var a;";
-	let lexer = Lexer::from(src);
+	/*let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
 	let mut parser = Parser::new(&mut issues, lexer);
 	if let Some(prog) = parser.parse_program() {
@@ -25,7 +25,7 @@ fn main() {
 	println!("\nerrors:");
 	for e in issues {
 		println!("  {}", e);
-	}
+	}*/
 
 	/*let mut i = 0;
 	loop {
