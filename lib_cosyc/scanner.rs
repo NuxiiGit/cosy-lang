@@ -3,6 +3,7 @@ use crate::span::Span;
 use std::str::CharIndices;
 use std::mem;
 
+/// Iterates over characters of a string, producing useful substrings and tagged data.
 pub struct CharReader<'a> {
 	src : &'a str,
 	chars : CharIndices<'a>,

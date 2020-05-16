@@ -32,7 +32,7 @@ let (x : &var 'a) := (value : 'a) : 'a = {
 	*x = value;
 	value
 }
-if x := thing() != None {
+if x := thing() != 0 {
 	-- stuff
 }
 

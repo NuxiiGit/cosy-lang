@@ -1,6 +1,6 @@
 use std::fmt;
 
-/// A struct which stores information about some substring of a source file.
+/// Represents information about some substring of a source file.
 #[derive(Debug, Clone, Default)]
 pub struct Span {
 	pub begin : usize,
