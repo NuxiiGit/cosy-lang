@@ -58,8 +58,9 @@ impl CharReader<'_> {
 							CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => depth += 1,
 							CharKind::Minus if matches!(self.peek(), CharKind::RightBrace) => depth -= 1,
 							CharKind::EoF => break,
-							_ => ()
+							_ => continue
 						}
+						self.next();
 					}
 					let reason = if depth >= 1 {
 						"unterminated block comment"
