@@ -7,7 +7,6 @@ var greatest = max(3, 4);
 -- lambda function
 let f : i32 -> i32 = \x -> x * 2;
 let f' : i32 -> i32 = \x -> {
-	print(x);
 	x + x
 }
 

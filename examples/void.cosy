@@ -1,5 +1,5 @@
 -- void type is used for non-terminating programs
-let error(message : String) : void {
+let impure error(message : String) : void {
 	print message;
 	exit()
 }
