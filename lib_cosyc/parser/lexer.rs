@@ -11,15 +11,31 @@ pub struct Lexer<'a> {
 impl<'a> From<&'a str> for Lexer<'a> {
 	fn from(src : &'a str) -> Self {
 		let mut reader = CharReader::from(src);
-		let peeked = reader.tokenise();
+		let peeked = reader.generate_token();
 		Self { reader, peeked }
 	}
 }
 
 impl CharReader<'_> {
 	/// Returns the next token in the source.
-	pub fn tokenise(&mut self) -> TokenKind {
-		unimplemented!()
+	pub fn generate_token(&mut self) -> TokenKind {
+	'search:
+		loop {
+			self.clear_substr();
+			let next = self.next();
+			let peek = self.peek();
+			// skip any preceding 
+			let kind = match next {
+				// whitespace
+				x if x.is_valid_whitespace() => {
+					self.advance_while(CharKind::is_valid_whitespace);
+					continue 'search;
+				}
+				// unknown symbol
+				_ => TokenKind::Issue { reason : "unknown symbol" }
+			};
+			break kind;
+		}
 	}
 }
 

@@ -11,6 +11,18 @@ pub struct CharReader<'a> {
 	span : Span
 }
 impl<'a> CharReader<'a> {
+	/// Advances the reader whilst some predicate holds.
+	/// Always halts if the `EoF` character is reached.
+	pub fn advance_while(&mut self, p : fn(&CharKind) -> bool) {
+		loop {
+			match self.peek() {
+				CharKind::EoF => break,
+				x if p(x) => { self.next(); },
+				_ => break
+			}
+		}
+	}
+
 	/// Peeks at the next `CharKind` in the string.
 	pub fn peek(&self) -> &CharKind {
 		&self.current
