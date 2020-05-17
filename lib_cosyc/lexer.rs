@@ -4,32 +4,32 @@ use std::str::CharIndices;
 use std::mem;
 
 /// Iterates over characters of a string, producing useful substrings and tagged data.
-pub struct CharReader<'a> {
+pub struct Lexer<'a> {
 	src : &'a str,
 	chars : CharIndices<'a>,
 	current : CharKind,
 	span : Span
 }
-impl<'a> CharReader<'a> {
+impl<'a> Lexer<'a> {
 	/// Advances the reader whilst some predicate holds.
 	/// Always halts if the `EoF` character is reached.
 	pub fn advance_while(&mut self, p : fn(&CharKind) -> bool) {
 		loop {
-			match self.peek() {
+			match self.current() {
 				CharKind::EoF => break,
-				x if p(x) => { self.next(); },
+				x if p(x) => { self.advance(); },
 				_ => break
 			}
 		}
 	}
 
 	/// Peeks at the next `CharKind` in the string.
-	pub fn peek(&self) -> &CharKind {
+	pub fn current(&self) -> &CharKind {
 		&self.current
 	}
 
 	/// Advances the scanner and returns the next `CharKind`.
-	pub fn next(&mut self) -> CharKind {
+	pub fn advance(&mut self) -> CharKind {
 		if self.current.is_valid_newline() {
 			self.span.line += 1;
 		}
@@ -44,21 +44,21 @@ impl<'a> CharReader<'a> {
 	}
 
 	/// Returns the current substring.
-	pub fn substr(&self) -> &'a str {
+	pub fn slice(&self) -> &'a str {
 		&self.src[self.span.begin..self.span.end]
 	}
 
-	/// Clears the current substring.
-	pub fn clear_substr(&mut self) {
+	/// Clears the current span.
+	pub fn reset_span(&mut self) {
 		self.span.begin = self.span.end;
 	}
 	
-	/// Returns the current span.
+	/// Returns a reference to the current span.
 	pub fn span(&self) -> &Span {
 		&self.span
 	}
 }
-impl<'a> From<&'a str> for CharReader<'a> {
+impl<'a> From<&'a str> for Lexer<'a> {
 	fn from(src : &'a str) -> Self {
 		let mut chars = src.char_indices();
 		let current = chars
