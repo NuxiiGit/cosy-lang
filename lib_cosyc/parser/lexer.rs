@@ -79,6 +79,11 @@ impl CharReader<'_> {
 				CharKind::SemiColon => TokenKind::SemiColon,
 				CharKind::Backtick => TokenKind::Backtick,
 				CharKind::EoF => TokenKind::EoF,
+				// number literals
+				x if x.is_valid_digit() => {
+					self.advance_while(CharKind::is_valid_digit);
+					TokenKind::Literal(LiteralKind::Integer)
+				},
 				// unknown symbol
 				_ => TokenKind::Issue { reason : "unknown symbol" }
 			};
