@@ -8,10 +8,23 @@ pub struct Lexer<'a> {
 	src : &'a str,
 	chars : CharIndices<'a>,
 	current : CharKind,
-	span : Span
+	span : Span,
+	prefix_whitespace : bool
 }
 impl<'a> Lexer<'a> {
-	/// Advances the reader whilst some predicate holds.
+	/// Trims preceding whitespace characters and returns a reference to the final non-whitespace character.
+	pub fn trim_whitespace(&mut self) -> &CharKind {
+		if self.prefix_whitespace {
+			while self.current.is_valid_whitespace() {
+				self.advance();
+			}
+			self.reset_span();
+			self.prefix_whitespace = false;
+		}
+		&self.current
+	}
+
+	/// Advances the lexer whilst some predicate holds.
 	/// Always halts if the `EoF` character is reached.
 	pub fn advance_while(&mut self, p : fn(&CharKind) -> bool) {
 		loop {
@@ -28,7 +41,7 @@ impl<'a> Lexer<'a> {
 		&self.current
 	}
 
-	/// Advances the scanner and returns the next `CharKind`.
+	/// Advances the lexer and returns the next `CharKind`.
 	pub fn advance(&mut self) -> CharKind {
 		if self.current.is_valid_newline() {
 			self.span.line += 1;
@@ -40,6 +53,9 @@ impl<'a> Lexer<'a> {
 			self.span.end = self.src.len();
 			CharKind::EoF
 		};
+		if !self.prefix_whitespace && future.is_valid_whitespace() {
+			self.prefix_whitespace = true;
+		}
 		mem::replace(&mut self.current, future)
 	}
 
@@ -69,7 +85,8 @@ impl<'a> From<&'a str> for Lexer<'a> {
 			src,
 			chars,
 			current,
-			span : Span::new()
+			span : Span::new(),
+			prefix_whitespace : true
 		}
 	}
 }
