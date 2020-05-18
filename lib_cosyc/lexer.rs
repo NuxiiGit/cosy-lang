@@ -119,7 +119,7 @@ impl CharReader<'_> {
 				// end of file
 				CharKind::EoF => TokenKind::EoF,
 				// unknown symbol
-				_ => TokenKind::Issue { reason : "unknown symbol" }
+				_ => TokenKind::Unknown
 			};
 			break kind;
 		}
@@ -148,7 +148,7 @@ pub enum TokenKind {
 	Literal(LiteralKind),
 	Identifier(IdentifierKind),
 	EoF,
-	Issue { reason : &'static str }
+	Unknown
 }
 impl TokenKind {
 	/// Returns `true` if the token is a literal value.
