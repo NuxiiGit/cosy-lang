@@ -13,7 +13,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "abc_++_x'_'";
+	let src = "xXXi_wud_nvrstøp_ÜXXx";
 	let mut lexer = Lexer::from(src);
 	loop {
 		let span = lexer.span();

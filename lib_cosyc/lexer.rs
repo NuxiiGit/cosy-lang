@@ -106,13 +106,13 @@ impl CharReader<'_> {
 							break;
 						}
 					}
+					// skip comment lexeme
+					if self.holds_comment_lexeme() {
+						self.advance_while(|x| !x.is_valid_newline());
+						continue 'search;
+					}
 					// match substring for keywords
 					match self.slice() {
-						"--" => {
-							// skip line comments
-							self.advance_while(|x| !x.is_valid_newline());
-							continue 'search;
-						},
 						_ => TokenKind::Identifier(kind)
 					}
 				},

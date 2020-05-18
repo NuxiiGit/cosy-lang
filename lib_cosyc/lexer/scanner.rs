@@ -8,7 +8,9 @@ pub struct CharReader<'a> {
 	src : &'a str,
 	chars : CharIndices<'a>,
 	current : CharKind,
-	span : Span
+	span : Span,
+	/// Used to detect comment lexemes.
+	only_dashes : bool
 }
 impl<'a> CharReader<'a> {
 	/// Advances the reader whilst some predicate holds.
@@ -40,6 +42,9 @@ impl<'a> CharReader<'a> {
 			self.span.end = self.src.len();
 			CharKind::EoF
 		};
+		if self.only_dashes && !matches!(self.current, CharKind::Minus) {
+			self.only_dashes = false;
+		}
 		mem::replace(&mut self.current, future)
 	}
 
@@ -51,11 +56,17 @@ impl<'a> CharReader<'a> {
 	/// Clears the current span.
 	pub fn reset_span(&mut self) {
 		self.span.begin = self.span.end;
+		self.only_dashes = true;
 	}
 	
 	/// Returns a reference to the current span.
 	pub fn span(&self) -> &Span {
 		&self.span
+	}
+
+	/// Returns whether the current stream of characters is a comment lexeme.
+	pub fn holds_comment_lexeme(&self) -> bool {
+		self.only_dashes && self.span.end - self.span.begin > 1
 	}
 }
 impl<'a> From<&'a str> for CharReader<'a> {
@@ -69,7 +80,8 @@ impl<'a> From<&'a str> for CharReader<'a> {
 			src,
 			chars,
 			current,
-			span : Span::new()
+			span : Span::new(),
+			only_dashes : true
 		}
 	}
 }
