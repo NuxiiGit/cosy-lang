@@ -1,231 +1,163 @@
+pub mod scanner;
+
+use scanner::{ CharReader, CharKind };
+
 use crate::span::Span;
 
-use std::str::CharIndices;
 use std::mem;
 
-/// Iterates over characters of a string, producing useful substrings and tagged data.
+/// Converts a string into individual tokens.
 pub struct Lexer<'a> {
-	src : &'a str,
-	chars : CharIndices<'a>,
-	current : CharKind,
-	span : Span,
-	prefix_whitespace : bool
+	reader : CharReader<'a>,
+	current : TokenKind
 }
-impl<'a> Lexer<'a> {
-	/// Trims preceding whitespace characters and returns a reference to the final non-whitespace character.
-	pub fn trim_whitespace(&mut self) -> &CharKind {
-		if self.prefix_whitespace {
-			while self.current.is_valid_whitespace() {
-				self.advance();
-			}
-			self.reset_span();
-			self.prefix_whitespace = false;
-		}
+impl Lexer<'_> {
+	/// Returns a reference to the current peeked token.
+	pub fn token(&self) -> &TokenKind {
 		&self.current
 	}
 
-	/// Advances the lexer whilst some predicate holds.
-	/// Always halts if the `EoF` character is reached.
-	pub fn advance_while(&mut self, p : fn(&CharKind) -> bool) {
-		loop {
-			match self.current() {
-				CharKind::EoF => break,
-				x if p(x) => { self.advance(); },
-				_ => break
-			}
-		}
+	/// Returns ownership of the peeked token.
+	pub fn advance(&mut self) -> TokenKind {
+		let next = self.reader.generate_token();
+		mem::replace(&mut self.current, next)
 	}
 
-	/// Peeks at the next `CharKind` in the string.
-	pub fn current(&self) -> &CharKind {
-		&self.current
-	}
-
-	/// Advances the lexer and returns the next `CharKind`.
-	pub fn advance(&mut self) -> CharKind {
-		if self.current.is_valid_newline() {
-			self.span.line += 1;
-		}
-		let future = if let Some((i, c)) = self.chars.next() {
-			self.span.end = i;
-			CharKind::identify(c)
-		} else {
-			self.span.end = self.src.len();
-			CharKind::EoF
-		};
-		if !self.prefix_whitespace && future.is_valid_whitespace() {
-			self.prefix_whitespace = true;
-		}
-		mem::replace(&mut self.current, future)
-	}
-
-	/// Returns the current substring.
-	pub fn slice(&self) -> &'a str {
-		&self.src[self.span.begin..self.span.end]
-	}
-
-	/// Clears the current span.
-	pub fn reset_span(&mut self) {
-		self.span.begin = self.span.end;
-	}
-	
-	/// Returns a reference to the current span.
+	/// Returns the span of the peeked token.
 	pub fn span(&self) -> &Span {
-		&self.span
+		self.reader.span()
 	}
 }
 impl<'a> From<&'a str> for Lexer<'a> {
 	fn from(src : &'a str) -> Self {
-		let mut chars = src.char_indices();
-		let current = chars
-				.next()
-				.map(|(_, snd)| CharKind::identify(snd))
-				.unwrap_or(CharKind::EoF);
-		Self {
-			src,
-			chars,
-			current,
-			span : Span::new(),
-			prefix_whitespace : true
+		let mut reader = CharReader::from(src);
+		let current = reader.generate_token();
+		Self { reader, current }
+	}
+}
+
+impl CharReader<'_> {
+	/// Returns the next token in the source.
+	pub fn generate_token(&mut self) -> TokenKind {
+	'search:
+		loop {
+			self.reset_span();
+			let kind = match self.advance() {
+				// whitespace
+				x if x.is_valid_whitespace() => {
+					self.advance_while(CharKind::is_valid_whitespace);
+					continue 'search;
+				}
+				// individual symbols
+				CharKind::LeftParen => TokenKind::LeftParen,
+				CharKind::RightParen => TokenKind::RightParen,
+				CharKind::LeftBrace => TokenKind::LeftBrace,
+				CharKind::RightBrace => TokenKind::RightBrace,
+				CharKind::SemiColon => TokenKind::SemiColon,
+				CharKind::Backtick => TokenKind::Backtick,
+				// number literals
+				x if x.is_valid_digit() => {
+					self.advance_while(CharKind::is_valid_digit);
+					TokenKind::Literal(LiteralKind::Integer)
+				},
+				// end of file
+				CharKind::EoF => TokenKind::EoF,
+				// unknown symbol
+				_ => TokenKind::Issue { reason : "unknown symbol" }
+			};
+			break kind;
 		}
 	}
 }
 
-/// Represents various kinds of character types.
+/// Represents available token types.
 #[derive(PartialEq, Debug, Clone)]
-pub enum CharKind {
-	EoL,
-	Tab,
-	Space,
-	Digit,
-	Graphic,
-	Underscore,
+pub enum TokenKind {
 	LeftParen,
 	RightParen,
 	LeftBrace,
 	RightBrace,
-	LeftBox,
-	RightBox,
-	Dot,
-	Comma,
-	Colon,
 	SemiColon,
-	Dollar,
 	Backtick,
-	Hashtag,
-	Address,
-	DoubleQuote,
-	SingleQuote,
-	Bar,
-	Caret,
-	Ampersand,
-	Bang,
-	Hook,
-	Equals,
-	LessThan,
-	GreaterThan,
-	Plus,
-	Minus,
-	Tilde,
-	Asterisk,
-	Solidus,
-	ReverseSolidus,
-	Percent,
-	/// Any other unicode character or symbol.
+	Literal(LiteralKind),
+	Identifier(IdentifierKind),
+	EoF,
+	Issue { reason : &'static str }
+}
+impl TokenKind {
+	/// Returns `true` if the token is a literal value.
+	pub fn is_literal(&self) -> bool {
+		matches!(self, Self::Literal(..))
+	}
+
+	/// Returns `true` if the token is an identifier.
+	pub fn is_identifier(&self) -> bool {
+		matches!(self, Self::Identifier(..))
+	}
+
+	/// Returns `true` if the token is an alphabetic identifier.
+	pub fn is_alphanumeric(&self) -> bool {
+		matches!(self, Self::Identifier(IdentifierKind::Alphanumeric))
+	}
+
+	/// Returns `true` if the token is an operator identifier.
+	pub fn is_operator(&self) -> bool {
+		self.is_identifier() && !self.is_alphanumeric()
+	}
+
+	/// Returns `true` if the token is the end of the file.
+	pub fn is_eof(&self) -> bool {
+		matches!(self, Self::EoF)
+	}
+}
+
+/// An enum which describes available literal types.
+#[derive(PartialEq, Debug, Clone)]
+pub enum LiteralKind {
+	Integer
+}
+
+/// An enum which describes available identifier types.
+#[derive(PartialEq, Debug, Clone)]
+pub enum IdentifierKind {
+	Alphanumeric,
+	Multiplication,
+	Addition,
+	Comparison,
+	And,
+	Or,
+	Equality,
 	Other,
-	EoF
+	Application
 }
-impl CharKind {
-	/// Converts a character into its respective `CharKind`.
-	pub fn identify(c : char) -> CharKind {
-		use CharKind::*;
-		match c {
-			'\n' => EoL,
-			'\t' => Tab,
-			x if x.is_whitespace() => Space,
-			x if x.is_ascii_digit() => Digit,
-			x if x.is_alphanumeric() => Graphic,
-			'_' => Underscore,
-			'(' => LeftParen,
-			')' => RightParen,
-			'{' => LeftBrace,
-			'}' => RightBrace,
-			'[' => LeftBox,
-			']' => RightBox,
-			'.' => Dot,
-			',' => Comma,
-			':' => Colon,
-			';' => SemiColon,
-			'$' => Dollar,
-			'`' => Backtick,
-			'#' => Hashtag,
-			'@' => Address,
-			'"' => DoubleQuote,
-			'\'' => SingleQuote,
-			'|' | '¦' => Bar,
-			'^' => Caret,
-			'&' => Ampersand,
-			'!' => Bang,
-			'?' => Hook,
-			'=' => Equals,
-			'<' => LessThan,
-			'>' => GreaterThan,
-			'+' => Plus,
-			'-' => Minus,
-			'~' => Tilde,
-			'*' => Asterisk,
-			'/' => Solidus,
-			'\\' => ReverseSolidus,
-			'%' => Percent,
-			_ => Other
+
+/*
+
+// line comments
+CharKind::Minus if matches!(self.peek(), CharKind::Minus) => {
+	self.advance_while(|x| !CharKind::is_valid_newline(x));
+	continue 'search;
+},
+// block comments
+CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => {
+	let mut depth : u8 = 1;
+	while depth >= 1 && depth < 255 {
+		match self.next() {
+			CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => depth += 1,
+			CharKind::Minus if matches!(self.peek(), CharKind::RightBrace) => depth -= 1,
+			CharKind::EoF => break,
+			_ => continue
 		}
+		self.next();
 	}
+	let reason = if depth >= 1 {
+		"unterminated block comment"
+	} else if depth == 255 {
+		"nested block comment exceeds depth limit"
+	} else {
+		continue 'search
+	};
+	TokenKind::Issue { reason }
+},
 
-	/// Returns whether the char is valid whitespace.
-	pub fn is_valid_whitespace(&self) -> bool {
-		use CharKind::*;
-		matches!(self, Tab | Space) || self.is_valid_newline()
-	}
-
-	/// Returns whether the char is valid new line character.
-	pub fn is_valid_newline(&self) -> bool {
-		matches!(self, CharKind::EoL)
-	}
-
-	/// Returns whether the char is a valid graphic.
-	pub fn is_valid_graphic(&self) -> bool {
-		matches!(self, CharKind::Graphic) || self.is_valid_digit()
-	}
-
-	/// Returns whether the char is a valid digit.
-	pub fn is_valid_digit(&self) -> bool {
-		matches!(self, CharKind::Digit)
-	}
-
-	/// Returns whether the char is a valid operator.
-	pub fn is_valid_operator(&self) -> bool {
-		use CharKind::*;
-		matches!(self
-				, Dot
-				| Colon
-				| Dollar
-				| Hashtag
-				| Address
-				| Bar
-				| Caret
-				| Ampersand
-				| Bang
-				| Hook
-				| Equals
-				| LessThan
-				| GreaterThan
-				| Plus
-				| Minus
-				| Tilde
-				| Asterisk
-				| Solidus
-				| ReverseSolidus
-				| Percent
-				| Other)
-	}
-}
+*/

@@ -2,7 +2,3 @@
 
 -- escaped comment \
    to multiple lines
-
-{- block comment -}
-
-{- {- nested -} block comment -}

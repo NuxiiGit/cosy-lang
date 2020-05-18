@@ -4,7 +4,7 @@
 
 //use cosyc::session::Session;
 
-use cosyc::lexer::*;
+use cosyc::lexer::scanner::*;
 //use cosyc::parser::*;
 //use cosyc::issues::*;
 
@@ -14,7 +14,7 @@ use std::time::Instant;
 fn main() {
 	let now = Instant::now();
 	let src = "1;``--'\n{-(){} var-} {-a;";
-	let mut lexer = Lexer::from(src);
+	let mut lexer = CharReader::from(src);
 	println!("{:?}", lexer.current());
 	println!("{:?}", lexer.advance());
 	println!("{:?}", lexer.advance());
