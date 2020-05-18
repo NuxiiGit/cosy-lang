@@ -1,11 +1,5 @@
 use std::fmt;
 
-/// Represents a value paired with its location in the source file.
-pub struct Node<T> {
-	pub content : T,
-	pub span : Span
-}
-
 /// Represents information about some substring of a source file.
 #[derive(Debug, Clone, Default)]
 pub struct Span {
@@ -26,11 +20,6 @@ impl Span {
 			end : other.end,
 			line : self.line
 		}
-	}
-
-	/// Creates a spanned value from this span.
-	pub fn into_node<T>(self, content : T) -> Node<T> {
-		Node { content, span : self }
 	}
 }
 impl fmt::Display for Span {
