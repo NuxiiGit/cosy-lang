@@ -13,16 +13,17 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "xXXi_wud_nvrstøp_ÜXXx";
+	let src = "xXXi_ -------->wud_nvrst\nøp_ÜXXx";
 	let mut lexer = Lexer::from(src);
 	loop {
-		let span = lexer.span();
-		let token = lexer.token();
+		let node = lexer.advance();
+		let token = node.content;
+		let span = node.span;
 		println!("{:?}:\n  span: {}\n  str:{:?}", token, span, &src[span.begin..span.end]);
 		if let TokenKind::EoF = token {
 			break;
 		}
-		lexer.advance();
+		
 	}
 	
 	/*let lexer = Lexer::from(src);

@@ -2,7 +2,7 @@ pub mod scanner;
 
 use scanner::{ CharReader, CharKind };
 
-use crate::span::Span;
+use crate::span::{ Node, Span };
 
 use std::mem;
 
@@ -18,9 +18,11 @@ impl Lexer<'_> {
 	}
 
 	/// Returns ownership of the peeked token.
-	pub fn advance(&mut self) -> TokenKind {
+	pub fn advance(&mut self) -> Node<TokenKind> {
+		let span = self.reader.span().clone();
 		let next = self.reader.generate_token();
-		mem::replace(&mut self.current, next)
+		let prev = mem::replace(&mut self.current, next);
+		span.into_node(prev)
 	}
 
 	/// Returns the span of the peeked token.
