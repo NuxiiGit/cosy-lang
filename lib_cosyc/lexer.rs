@@ -60,6 +60,62 @@ impl CharReader<'_> {
 					self.advance_while(CharKind::is_valid_digit);
 					TokenKind::Literal(LiteralKind::Integer)
 				},
+				// identifiers
+				x if matches!(x, CharKind::Underscore) ||
+						x.is_valid_graphic() ||
+						x.is_valid_operator() => {
+					let kind = match x {
+						| CharKind::Graphic
+						| CharKind::Underscore => IdentifierKind::Alphanumeric,
+						| CharKind::Asterisk
+						| CharKind::Solidus
+						| CharKind::ReverseSolidus
+						| CharKind::Percent => IdentifierKind::Multiplication,
+						| CharKind::Plus
+						| CharKind::Minus => IdentifierKind::Addition,
+						| CharKind::GreaterThan
+						| CharKind::LessThan => IdentifierKind::Comparison,
+						| CharKind::Ampersand => IdentifierKind::And,
+						| CharKind::Bar
+						| CharKind::Caret => IdentifierKind::Or,
+						| CharKind::Equals
+						| CharKind::Bang 
+						| CharKind::Hook
+						| CharKind::Tilde => IdentifierKind::Equality,
+						| CharKind::Dollar => IdentifierKind::Application,
+						| _ => IdentifierKind::Other
+					};
+					if x.is_valid_graphic() {
+						self.read_alphanumeric_identifier();
+					} else if x.is_valid_operator() {
+						self.read_operator_identifier();
+					}
+					// join alphanumeric identifiers and operators with underscores
+					loop {
+						if matches!(self.current(), CharKind::Underscore) {
+							self.advance_while(|x| matches!(x, CharKind::Underscore));
+							let peeked = self.current();
+							if peeked.is_valid_graphic() {
+								self.read_alphanumeric_identifier();
+							} else if peeked.is_valid_operator() {
+								self.read_operator_identifier();
+							} else {
+								break;
+							}
+						} else {
+							break;
+						}
+					}
+					// match substring for keywords
+					match self.slice() {
+						"--" => {
+							// skip line comments
+							self.advance_while(|x| !x.is_valid_newline());
+							continue 'search;
+						},
+						_ => TokenKind::Identifier(kind)
+					}
+				},
 				// end of file
 				CharKind::EoF => TokenKind::EoF,
 				// unknown symbol
@@ -67,6 +123,16 @@ impl CharReader<'_> {
 			};
 			break kind;
 		}
+	}
+
+	fn read_alphanumeric_identifier(&mut self) {
+		self.advance_while(CharKind::is_valid_graphic);
+		// alphanumeric identifiers can end with any number of `'` (called "prime")
+		self.advance_while(|x| matches!(x, CharKind::SingleQuote));
+	}
+
+	fn read_operator_identifier(&mut self) {
+		self.advance_while(CharKind::is_valid_operator);
 	}
 }
 
@@ -127,37 +193,6 @@ pub enum IdentifierKind {
 	And,
 	Or,
 	Equality,
-	Other,
-	Application
+	Application,
+	Other
 }
-
-/*
-
-// line comments
-CharKind::Minus if matches!(self.peek(), CharKind::Minus) => {
-	self.advance_while(|x| !CharKind::is_valid_newline(x));
-	continue 'search;
-},
-// block comments
-CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => {
-	let mut depth : u8 = 1;
-	while depth >= 1 && depth < 255 {
-		match self.next() {
-			CharKind::LeftBrace if matches!(self.peek(), CharKind::Minus) => depth += 1,
-			CharKind::Minus if matches!(self.peek(), CharKind::RightBrace) => depth -= 1,
-			CharKind::EoF => break,
-			_ => continue
-		}
-		self.next();
-	}
-	let reason = if depth >= 1 {
-		"unterminated block comment"
-	} else if depth == 255 {
-		"nested block comment exceeds depth limit"
-	} else {
-		continue 'search
-	};
-	TokenKind::Issue { reason }
-},
-
-*/

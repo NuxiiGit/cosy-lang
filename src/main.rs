@@ -4,7 +4,7 @@
 
 //use cosyc::session::Session;
 
-use cosyc::lexer::scanner::*;
+use cosyc::lexer::{ Lexer, TokenKind };
 //use cosyc::parser::*;
 //use cosyc::issues::*;
 
@@ -13,32 +13,17 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "1;``--'\n{-(){} var-} {-a;";
-	let mut lexer = CharReader::from(src);
-	println!("{:?}", lexer.current());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("slice={:?}, span={:?}", lexer.slice(), lexer.span());
-	lexer.reset_span();
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.current());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("{:?}", lexer.advance());
-	println!("slice={:?}, span={:?}", lexer.slice(), lexer.span());
-	/*loop {
+	let src = "abc_++_x'_'";
+	let mut lexer = Lexer::from(src);
+	loop {
 		let span = lexer.span();
 		let token = lexer.token();
+		println!("{:?}:\n  span: {}\n  str:{:?}", token, span, &src[span.begin..span.end]);
 		if let TokenKind::EoF = token {
 			break;
 		}
-		println!("token={:?}, span={:?}, str={:?}", token, span, &src[span.begin..span.end]);
 		lexer.advance();
-	}*/
+	}
 	
 	/*let lexer = Lexer::from(src);
 	let mut issues = IssueTracker::new();
