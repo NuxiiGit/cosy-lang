@@ -1,48 +1,28 @@
 use crate::scanner::{ CharReader, CharKind };
 use crate::span::Span;
 
-use std::mem;
+use super::ident::{ NameTable, Identifier };
 
 /// Converts a string into individual tokens.
 pub struct Lexer<'a> {
 	reader : CharReader<'a>,
-	current : TokenKind
+	name_table : NameTable<'a>
 }
 impl Lexer<'_> {
-	/// Returns a reference to the current peeked token.
-	pub fn token(&self) -> &TokenKind {
-		&self.current
-	}
-
-	/// Returns ownership of the peeked token.
-	pub fn advance(&mut self) -> TokenKind {
-		let next = self.reader.generate_token();
-		mem::replace(&mut self.current, next)
-	}
-
-	/// Returns the span of the peeked token.
+	/// Returns the span of the current token.
 	pub fn span(&self) -> &Span {
 		self.reader.span()
 	}
-}
-impl<'a> From<&'a str> for Lexer<'a> {
-	fn from(src : &'a str) -> Self {
-		let mut reader = CharReader::from(src);
-		let current = reader.generate_token();
-		Self { reader, current }
-	}
-}
 
-impl CharReader<'_> {
 	/// Returns the next token in the source.
-	pub fn generate_token(&mut self) -> TokenKind {
+	pub fn advance(&mut self) -> TokenKind {
 	'search:
 		loop {
-			self.reset_span();
-			let kind = match self.advance() {
+			self.reader.reset_span();
+			let kind = match self.reader.advance() {
 				// whitespace
 				x if x.is_valid_whitespace() => {
-					self.advance_while(CharKind::is_valid_whitespace);
+					self.reader.advance_while(CharKind::is_valid_whitespace);
 					continue 'search;
 				}
 				// individual symbols
@@ -54,33 +34,34 @@ impl CharReader<'_> {
 				CharKind::Backtick => TokenKind::Backtick,
 				// number literals
 				x if x.is_valid_digit() => {
-					self.advance_while(CharKind::is_valid_digit);
-					TokenKind::Literal(LiteralKind::Integer)
+					self.reader.advance_while(CharKind::is_valid_digit);
+					let digit = self.reader.slice().parse::<usize>().unwrap();
+					TokenKind::Literal(LiteralKind::Integral(digit))
 				},
 				// identifiers
 				x if matches!(x, CharKind::Underscore) ||
 						x.is_valid_graphic() ||
 						x.is_valid_operator() => {
 					let kind = match x {
-						  CharKind::Graphic
+							CharKind::Graphic
 						| CharKind::Underscore => IdentifierKind::Alphanumeric,
-						  CharKind::Asterisk
+							CharKind::Asterisk
 						| CharKind::Solidus
 						| CharKind::ReverseSolidus
 						| CharKind::Percent => IdentifierKind::Multiplication,
-						  CharKind::Plus
+							CharKind::Plus
 						| CharKind::Minus => IdentifierKind::Addition,
-						  CharKind::GreaterThan
+							CharKind::GreaterThan
 						| CharKind::LessThan => IdentifierKind::Comparison,
-						  CharKind::Ampersand => IdentifierKind::And,
-						  CharKind::Bar
+							CharKind::Ampersand => IdentifierKind::And,
+							CharKind::Bar
 						| CharKind::Caret => IdentifierKind::Or,
-						  CharKind::Equals
+							CharKind::Equals
 						| CharKind::Bang 
 						| CharKind::Hook
 						| CharKind::Tilde => IdentifierKind::Equality,
-						  CharKind::Dollar => IdentifierKind::Application,
-						  _ => IdentifierKind::Other
+							CharKind::Dollar => IdentifierKind::Application,
+							_ => IdentifierKind::Other
 					};
 					if x.is_valid_graphic() {
 						self.read_alphanumeric_identifier();
@@ -89,9 +70,9 @@ impl CharReader<'_> {
 					}
 					// join alphanumeric identifiers and operators with underscores
 					loop {
-						if matches!(self.current(), CharKind::Underscore) {
-							self.advance_while(|x| matches!(x, CharKind::Underscore));
-							let peeked = self.current();
+						if matches!(self.reader.current(), CharKind::Underscore) {
+							self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
+							let peeked = self.reader.current();
 							if peeked.is_valid_graphic() {
 								self.read_alphanumeric_identifier();
 							} else if peeked.is_valid_operator() {
@@ -104,12 +85,12 @@ impl CharReader<'_> {
 						}
 					}
 					// skip comment lexeme
-					if self.holds_comment_lexeme() {
-						self.advance_while(|x| !x.is_valid_newline());
+					if self.reader.holds_comment_lexeme() {
+						self.reader.advance_while(|x| !x.is_valid_newline());
 						continue 'search;
 					}
 					// match substring for keywords
-					match self.slice() {
+					match self.reader.slice() {
 						_ => TokenKind::Identifier(kind)
 					}
 				},
@@ -123,13 +104,20 @@ impl CharReader<'_> {
 	}
 
 	fn read_alphanumeric_identifier(&mut self) {
-		self.advance_while(CharKind::is_valid_graphic);
+		self.reader.advance_while(CharKind::is_valid_graphic);
 		// alphanumeric identifiers can end with any number of `'` (called "prime")
-		self.advance_while(|x| matches!(x, CharKind::SingleQuote));
+		self.reader.advance_while(|x| matches!(x, CharKind::SingleQuote));
 	}
 
 	fn read_operator_identifier(&mut self) {
-		self.advance_while(CharKind::is_valid_operator);
+		self.reader.advance_while(CharKind::is_valid_operator);
+	}
+}
+impl<'a> From<&'a str> for Lexer<'a> {
+	fn from(src : &'a str) -> Self {
+		let mut reader = CharReader::from(src);
+		let name_table = NameTable::new();
+		Self { reader, name_table }
 	}
 }
 
@@ -177,7 +165,7 @@ impl TokenKind {
 /// An enum which describes available literal types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum LiteralKind {
-	Integer
+	Integral(usize)
 }
 
 /// An enum which describes available identifier types.

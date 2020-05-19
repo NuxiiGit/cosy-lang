@@ -8,13 +8,12 @@ fn main() {
 	let src = "xXXi_ -------->wud_nvrst\nøp_ÜXXx";
 	let mut lexer = Lexer::from(src);
 	loop {
-		let token = lexer.token();
+		let token = lexer.advance();
 		let span = lexer.span();
 		println!("{:?}:\n  span: {}\n  str:{:?}", token, span, &src[span.begin..span.end]);
 		if let TokenKind::EoF = token {
 			break;
 		}
-		lexer.advance();
 	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());

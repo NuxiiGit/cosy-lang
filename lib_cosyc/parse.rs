@@ -1,4 +1,5 @@
 pub mod lexer;
+pub mod ident;
 
 use crate::span::Span;
 
