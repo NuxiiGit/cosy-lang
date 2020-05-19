@@ -31,7 +31,6 @@ impl Lexer<'_> {
 				CharKind::LeftBrace => TokenKind::LeftBrace,
 				CharKind::RightBrace => TokenKind::RightBrace,
 				CharKind::SemiColon => TokenKind::SemiColon,
-				CharKind::Backtick => TokenKind::Backtick,
 				// number literals
 				x if x.is_valid_digit() => {
 					self.reader.advance_while(CharKind::is_valid_digit);
@@ -54,8 +53,7 @@ impl Lexer<'_> {
 							CharKind::GreaterThan
 						| CharKind::LessThan => IdentifierKind::Comparison,
 							CharKind::Ampersand => IdentifierKind::And,
-							CharKind::Bar
-						| CharKind::Caret => IdentifierKind::Or,
+							CharKind::Bar => IdentifierKind::Or,
 							CharKind::Equals
 						| CharKind::Bang 
 						| CharKind::Hook
@@ -91,6 +89,7 @@ impl Lexer<'_> {
 					}
 					// match substring for keywords
 					match self.reader.slice() {
+						"var" => TokenKind::Var,
 						_ => {
 							let slice = self.reader.slice();
 							TokenKind::Identifier(self.name_table.add(slice), kind)
@@ -132,8 +131,8 @@ pub enum TokenKind {
 	LeftBrace,
 	RightBrace,
 	SemiColon,
-	Backtick,
 	Literal(LiteralKind),
+	Var,
 	Identifier(Identifier, IdentifierKind),
 	EoF,
 	Unknown
