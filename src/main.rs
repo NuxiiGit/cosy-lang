@@ -5,7 +5,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "xXXi_ -------->wud_nvrst\nøp_ÜXXx";
+	let src = "xXXi_ -------->wud_nvrst-------->\nøp_ÜXXx";
 	let mut lexer = Lexer::from(src);
 	loop {
 		let token = lexer.advance();

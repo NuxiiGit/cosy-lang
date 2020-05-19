@@ -91,7 +91,10 @@ impl Lexer<'_> {
 					}
 					// match substring for keywords
 					match self.reader.slice() {
-						_ => TokenKind::Identifier(kind)
+						_ => {
+							let slice = self.reader.slice();
+							TokenKind::Identifier(self.name_table.add(slice), kind)
+						}
 					}
 				},
 				// end of file
@@ -131,7 +134,7 @@ pub enum TokenKind {
 	SemiColon,
 	Backtick,
 	Literal(LiteralKind),
-	Identifier(IdentifierKind),
+	Identifier(Identifier, IdentifierKind),
 	EoF,
 	Unknown
 }
@@ -148,7 +151,7 @@ impl TokenKind {
 
 	/// Returns `true` if the token is an alphabetic identifier.
 	pub fn is_alphanumeric(&self) -> bool {
-		matches!(self, Self::Identifier(IdentifierKind::Alphanumeric))
+		matches!(self, Self::Identifier(.., IdentifierKind::Alphanumeric))
 	}
 
 	/// Returns `true` if the token is an operator identifier.
