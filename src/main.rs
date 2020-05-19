@@ -1,4 +1,4 @@
-use cosyc::lexer::{ Lexer, TokenKind };
+use cosyc::parse::lexer::{ Lexer, TokenKind };
 
 use std::fs;
 use std::time::Instant;

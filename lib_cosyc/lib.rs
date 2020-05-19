@@ -1,3 +1,3 @@
 pub mod span;
-pub mod lexer;
-pub mod parser;
+pub mod scanner;
+pub mod parse;

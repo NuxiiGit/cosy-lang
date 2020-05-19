@@ -1,4 +1,5 @@
-use crate::lexer::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
+pub mod lexer;
+
 use crate::span::Span;
 
 use std::fmt;
@@ -48,6 +49,6 @@ pub struct Node<T : fmt::Debug + Clone> {
 }
 impl<T : fmt::Debug + Clone> fmt::Debug for Node<T> {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "{:?}", self.content)
+		write!(out, "({}){:?}", self.span, self.content)
 	}
 }
