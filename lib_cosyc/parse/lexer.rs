@@ -1,5 +1,7 @@
-use crate::scanner::{ CharReader, CharKind };
-use crate::common::diagnostics::span::Span;
+use crate::{
+	scanner::{ CharReader, CharKind },
+	common::diagnostics::span::Span
+};
 
 use super::ident::{ NameTable, Identifier };
 

@@ -1,7 +1,6 @@
 use crate::common::diagnostics::span::Span;
 
-use std::str::CharIndices;
-use std::mem;
+use std::{ str::CharIndices, mem };
 
 /// Iterates over characters of a string, producing useful substrings and tagged data.
 pub struct CharReader<'a> {

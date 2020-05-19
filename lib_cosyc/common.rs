@@ -1,7 +1,9 @@
 pub mod diagnostics;
 
-use diagnostics::span::Span;
-use diagnostics::error::{ IssueTracker, Error };
+use diagnostics::{
+	span::Span,
+	error::{ IssueTracker, Error }
+};
 
 use std::fs;
 
