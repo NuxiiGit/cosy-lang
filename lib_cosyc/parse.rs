@@ -1,7 +1,7 @@
 pub mod lexer;
 pub mod ident;
 
-use crate::span::Span;
+use crate::common::diagnostics::span::Span;
 
 use std::fmt;
 

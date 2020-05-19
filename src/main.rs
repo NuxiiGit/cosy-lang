@@ -1,5 +1,5 @@
 use cosyc::parse::lexer::{ Lexer, TokenKind };
-use cosyc::error::{ IssueTracker, Error };
+use cosyc::common::diagnostics::error::{ IssueTracker, Error };
 
 use std::time::Instant;
 

@@ -1,4 +1,4 @@
-use crate::span::Span;
+use crate::common::diagnostics::span::Span;
 
 use std::str::CharIndices;
 use std::mem;
