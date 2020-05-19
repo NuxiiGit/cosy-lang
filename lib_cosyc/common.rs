@@ -1,9 +1,6 @@
 pub mod diagnostics;
 
-use diagnostics::{
-	span::Span,
-	error::{ IssueTracker, Error }
-};
+use diagnostics::{ IssueTracker, span::Span, error::Error, Node };
 
 use std::fs;
 
@@ -24,10 +21,9 @@ impl Session {
 			Self::from(src)
 		} else {
 			let mut sess = Self::default();
-			sess.issues.report(Error {
+			sess.issues.report(Node::from(Error {
 				reason : "unable to open file for reading",
-				span : Span::default()
-			});
+			}));
 			sess
 		}
 	}

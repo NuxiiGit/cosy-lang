@@ -1,9 +1,7 @@
 pub mod lexer;
 pub mod ident;
 
-use crate::common::diagnostics::span::Span;
-
-use std::fmt;
+use crate::common::diagnostics::Node;
 
 /// Represents information about the program.
 #[derive(Debug)]
@@ -40,16 +38,4 @@ pub enum Expr {
 #[derive(Debug, Clone)]
 pub enum ValueKind {
 	Integer
-}
-
-/// Represents metadata of a AST node.
-#[derive(Clone)]
-pub struct Node<T : fmt::Debug + Clone> {
-	pub content : T,
-	pub span : Span
-}
-impl<T : fmt::Debug + Clone> fmt::Debug for Node<T> {
-	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "({}){:?}", self.span, self.content)
-	}
 }

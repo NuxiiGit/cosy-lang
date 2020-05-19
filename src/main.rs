@@ -1,5 +1,5 @@
 use cosyc::parse::lexer::{ Lexer, TokenKind };
-use cosyc::common::diagnostics::error::{ IssueTracker, Error };
+use cosyc::common::diagnostics::{ IssueTracker, error::Error, Node };
 
 use std::time::Instant;
 
@@ -11,8 +11,10 @@ fn main() {
 	loop {
 		let token = lexer.advance();
 		let span = lexer.span();
-		issues.report(Error {
-			reason : "super special error reason",
+		issues.report(Node {
+			content : Error {
+				reason : "super special error reason"
+			},
 			span : span.clone()
 		});
 		println!("{:?}:\n  span: {:#}\n  str:{:?}", token, span, &src[span.begin..span.end]);
