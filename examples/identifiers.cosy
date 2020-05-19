@@ -8,7 +8,7 @@ var pi2 = 2 * 3.14;
 var player_age = 18;
 
 -- operator identifiers
-var @~@ = "hewwo?";
+var ~^_^~ = "hewwo?";
 
 -- mixed identifiers
 let a %_gain b = a * 100.0 / b;
