@@ -1,7 +1,6 @@
 use crate::span::Span;
 
 use std::{ fmt, error };
-use std::vec;
 
 /// A struct which keeps track of errors.
 #[derive(Default)]
@@ -21,10 +20,18 @@ impl IssueTracker {
 }
 impl IntoIterator for IssueTracker {
 	type Item = Error;
-	type IntoIter = vec::IntoIter<Self::Item>;
+	type IntoIter = std::vec::IntoIter<Error>;
 
 	fn into_iter(self) -> Self::IntoIter {
 		self.errors.into_iter()
+	}
+}
+impl<'a> IntoIterator for &'a IssueTracker {
+	type Item = &'a Error;
+	type IntoIter = std::slice::Iter<'a, Error>;
+
+	fn into_iter(self) -> Self::IntoIter {
+		(&self.errors).into_iter()
 	}
 }
 

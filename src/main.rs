@@ -1,5 +1,5 @@
 use cosyc::parse::lexer::{ Lexer, TokenKind };
-use cosyc::error::IssueTracker;
+use cosyc::error::{ IssueTracker, Error };
 
 use std::time::Instant;
 
@@ -11,14 +11,18 @@ fn main() {
 	loop {
 		let token = lexer.advance();
 		let span = lexer.span();
-		println!("{:?}:\n  span: {}\n  str:{:?}", token, span, &src[span.begin..span.end]);
+		issues.report(Error {
+			reason : "super special error reason",
+			span : span.clone()
+		});
+		println!("{:?}:\n  span: {:#}\n  str:{:?}", token, span, &src[span.begin..span.end]);
 		if let TokenKind::EoF = token {
 			break;
 		}
 	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());
-	for error in issues {
+	for error in &issues {
 		println!("{}", error);
 	}
 }
