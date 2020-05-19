@@ -118,7 +118,7 @@ impl Lexer<'_> {
 }
 impl<'a> From<&'a str> for Lexer<'a> {
 	fn from(src : &'a str) -> Self {
-		let mut reader = CharReader::from(src);
+		let reader = CharReader::from(src);
 		let name_table = NameTable::new();
 		Self { reader, name_table }
 	}

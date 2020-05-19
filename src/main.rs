@@ -1,11 +1,12 @@
 use cosyc::parse::lexer::{ Lexer, TokenKind };
+use cosyc::error::IssueTracker;
 
-use std::fs;
 use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
 	let src = "xXXi_ -------->wud_nvrst-------->\nøp_ÜXXx";
+	let mut issues = IssueTracker::new();
 	let mut lexer = Lexer::from(src);
 	loop {
 		let token = lexer.advance();
@@ -17,7 +18,7 @@ fn main() {
 	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());
-	/*for error in sess.issues {
+	for error in issues {
 		println!("{}", error);
-	}*/
+	}
 }
