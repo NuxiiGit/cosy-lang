@@ -21,8 +21,7 @@ pub enum Stmt {
 	Decl,
 	Expr {
 		expr : Node<Expr>
-	},
-	NoOp
+	}
 }
 
 /// Represents expression information.
@@ -31,7 +30,8 @@ pub enum Expr {
 	Variable,
 	Value {
 		kind : ValueKind
-	}
+	},
+	NoOp
 }
 
 /// Represents the different primitive variants.
@@ -41,8 +41,13 @@ pub enum ValueKind {
 }
 
 /// Represents metadata of a AST node.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Node<T : fmt::Debug + Clone> {
 	pub content : T,
 	pub span : Span
+}
+impl<T : fmt::Debug + Clone> fmt::Debug for Node<T> {
+	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+		write!(out, "{:?}", self.content)
+	}
 }
