@@ -2,13 +2,14 @@ pub mod lex;
 pub mod ident;
 
 use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
+use ident::Identifier;
 
 use super::common::{
 	Session,
 	diagnostics::{ IssueTracker, error::Error, span::Span }
 };
 
-use std::{ fmt, mem, result };
+use std::{ mem, result };
 
 /// Produces abstract syntax from concrete syntax. Reports any errors to the available `IssueTracker`.
 pub struct Parser<'a> {
@@ -25,9 +26,10 @@ impl<'a> Parser<'a> {
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
 		match self.token() {
-			TokenKind::Identifier(..) => {
+			TokenKind::Identifier(ident, ..) => {
+				let ident = *ident;
 				let node = self.advance();
-				Ok(node.into(Expr::Variable))
+				Ok(node.into(Expr::Variable { ident }))
 			},
 			TokenKind::Literal(kind) => {
 				let kind = match kind {
@@ -113,7 +115,9 @@ pub enum Stmt {
 /// Represents expression information.
 #[derive(Debug)]
 pub enum Expr {
-	Variable,
+	Variable {
+		ident : Identifier
+	},
 	Value {
 		kind : ValueKind
 	},
