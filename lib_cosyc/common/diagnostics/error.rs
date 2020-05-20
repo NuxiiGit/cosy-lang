@@ -22,3 +22,8 @@ pub enum ErrorKind {
     Warning,
     Fatal
 }
+impl Default for ErrorKind {
+	fn default() -> Self {
+		ErrorKind::Warning
+	}
+}

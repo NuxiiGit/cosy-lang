@@ -1,14 +1,15 @@
 pub mod error;
 pub mod span;
 
-use error::Error;
+use error::{ Error, ErrorKind };
 
 use std::{ vec, slice };
 
 /// A struct which keeps track of errors.
 #[derive(Default)]
 pub struct IssueTracker {
-	errors : Vec<Error>
+	errors : Vec<Error>,
+	pub error_level : ErrorKind
 }
 impl IssueTracker {
 	/// Creates a new empty session.
@@ -16,8 +17,16 @@ impl IssueTracker {
 		Self::default()
 	}
 
+	/// Returns whether errors occurred.
+	pub fn contains_errors(&self) -> bool {
+		!self.errors.is_empty()
+	}
+
 	/// Adds a new error to the session.
 	pub fn report(&mut self, error : Error) {
+		if error.kind > self.error_level {
+			self.error_level = error.kind.clone();
+		}
 		self.errors.push(error);
 	}
 }
