@@ -5,13 +5,13 @@ use lexer::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 
 use crate::common::{
 	Session,
-	diagnostics::{ error::Error, span::Span }
+	diagnostics::{ IssueTracker, error::Error, span::Span }
 };
 
 use std::fmt;
 
 pub struct Parser<'a> {
-	sess : *mut Session,
+	issues : &'a mut IssueTracker,
 	lexer : Lexer<'a>
 }
 impl<'a> Parser<'a> {
@@ -19,22 +19,18 @@ impl<'a> Parser<'a> {
 		let token = self.lexer.advance();
 		let span = self.lexer.span();
 		println!("{}: {:?}", span, token);
-		unsafe {
-			(*self.sess).issues.report(Error {
-				reason : "super special error reason",
-				span : span.clone()
-			});
-		}
+		self.issues.report(Error {
+			reason : "super special error reason",
+			span : span.clone()
+		});
 		token
 	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
 	fn from(sess : &'a mut Session) -> Self {
-		unsafe {
-			let sess = sess as *mut Session;
-			let lexer = Lexer::from(&(*sess).src);
-			Self { sess, lexer }
-		}
+		let issues = &mut sess.issues;
+		let lexer = Lexer::from(&sess.src);
+		Self { issues, lexer }
 	}
 }
 
