@@ -58,6 +58,8 @@ impl<'a> CharReader<'a> {
 	/// Clears the current span.
 	pub fn reset_span(&mut self) {
 		self.span.begin.byte = self.span.end.byte;
+		self.span.begin.line = self.span.end.line;
+		self.span.begin.column = self.span.end.column;
 		self.only_dashes = true;
 	}
 	
