@@ -3,9 +3,8 @@ use std::fmt;
 /// Represents information about some substring of a source file.
 #[derive(Debug, Clone, Default)]
 pub struct Span {
-	pub begin : usize,
-	pub end : usize,
-	pub line : usize
+	pub begin : Cursor,
+	pub end : Cursor
 }
 impl Span {
 	/// Creates a default span
@@ -16,14 +15,24 @@ impl Span {
 	/// Joins two spans together to produce a new span.
 	pub fn join(&self, other: &Self) -> Self {
 		Span {
-			begin : self.begin,
-			end : other.end,
-			line : self.line
+			begin : self.begin.clone(),
+			end : other.end.clone()
 		}
 	}
 }
 impl fmt::Display for Span {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "[{}..{}] line {}", self.begin, self.end, self.line + 1)
+		write!(out, "[{}..{}] (row. {}, col. {})", 
+				self.begin.byte, self.end.byte,
+				self.begin.line + 1, self.begin.column + 1)
 	}
+}
+
+/// Represents a position in a file.
+#[derive(Debug, Clone, Default)]
+pub struct Cursor {
+	pub byte : usize,
+	pub line : usize,
+	/// The number of UTF-8 codepoints since the last new line.
+	pub column : usize
 }

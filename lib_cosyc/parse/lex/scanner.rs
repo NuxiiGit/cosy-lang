@@ -32,13 +32,16 @@ impl<'a> CharReader<'a> {
 	/// Advances the reader and returns the next `CharKind`.
 	pub fn advance(&mut self) -> CharKind {
 		if self.current.is_valid_newline() {
-			self.span.line += 1;
+			self.span.end.line += 1;
+			self.span.end.column = 0;
+		} else {
+			self.span.end.column += 1;
 		}
 		let future = if let Some((i, c)) = self.chars.next() {
-			self.span.end = i;
+			self.span.end.byte = i;
 			CharKind::identify(c)
 		} else {
-			self.span.end = self.src.len();
+			self.span.end.byte = self.src.len();
 			CharKind::EoF
 		};
 		if self.only_dashes && !matches!(self.current, CharKind::Minus) {
@@ -49,12 +52,12 @@ impl<'a> CharReader<'a> {
 
 	/// Returns the current substring.
 	pub fn slice(&self) -> &'a str {
-		&self.src[self.span.begin..self.span.end]
+		&self.src[self.span.begin.byte..self.span.end.byte]
 	}
 
 	/// Clears the current span.
 	pub fn reset_span(&mut self) {
-		self.span.begin = self.span.end;
+		self.span.begin.byte = self.span.end.byte;
 		self.only_dashes = true;
 	}
 	
@@ -65,7 +68,7 @@ impl<'a> CharReader<'a> {
 
 	/// Returns whether the current stream of characters is a comment lexeme.
 	pub fn holds_comment_lexeme(&self) -> bool {
-		self.only_dashes && self.span.end - self.span.begin > 1
+		self.only_dashes && self.span.end.byte - self.span.begin.byte > 1
 	}
 }
 impl<'a> From<&'a str> for CharReader<'a> {
