@@ -18,22 +18,30 @@ pub struct Parser<'a> {
 }
 impl<'a> Parser<'a> {
 	/// Parses any kind of expression.
-	fn parse_expr(&mut self) -> Result<Expr> {
+	pub fn parse_expr(&mut self) -> Result<Expr> {
 		self.parse_expr_terminal()
 	}
 
 	/// Parses literals, identifiers, and groupings of expressions.
-	fn parse_expr_terminal(&mut self) -> Result<Expr> {
-		if self.token().is_literal() {
-			let node = self.advance();
-			Ok(node.into(Expr::Variable))
-		} else {
-			self.parse_expr_groupings()
+	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
+		match self.token() {
+			TokenKind::Identifier(..) => {
+				let node = self.advance();
+				Ok(node.into(Expr::Variable))
+			},
+			TokenKind::Literal(kind) => {
+				let kind = match kind {
+					LiteralKind::Integral(value) => ValueKind::Integer(*value)
+				};
+				let node = self.advance();
+				Ok(node.into(Expr::Value { kind }))
+			},
+			_ => self.parse_expr_groupings()
 		}
 	}
 
 	/// Parses groupings of expressions.
-	fn parse_expr_groupings(&mut self) -> Result<Expr> {
+	pub fn parse_expr_groupings(&mut self) -> Result<Expr> {
 		self.expects(TokenKind::LeftParen, "malformed expression")?;
 		let expr = self.parse_expr()?;
 		self.expects(TokenKind::RightParen, "expected closing parenthesis in grouping")?;
@@ -41,7 +49,7 @@ impl<'a> Parser<'a> {
 	}
 
 	/// Advances the parser, but returns an error if some predicate isn't held.
-	fn expects(&mut self, kind : TokenKind, on_err : &'static str) -> Result<TokenKind> {
+	pub fn expects(&mut self, kind : TokenKind, on_err : &'static str) -> Result<TokenKind> {
 		let node = self.advance();
 		if node.content == kind {
 			Ok(node)
@@ -54,7 +62,7 @@ impl<'a> Parser<'a> {
 	}
 
 	/// Returns a reference to the current token kind.
-	fn token(&self) -> &TokenKind {
+	pub fn token(&self) -> &TokenKind {
 		&self.current
 	}
 
@@ -115,7 +123,7 @@ pub enum Expr {
 /// Represents the different primitive variants.
 #[derive(Debug)]
 pub enum ValueKind {
-	Integer
+	Integer(usize)
 }
 
 /// Represents a piece of data paired with a source position.
