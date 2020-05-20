@@ -6,7 +6,11 @@ use ident::Identifier;
 
 use super::common::{
 	Session,
-	diagnostics::{ IssueTracker, error::Error, span::Span }
+	diagnostics::{
+		IssueTracker,
+		error::{ Error, ErrorKind },
+		span::Span
+	}
 };
 
 use std::{ mem, result };
@@ -59,7 +63,8 @@ impl<'a> Parser<'a> {
 		} else {
 			Err(Error {
 				reason : on_err,
-				span : node.span
+				span : node.span,
+				kind : ErrorKind::Fatal
 			})
 		}
 	}
@@ -84,7 +89,8 @@ impl<'a> Parser<'a> {
 	pub fn warn(&mut self, reason : &'static str) {
 		self.issues.report(Error {
 			reason,
-			span : self.lexer.span().clone()
+			span : self.lexer.span().clone(),
+			kind : ErrorKind::Warning
 		});
 	}
 }
