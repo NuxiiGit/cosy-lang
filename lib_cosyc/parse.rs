@@ -20,6 +20,7 @@ pub struct Parser<'a> {
 impl<'a> Parser<'a> {
 	/// Parses any kind of expression.
 	pub fn parse_expr(&mut self) -> Result<Expr> {
+		self.warn("bweh uwu...");
 		self.parse_expr_terminal()
 	}
 
@@ -77,6 +78,14 @@ impl<'a> Parser<'a> {
 			content : prev,
 			span
 		}
+	}
+
+	/// Inserts a warning into to the `IssueTracker`.
+	pub fn warn(&mut self, reason : &'static str) {
+		self.issues.report(Error {
+			reason,
+			span : self.lexer.span().clone()
+		});
 	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {

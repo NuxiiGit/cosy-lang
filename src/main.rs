@@ -13,7 +13,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "uwu";
+	let src = "(((uwu)))";
 	let mut sess = Session::from(String::from(src));
 	let mut parser = Parser::from(&mut sess);
 	let result = parser.parse_expr();
