@@ -8,31 +8,78 @@ use super::common::{
 	diagnostics::{ IssueTracker, error::Error, span::Span }
 };
 
-use std::fmt;
+use std::{ fmt, mem, result };
 
+/// Produces abstract syntax from concrete syntax. Reports any errors to the available `IssueTracker`.
 pub struct Parser<'a> {
 	issues : &'a mut IssueTracker,
-	lexer : Lexer<'a>
+	lexer : Lexer<'a>,
+	current : TokenKind
 }
 impl<'a> Parser<'a> {
-	pub fn next_token(&mut self) -> TokenKind {
-		let token = self.lexer.advance();
-		let span = self.lexer.span();
-		println!("{}: {:?}", span, token);
-		self.issues.report(Error {
-			reason : "super special error reason",
-			span : span.clone()
-		});
-		token
+	/// Parses any kind of expression.
+	fn parse_expr(&mut self) -> Result<Expr> {
+		self.parse_expr_terminal()
+	}
+
+	/// Parses literals, identifiers, and groupings of expressions.
+	fn parse_expr_terminal(&mut self) -> Result<Expr> {
+		if self.token().is_literal() {
+			let node = self.advance();
+			Ok(node.into(Expr::Variable))
+		} else {
+			self.parse_expr_groupings()
+		}
+	}
+
+	/// Parses groupings of expressions.
+	fn parse_expr_groupings(&mut self) -> Result<Expr> {
+		self.expects(TokenKind::LeftParen, "malformed expression")?;
+		let expr = self.parse_expr()?;
+		self.expects(TokenKind::RightParen, "expected closing parenthesis in grouping")?;
+		Ok(expr)
+	}
+
+	/// Advances the parser, but returns an error if some predicate isn't held.
+	fn expects(&mut self, kind : TokenKind, on_err : &'static str) -> Result<TokenKind> {
+		let node = self.advance();
+		if node.content == kind {
+			Ok(node)
+		} else {
+			Err(Error {
+				reason : on_err,
+				span : node.span
+			})
+		}
+	}
+
+	/// Returns a reference to the current token kind.
+	fn token(&self) -> &TokenKind {
+		&self.current
+	}
+
+	/// Advances the parser and returns the `Node` of the previous lexeme.
+	pub fn advance(&mut self) -> Node<TokenKind> {
+		let span = self.lexer.span().clone();
+		let next = self.lexer.advance();
+		let prev = mem::replace(&mut self.current, next);
+		Node {
+			content : prev,
+			span
+		}
 	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
 	fn from(sess : &'a mut Session) -> Self {
 		let issues = &mut sess.issues;
-		let lexer = Lexer::from(&sess.src);
-		Self { issues, lexer }
+		let mut lexer = Lexer::from(&sess.src);
+		let current = lexer.advance();
+		Self { issues, lexer, current }
 	}
 }
+
+/// Represents a parser result and failure case.
+pub type Result<T> = result::Result<Node<T>, Error>;
 
 /// Represents information about the program.
 #[derive(Debug)]
@@ -47,7 +94,7 @@ pub struct Block {
 }
 
 /// Represents statement information.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Stmt {
 	Decl,
 	Expr {
@@ -56,7 +103,7 @@ pub enum Stmt {
 }
 
 /// Represents expression information.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum Expr {
 	Variable,
 	Value {
@@ -66,14 +113,22 @@ pub enum Expr {
 }
 
 /// Represents the different primitive variants.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum ValueKind {
 	Integer
 }
 
 /// Represents a piece of data paired with a source position.
-#[derive(Debug, Clone)]
-pub struct Node<T : fmt::Debug + Clone> {
+#[derive(Debug)]
+pub struct Node<T> {
 	pub content : T,
 	pub span : Span
+}
+impl<T> Node<T> {
+	/// Converts a Node of type `T` into to a node of type `S`.
+	/// The content of the previous span is consumed and discarded.
+	pub fn into<S>(self, content : S) -> Node<S> {
+		let span = self.span;
+		Node { content, span }
+	}
 }
