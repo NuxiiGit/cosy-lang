@@ -44,24 +44,24 @@ impl Lexer<'_> {
 						x.is_valid_graphic() ||
 						x.is_valid_operator() => {
 					let kind = match x {
-							CharKind::Graphic
+						CharKind::Graphic
 						| CharKind::Underscore => IdentifierKind::Alphanumeric,
-							CharKind::Asterisk
+						CharKind::Asterisk
 						| CharKind::Solidus
 						| CharKind::ReverseSolidus
 						| CharKind::Percent => IdentifierKind::Multiplication,
-							CharKind::Plus
+						CharKind::Plus
 						| CharKind::Minus => IdentifierKind::Addition,
-							CharKind::GreaterThan
+						CharKind::GreaterThan
 						| CharKind::LessThan => IdentifierKind::Comparison,
-							CharKind::Ampersand => IdentifierKind::And,
-							CharKind::Bar => IdentifierKind::Or,
-							CharKind::Equals
+						CharKind::Ampersand => IdentifierKind::And,
+						CharKind::Bar => IdentifierKind::Or,
+						CharKind::Equals
 						| CharKind::Bang 
 						| CharKind::Hook
 						| CharKind::Tilde => IdentifierKind::Equality,
-							CharKind::Dollar => IdentifierKind::Application,
-							_ => IdentifierKind::Other
+						CharKind::Dollar => IdentifierKind::Application,
+						_ => IdentifierKind::Other
 					};
 					if x.is_valid_graphic() {
 						self.read_alphanumeric_identifier();

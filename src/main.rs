@@ -7,7 +7,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "xXXi_ -------->wud_nvrst-------->\nøp_ÜXXx";
+	let src = "xXXi_ 123.22-------->wud_nvrst-------->\nøp_ÜXXx";
 	let mut issues = IssueTracker::new();
 	let mut lexer = Lexer::from(src);
 	loop {

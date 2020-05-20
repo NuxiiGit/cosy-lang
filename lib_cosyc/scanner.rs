@@ -156,7 +156,7 @@ impl CharKind {
 			'@' => Address,
 			'"' => DoubleQuote,
 			'\'' => SingleQuote,
-			  '|'
+			'|'
 			| '¦' => Bar,
 			'^' => Caret,
 			'&' => Ampersand,
@@ -201,7 +201,7 @@ impl CharKind {
 	pub fn is_valid_operator(&self) -> bool {
 		use CharKind::*;
 		matches!(self,
-				  Dot
+				Dot
 				| Colon
 				| Dollar
 				| Hashtag
