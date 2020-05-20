@@ -1,7 +1,8 @@
-use crate::{
-	scanner::{ CharReader, CharKind },
-	common::diagnostics::span::Span
-};
+pub mod scanner;
+
+use scanner::{ CharReader, CharKind };
+
+use crate::common::diagnostics::span::Span;
 
 use super::ident::{ NameTable, Identifier };
 

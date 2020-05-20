@@ -1,7 +1,7 @@
 use cosyc::{
 	parse::{
 		Parser,
-		lexer::{ Lexer, TokenKind }
+		lex::{ Lexer, TokenKind }
 	},
 	common::{
 		Session,

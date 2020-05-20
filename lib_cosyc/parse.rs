@@ -1,9 +1,9 @@
-pub mod lexer;
+pub mod lex;
 pub mod ident;
 
-use lexer::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
+use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 
-use crate::common::{
+use super::common::{
 	Session,
 	diagnostics::{ IssueTracker, error::Error, span::Span }
 };

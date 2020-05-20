@@ -2,8 +2,6 @@ pub mod diagnostics;
 
 use diagnostics::IssueTracker;
 
-use crate::parse::{ lexer::Lexer };
-
 /// A struct which stores session information, such as:
 /// - Source code
 /// - Errors
