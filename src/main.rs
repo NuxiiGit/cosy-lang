@@ -1,5 +1,7 @@
-use cosyc::parse::lexer::{ Lexer, TokenKind };
-use cosyc::common::diagnostics::{ IssueTracker, error::Error, Node };
+use cosyc::{
+	parse::lexer::{ Lexer, TokenKind },
+	common::diagnostics::{ IssueTracker, error::Error }
+};
 
 use std::time::Instant;
 
@@ -11,13 +13,11 @@ fn main() {
 	loop {
 		let token = lexer.advance();
 		let span = lexer.span();
-		issues.report(Node {
-			content : Error {
-				reason : "super special error reason"
-			},
+		issues.report(Error {
+			reason : "super special error reason",
 			span : span.clone()
 		});
-		println!("{:?}:\n  span: {:#}\n  str:{:?}", token, span, &src[span.begin..span.end]);
+		println!("{:?}:\n  span: {:}\n  str:{:?}", token, span, &src[span.begin..span.end]);
 		if let TokenKind::EoF = token {
 			break;
 		}

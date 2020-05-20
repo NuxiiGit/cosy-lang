@@ -1,7 +1,9 @@
 pub mod lexer;
 pub mod ident;
 
-use crate::common::diagnostics::Node;
+use crate::common::diagnostics::span::Span;
+
+use std::fmt;
 
 /// Represents information about the program.
 #[derive(Debug)]
@@ -38,4 +40,11 @@ pub enum Expr {
 #[derive(Debug, Clone)]
 pub enum ValueKind {
 	Integer
+}
+
+/// Represents a piece of data paired with a source position.
+#[derive(Debug, Clone)]
+pub struct Node<T : fmt::Debug + Clone> {
+	pub content : T,
+	pub span : Span
 }

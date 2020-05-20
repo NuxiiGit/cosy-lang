@@ -117,6 +117,12 @@ impl Lexer<'_> {
 		self.reader.advance_while(CharKind::is_valid_operator);
 	}
 }
+impl<'a> From<&'a String> for Lexer<'a> {
+	fn from(src : &'a String) -> Self {
+		let slice : &str = &src;
+		Self::from(slice)
+	}
+}
 impl<'a> From<&'a str> for Lexer<'a> {
 	fn from(src : &'a str) -> Self {
 		let reader = CharReader::from(src);
