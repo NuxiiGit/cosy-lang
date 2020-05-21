@@ -18,7 +18,7 @@ fn main() {
 	let mut parser = Parser::from(&mut sess);
 	let result = parser.parse_stmt();
 	match result {
-		Ok(Node { span, content }) => println!("{}\n{:#?}", span, content),
+		Ok(stmt) => println!("{:#?}", stmt),
 		Err(e) => println!("{}", e)
 	}
 	let dt = now.elapsed();

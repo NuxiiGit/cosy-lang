@@ -9,7 +9,7 @@ use super::common::{
 	diagnostics::{
 		IssueTracker,
 		error::{ Error, ErrorKind },
-		span::Span
+		span::{ Span, Cursor }
 	}
 };
 
@@ -25,8 +25,8 @@ impl<'a> Parser<'a> {
 	/// Parses any kind of statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
-		let node = self.phantom_node();
-		let expr = match self.token() {
+		let begin = self.cursor();
+		let content = match self.token() {
 			_ => {
 				// expression statements require semicolons
 				requires_semicolon = true;
@@ -36,7 +36,10 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
-		Ok(node.into(Stmt::Expr { expr }))
+		let end = self.cursor();
+		let span = Span { begin, end };
+		let expr = Node { content, span };
+		Ok(Stmt::Expr { expr })
 	}
 
 	/// Parses any kind of expression.
@@ -49,15 +52,15 @@ impl<'a> Parser<'a> {
 		match self.token() {
 			TokenKind::Identifier(ident, ..) => {
 				let ident = *ident;
-				let node = self.advance();
-				Ok(node.into(Expr::Variable { ident }))
+				self.advance();
+				Ok(Expr::Variable { ident })
 			},
 			TokenKind::Literal(kind) => {
 				let kind = match kind {
 					LiteralKind::Integral(value) => ValueKind::Integer(*value)
 				};
-				let node = self.advance();
-				Ok(node.into(Expr::Value { kind }))
+				self.advance();
+				Ok(Expr::Value { kind })
 			},
 			_ => self.parse_expr_groupings()
 		}
@@ -73,15 +76,16 @@ impl<'a> Parser<'a> {
 
 	/// Advances the parser, but returns an error if some predicate isn't held.
 	pub fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Result<TokenKind> {
-		let node = self.advance();
-		if p(&node.content) {
-			Ok(node)
+		if p(self.token()) {
+			Ok(self.advance())
 		} else {
-			Err(Error {
+			let error = Error {
 				reason : on_err,
-				span : node.span,
+				span : self.span(),
 				kind : ErrorKind::Fatal
-			})
+			};
+			self.advance();
+			Err(error)
 		}
 	}
 
@@ -90,24 +94,21 @@ impl<'a> Parser<'a> {
 		&self.current
 	}
 
-	/// Creates a node with no associated value with the current span.
-	pub fn phantom_node(&mut self) -> Node<()> {
-		let span = self.lexer.span().clone();
-		Node {
-			content : (),
-			span
-		}
+	/// Returns the current token span.
+	pub fn span(&self) -> Span {
+		self.lexer.span().clone()
 	}
 
-	/// Advances the parser and returns the `Node` of the previous lexeme.
-	pub fn advance(&mut self) -> Node<TokenKind> {
-		let span = self.lexer.span().clone();
+	/// Returns the left-most cursor of the lexer.
+	pub fn cursor(&self) -> Cursor {
+		let cursor = &self.lexer.span().begin;
+		cursor.clone()
+	}
+
+	/// Advances the parser and returns the the previous lexeme.
+	pub fn advance(&mut self) -> TokenKind {
 		let next = self.lexer.advance();
-		let prev = mem::replace(&mut self.current, next);
-		Node {
-			content : prev,
-			span
-		}
+		mem::replace(&mut self.current, next)
 	}
 
 	/// Inserts a warning into to the `IssueTracker`.
@@ -129,7 +130,7 @@ impl<'a> From<&'a mut Session> for Parser<'a> {
 }
 
 /// Represents a parser result and failure case.
-pub type Result<T> = result::Result<Node<T>, Error>;
+pub type Result<T> = result::Result<T, Error>;
 
 /// Represents information about the program.
 #[derive(Debug)]
@@ -172,21 +173,31 @@ pub enum ValueKind {
 	Integer(usize)
 }
 
+struct NodeBuilder<'a, 'p> {
+	parser : &'a Parser<'p>,
+	cursor : Cursor
+}
+impl<'a, 'p> NodeBuilder<'a, 'p> {
+	fn start(parser : &'a Parser<'p>) -> Self {
+		let cursor = parser.lexer.span().begin.clone();
+		NodeBuilder { parser, cursor }
+	}
+
+	fn end<T>(self, content : T) -> Node<T> {
+		let begin = self.cursor;
+		let end = self.parser.lexer.span().begin.clone();
+		let span = Span { begin, end };
+		Node { content, span }
+	}
+}
+
 /// Represents a piece of data paired with a source position.
 pub struct Node<T> {
 	pub content : T,
 	pub span : Span
 }
-impl<T> Node<T> {
-	/// Converts a Node of type `T` into to a node of type `S`.
-	/// The content of the previous span is consumed and discarded.
-	pub fn into<S>(self, content : S) -> Node<S> {
-		let span = self.span;
-		Node { content, span }
-	}
-}
 impl<T : fmt::Debug> fmt::Debug for Node<T> {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "{:?}", self.content)
+		write!(out, "{{span={}}} {:?}", self.span, self.content)
     }
 }
