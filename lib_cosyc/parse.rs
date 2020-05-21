@@ -22,9 +22,25 @@ pub struct Parser<'a> {
 	current : TokenKind
 }
 impl<'a> Parser<'a> {
+	/// Parses any kind of statement.
+	pub fn parse_stmt(&mut self) -> Result<Stmt> {
+		let mut requires_semicolon = false;
+		let node = self.phantom_node();
+		let expr = match self.token() {
+			_ => {
+				// expression statements require semicolons
+				requires_semicolon = true;
+				self.parse_expr()
+			},
+		}?;
+		if requires_semicolon {
+			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
+		}
+		Ok(node.into(Stmt::Expr { expr }))
+	}
+
 	/// Parses any kind of expression.
 	pub fn parse_expr(&mut self) -> Result<Expr> {
-		self.warn("bweh uwu...");
 		self.parse_expr_terminal()
 	}
 
@@ -49,16 +65,16 @@ impl<'a> Parser<'a> {
 
 	/// Parses groupings of expressions.
 	pub fn parse_expr_groupings(&mut self) -> Result<Expr> {
-		self.expects(TokenKind::LeftParen, "malformed expression")?;
-		let expr = self.parse_expr()?;
-		self.expects(TokenKind::RightParen, "expected closing parenthesis in grouping")?;
-		Ok(expr)
+		self.expects(|x| matches!(x, TokenKind::LeftParen), "malformed expression")?;
+		let node = self.parse_expr()?;
+		self.expects(|x| matches!(x, TokenKind::RightParen), "expected closing parenthesis in grouping")?;
+		Ok(node)
 	}
 
 	/// Advances the parser, but returns an error if some predicate isn't held.
-	pub fn expects(&mut self, kind : TokenKind, on_err : &'static str) -> Result<TokenKind> {
+	pub fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Result<TokenKind> {
 		let node = self.advance();
-		if node.content == kind {
+		if p(&node.content) {
 			Ok(node)
 		} else {
 			Err(Error {
@@ -72,6 +88,15 @@ impl<'a> Parser<'a> {
 	/// Returns a reference to the current token kind.
 	pub fn token(&self) -> &TokenKind {
 		&self.current
+	}
+
+	/// Creates a node with no associated value with the current span.
+	pub fn phantom_node(&mut self) -> Node<()> {
+		let span = self.lexer.span().clone();
+		Node {
+			content : (),
+			span
+		}
 	}
 
 	/// Advances the parser and returns the `Node` of the previous lexeme.
@@ -121,7 +146,9 @@ pub struct Block {
 /// Represents statement information.
 #[derive(Debug)]
 pub enum Stmt {
-	Decl,
+	Declr {
+		ident : Identifier
+	},
 	Expr {
 		expr : Node<Expr>
 	}

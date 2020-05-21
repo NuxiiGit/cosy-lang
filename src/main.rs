@@ -13,12 +13,12 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "(((uwu a)))";
+	let src = "((( uwu )));";
 	let mut sess = Session::from(String::from(src));
 	let mut parser = Parser::from(&mut sess);
-	let result = parser.parse_expr();
+	let result = parser.parse_stmt();
 	match result {
-		Ok(Node { span, content }) => println!("{}: {:?}", span, content),
+		Ok(Node { span, content }) => println!("{}\n{:#?}", span, content),
 		Err(e) => println!("{}", e)
 	}
 	let dt = now.elapsed();
