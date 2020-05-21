@@ -25,7 +25,7 @@ impl<'a> Parser<'a> {
 	/// Parses any kind of statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
-		let begin = self.cursor();
+		let node = self.new_node();
 		let content = match self.token() {
 			_ => {
 				// expression statements require semicolons
@@ -36,9 +36,7 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
-		let end = self.cursor();
-		let span = Span { begin, end };
-		let expr = Node { content, span };
+		let expr = node.submit(content);
 		Ok(Stmt::Expr { expr })
 	}
 
@@ -119,6 +117,11 @@ impl<'a> Parser<'a> {
 			kind : ErrorKind::Warning
 		});
 	}
+
+	/// Internal function for creating a node builder.
+	fn new_node(&self) -> NodeBuilder<'a> {
+		NodeBuilder::new(&self.lexer)
+	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
 	fn from(sess : &'a mut Session) -> Self {
@@ -173,24 +176,6 @@ pub enum ValueKind {
 	Integer(usize)
 }
 
-struct NodeBuilder<'a, 'p> {
-	parser : &'a Parser<'p>,
-	cursor : Cursor
-}
-impl<'a, 'p> NodeBuilder<'a, 'p> {
-	fn start(parser : &'a Parser<'p>) -> Self {
-		let cursor = parser.lexer.span().begin.clone();
-		NodeBuilder { parser, cursor }
-	}
-
-	fn end<T>(self, content : T) -> Node<T> {
-		let begin = self.cursor;
-		let end = self.parser.lexer.span().begin.clone();
-		let span = Span { begin, end };
-		Node { content, span }
-	}
-}
-
 /// Represents a piece of data paired with a source position.
 pub struct Node<T> {
 	pub content : T,
@@ -200,4 +185,26 @@ impl<T : fmt::Debug> fmt::Debug for Node<T> {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
 		write!(out, "{{span={}}} {:?}", self.span, self.content)
     }
+}
+
+/// Usability feature for constructing spans from the parser lexer.
+struct NodeBuilder<'a> {
+	lexer : *const Lexer<'a>,
+	cursor : Cursor
+}
+impl<'a> NodeBuilder<'a> {
+	fn new(lexer : &Lexer<'a>) -> Self {
+		let cursor = lexer.span().begin.clone();
+		let lexer = lexer as *const Lexer<'a>;
+		NodeBuilder { lexer, cursor }
+	}
+
+	fn submit<T>(self, content : T) -> Node<T> {
+		unsafe {
+			let begin = self.cursor;
+			let end = (*self.lexer).span().begin.clone();
+			let span = Span { begin, end };
+			Node { content, span }
+		}
+	}
 }
