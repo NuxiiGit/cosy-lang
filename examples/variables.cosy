@@ -1,15 +1,15 @@
 -- variable
-var foo : i32 = 3;
+let mut foo : i32 = 3;
 
 -- constant
 let bar = 'A';
 
 -- delayed variable instantiation
-var i : i32;
+let mut i : i32;
 i = 1;
 
 -- block declaration
-var { a = 1, b = "nice" }
+let mut { a = 1, b = "nice" }
 
 -- block declaration mutual recursion
 let {
