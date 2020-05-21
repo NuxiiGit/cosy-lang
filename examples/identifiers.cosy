@@ -1,14 +1,14 @@
 -- alphabetic
-var five = 5;
+let five = 5;
 
 -- alphanumeric
-var pi2 = 2 * 3.14;
+let pi2 = 2 * 3.14;
 
 -- underscores
-var player_age = 18;
+let player_age = 18;
 
 -- operator identifiers
-var ~^_^~ = "hewwo?";
+let ~^_^~ = "hewwo?";
 
 -- mixed identifiers
 let a %_gain b = a * 100.0 / b;
@@ -17,6 +17,6 @@ if 15 %_gain 12 > 30.0 {
 }
 
 -- prime identifiers
-var x   = 0;       -- x
-var x'  = x  + 1;  -- x prime
-var x'' = x' + 1;  -- x prime-prime
+let x   = 0;       -- x
+let x'  = x  + 1;  -- x prime
+let x'' = x' + 1;  -- x prime-prime
