@@ -13,7 +13,7 @@ use super::common::{
 	}
 };
 
-use std::{ mem, result };
+use std::{ fmt, mem, result };
 
 /// Produces abstract syntax from concrete syntax. Reports any errors to the available `IssueTracker`.
 pub struct Parser<'a> {
@@ -173,7 +173,6 @@ pub enum ValueKind {
 }
 
 /// Represents a piece of data paired with a source position.
-#[derive(Debug)]
 pub struct Node<T> {
 	pub content : T,
 	pub span : Span
@@ -185,4 +184,9 @@ impl<T> Node<T> {
 		let span = self.span;
 		Node { content, span }
 	}
+}
+impl<T : fmt::Debug> fmt::Debug for Node<T> {
+	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+		write!(out, "{:?}", self.content)
+    }
 }
