@@ -19,13 +19,14 @@ use std::{ fmt, mem, result };
 pub struct Parser<'a> {
 	issues : &'a mut IssueTracker,
 	lexer : Lexer<'a>,
-	current : TokenKind
+	current : TokenKind,
+	span : Span
 }
 impl<'a> Parser<'a> {
 	/// Parses any kind of statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
-		let node = self.new_node();
+		let span = self.span();
 		let content = match self.token() {
 			_ => {
 				// expression statements require semicolons
@@ -92,9 +93,9 @@ impl<'a> Parser<'a> {
 		&self.current
 	}
 
-	/// Returns the current token span.
+	/// Returns the previous token span.
 	pub fn span(&self) -> Span {
-		self.lexer.span().clone()
+		self.span.clone()
 	}
 
 	/// Returns the left-most cursor of the lexer.
@@ -105,6 +106,7 @@ impl<'a> Parser<'a> {
 
 	/// Advances the parser and returns the the previous lexeme.
 	pub fn advance(&mut self) -> TokenKind {
+		self.span = self.lexer.span().clone();
 		let next = self.lexer.advance();
 		mem::replace(&mut self.current, next)
 	}
@@ -128,7 +130,8 @@ impl<'a> From<&'a mut Session> for Parser<'a> {
 		let issues = &mut sess.issues;
 		let mut lexer = Lexer::from(&sess.src);
 		let current = lexer.advance();
-		Self { issues, lexer, current }
+		let span = Span::new();
+		Self { issues, lexer, current, span }
 	}
 }
 
