@@ -61,3 +61,6 @@ let concat(xss : [['a]]) : ['a] = case xss {
 -- operator blocks (allow the use of expressions or non-operator identifiers as operators)
 let (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if x < min { min } else { x };
 let percent = 0 `clamp(x)` 100;
+
+-- constant function
+let const double(a : i32)

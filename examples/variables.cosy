@@ -1,8 +1,9 @@
 -- variable
-let mut foo : i32 = 3;
+let     foo : i32 = 3;  -- immutable
+let mut boo : i32 = 3;  -- mutable
 
 -- constant
-let bar = 'A';
+let const thing = 'A';  -- constant variables can be assigned to other constant variables
 
 -- delayed variable instantiation
 let mut i : i32;
