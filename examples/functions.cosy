@@ -63,4 +63,5 @@ let (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if 
 let percent = 0 `clamp(x)` 100;
 
 -- constant function
-let const double(a : i32)
+let const double(a : i32) : i32 = 2 * a;  -- let const double : i32 -> i32 = \(a : i32) -> 2 * a;
+let const pi_2 = double(pi);
