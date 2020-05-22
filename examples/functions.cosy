@@ -28,7 +28,7 @@ let (f : 'a -> 'b) $ (x : 'a) : 'b = f(x);
 let greatest' = (max_curried $ 2) $ 1;
 
 -- pipeline operator
-let (f : 'a -> 'b) |> (x : 'a) : 'b = f $ x;
+let (x : 'a) |> (f : 'a -> 'b) : 'b = f $ x;
 let greatest'' = 1 |> (2 |> max_curried);
 
 -- procedural style functions
@@ -53,6 +53,6 @@ let concat(xss : [['a]]) : ['a] = case xss {
 let (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if x < min { min } else { x };
 let percent = 0 `clamp(x)` 100;
 
--- constant function
+-- constant function (functions must be pure to qualify as constants)
 let const double(a : i32) : i32 = 2 * a;  -- let const double : i32 -> i32 = \(a : i32) -> 2 * a;
-let const pi_2 = double(pi);
+let const pi_2 = double(pi);              -- evaluated at compile time
