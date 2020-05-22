@@ -31,15 +31,6 @@ let greatest' = (max_curried $ 2) $ 1;
 let (f : 'a -> 'b) |> (x : 'a) : 'b = f $ x;
 let greatest'' = 1 |> (2 |> max_curried);
 
--- walrus operator
-let (x : ^var 'a) := (value : 'a) : 'a = {
-	x^ = value;
-	value
-}
-if x := thing() != 0 {
-	-- stuff
-}
-
 -- procedural style functions
 let izard(a : str, b : str) : str = {
 	return a ++ "izard" ++ b;
