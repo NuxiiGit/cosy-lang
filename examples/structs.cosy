@@ -6,6 +6,12 @@ let struct = record { name : str, age : i32 };
 
 -- typedefs
 type Point = (i32, i32);
+type Empty = ();
 
 -- newtype
 type Vec2 = distinct record { x : i32, y : i32 };
+type Size = distinct (u32);  -- singleton tuple
+
+-- construction
+let vec2 = Vec2.{ x = 2.0, y = 4.2 };  -- notice the required `.` between the type name and brackets
+let point = Point.(3.0, 2.0);
