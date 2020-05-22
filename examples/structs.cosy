@@ -1,0 +1,11 @@
+-- tuples
+let tuple = (1, 2);
+
+-- records
+let struct = record { name : str, age : i32 };
+
+-- typedefs
+type Point = (i32, i32);
+
+-- newtype
+type Vec2 = distinct record { x : i32, y : i32 };
