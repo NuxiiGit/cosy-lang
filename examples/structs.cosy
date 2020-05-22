@@ -13,5 +13,13 @@ type Vec2 = distinct record { x : i32, y : i32 };
 type Size = distinct (u32);  -- singleton tuple
 
 -- construction
-let vec2 = Vec2.{ x = 2.0, y = 4.2 };  -- notice the required `.` between the type name and brackets
+let vec = Vec2.{ x = 2.0, y = 4.2 };  -- notice the required `.` between the type name and brackets
 let point = Point.(3.0, 2.0);
+
+-- setting members
+vec.x = 5.0;     -- record
+point.0 = 12.3;  -- tuple
+
+-- getting members
+var y = vec.y;    -- record
+var b = point.1;  -- tuple
