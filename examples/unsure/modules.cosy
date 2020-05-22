@@ -1,9 +1,0 @@
--- import module
-import Prelude::Math;
-
-let %*% = Math::matrix_mul;
-
-let \\ = Math::set_difference;
-
--- block import
-import Prelude::{ List, Tree, Graph };
