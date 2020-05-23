@@ -5,7 +5,7 @@ use cosyc::{
 	},
 	common::{
 		Session,
-		diagnostics::{ IssueTracker, error::Error }
+		diagnostics::{ IssueTracker }
 	}
 };
 
@@ -23,7 +23,7 @@ fn main() {
 	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());
-	for (i, error) in &sess.issues {
-		println!("[{}] {}", i, error);
+	for issue in &sess.issues {
+		println!("[{}] {}", issue.location, issue.error);
 	}
 }

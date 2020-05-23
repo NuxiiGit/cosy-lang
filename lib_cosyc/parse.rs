@@ -6,10 +6,7 @@ use ident::Identifier;
 
 use super::common::{
 	Session,
-	diagnostics::{
-		IssueTracker, SourcePosition,
-		error::{ Error, ErrorKind }
-	}
+	diagnostics::{ IssueTracker, SourcePosition, Error, ErrorKind }
 };
 
 use std::{ fmt, mem, result };
@@ -24,7 +21,7 @@ impl<'a> Parser<'a> {
 	/// Parses an expression statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
-		let position = self.lexer.cursor();
+		let location = self.lexer.cursor();
 		let expr = match self.token() {
 			_ => {
 				// expression statements always require semicolons
@@ -47,7 +44,7 @@ impl<'a> Parser<'a> {
 
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
-		let position = self.lexer.cursor();
+		let location = self.lexer.cursor();
 		let kind = match self.token() {
 			TokenKind::Identifier(ident, ..) => {
 				let ident = *ident;
