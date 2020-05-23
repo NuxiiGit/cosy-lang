@@ -18,11 +18,11 @@ impl IssueTracker {
 	}
 
 	/// Adds a new error to the session.
-	pub fn report(&mut self, location : SourcePosition, error : Error) {
+	pub fn report(&mut self, error : SyntaxError) {
 		if error.kind > self.error_level {
 			self.error_level = error.kind.clone();
 		}
-		self.errors.push(SyntaxError { location, error });
+		self.errors.push(error);
 	}
 }
 impl IntoIterator for IssueTracker {
@@ -42,28 +42,20 @@ impl<'a> IntoIterator for &'a IssueTracker {
 	}
 }
 
-/// Represents an error and the location it occurred in the source file.
+/// Stores compile error information.
 #[derive(Debug, Clone)]
 pub struct SyntaxError {
 	pub location : SourcePosition,
-	pub error : Error
+	pub kind : ErrorKind,
+	pub reason : &'static str
+	
 }
-
-/// Represebts a source location.
-pub type SourcePosition = usize;
-
-/// Stores compile error information.
-#[derive(Debug, Clone)]
-pub struct Error {
-	pub reason : &'static str,
-	pub kind : ErrorKind
-}
-impl fmt::Display for Error {
+impl fmt::Display for SyntaxError {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "{:?}! {}", self.kind, self.reason)
+		write!(out, "[{}] {:?}! {}", self.location, self.kind, self.reason)
     }
 }
-impl error::Error for Error {}
+impl error::Error for SyntaxError {}
 
 /// Represents the differnt kinds of error.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
@@ -76,3 +68,6 @@ impl Default for ErrorKind {
 		ErrorKind::Warning
 	}
 }
+
+/// Represebts a source location.
+pub type SourcePosition = usize;

@@ -6,7 +6,7 @@ use ident::Identifier;
 
 use super::common::{
 	Session,
-	diagnostics::{ IssueTracker, SourcePosition, Error, ErrorKind }
+	diagnostics::{ IssueTracker, SourcePosition, SyntaxError, ErrorKind }
 };
 
 use std::{ fmt, mem, result };
@@ -74,10 +74,8 @@ impl<'a> Parser<'a> {
 		if p(self.token()) {
 			Ok(self.advance())
 		} else {
-			let error = Error {
-				reason : on_err,
-				kind : ErrorKind::Fatal
-			};
+			let error = self.error(ErrorKind::Fatal, on_err);
+			self.advance();
 			Err(error)
 		}
 	}
@@ -87,26 +85,32 @@ impl<'a> Parser<'a> {
 		&self.current
 	}
 
-	/// Advances the parser and returns the the previous lexeme.
-	pub fn advance(&mut self) -> TokenKind {
-		let next = self.lexer.advance();
-		mem::replace(&mut self.current, next)
+	/// Returns an error at the current token position.
+	pub fn error(&self, kind : ErrorKind, reason : &'static str) -> SyntaxError {
+		let location = self.cursor();
+		SyntaxError { location, kind, reason }
 	}
 
 	/// Inserts a warning into to the `IssueTracker`.
 	pub fn warn(&mut self, reason : &'static str) {
-		let kind = ErrorKind::Warning;
-		self.report(Error { reason, kind });
+		let error = self.error(ErrorKind::Warning, reason);
+		self.report(error);
 	}
 
 	/// Reports an error to the `IssueTracker`.
-	pub fn report(&mut self, error : Error) {
-		self.issues.report(self.cursor(), error);
+	pub fn report(&mut self, error : SyntaxError) {
+		self.issues.report(error);
 	}
 
 	/// Returns the current cursor of the parser.
 	pub fn cursor(&self) -> SourcePosition {
 		self.lexer.cursor()
+	}
+
+	/// Advances the parser and returns the the previous lexeme.
+	pub fn advance(&mut self) -> TokenKind {
+		let next = self.lexer.advance();
+		mem::replace(&mut self.current, next)
 	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
@@ -119,7 +123,7 @@ impl<'a> From<&'a mut Session> for Parser<'a> {
 }
 
 /// Represents a parser result and failure case.
-pub type Result<T> = result::Result<T, Error>;
+pub type Result<T> = result::Result<T, SyntaxError>;
 
 /// Represents information about the program.
 #[derive(Debug)]
