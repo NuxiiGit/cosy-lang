@@ -15,13 +15,13 @@ use std::{ fmt, mem, result };
 pub struct Parser<'a> {
 	issues : &'a mut IssueTracker,
 	lexer : Lexer<'a>,
-	current : TokenKind
+	location : SourcePosition,
+	peeked : TokenKind
 }
 impl<'a> Parser<'a> {
 	/// Parses an expression statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
-		let location = self.lexer.cursor();
 		let expr = match self.token() {
 			_ => {
 				// expression statements always require semicolons
@@ -32,6 +32,7 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
+		let location = self.location();
 		let kind = StmtKind::Expr { expr };
 		Ok(Stmt { location, kind })
 	}
@@ -43,7 +44,6 @@ impl<'a> Parser<'a> {
 
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
-		let location = self.lexer.cursor();
 		let kind = match self.matches(TokenKind::is_terminal) {
 			Some(TokenKind::Identifier(ident, ..)) => {
 				ExprKind::Variable { ident }
@@ -54,9 +54,10 @@ impl<'a> Parser<'a> {
 				};
 				ExprKind::Value { kind }
 			},
+			Some(_) => return Err(self.error(ErrorKind::Bug, "unknown terminal value")),
 			_ => return self.parse_expr_groupings()
 		};
-		self.advance();
+		let location = self.location();
 		Ok(Expr { location, kind })
 	}
 
@@ -73,9 +74,8 @@ impl<'a> Parser<'a> {
 		if let Some(kind) = self.matches(p) {
 			Ok(kind)
 		} else {
-			let error = self.error(ErrorKind::Fatal, on_err);
 			self.advance();
-			Err(error)
+			Err(self.error(ErrorKind::Fatal, on_err))
 		}
 	}
 
@@ -91,13 +91,7 @@ impl<'a> Parser<'a> {
 
 	/// Returns a reference to the current token kind.
 	pub fn token(&self) -> &TokenKind {
-		&self.current
-	}
-
-	/// Returns an error at the current token position.
-	pub fn error(&self, kind : ErrorKind, reason : &'static str) -> SyntaxError {
-		let location = self.cursor();
-		SyntaxError { location, kind, reason }
+		&self.peeked
 	}
 
 	/// Inserts a warning into to the `IssueTracker`.
@@ -106,28 +100,36 @@ impl<'a> Parser<'a> {
 		self.report(error);
 	}
 
+	/// Returns an error at the current token position.
+	pub fn error(&self, kind : ErrorKind, reason : &'static str) -> SyntaxError {
+		let location = self.location();
+		SyntaxError { location, kind, reason }
+	}
+
 	/// Reports an error to the `IssueTracker`.
 	pub fn report(&mut self, error : SyntaxError) {
 		self.issues.report(error);
 	}
 
-	/// Returns the current cursor of the parser.
-	pub fn cursor(&self) -> SourcePosition {
-		self.lexer.cursor()
+	/// Returns the current location of the parser.
+	pub fn location(&self) -> SourcePosition {
+		self.location
 	}
 
 	/// Advances the parser and returns the the previous lexeme.
 	pub fn advance(&mut self) -> TokenKind {
+		self.location = self.lexer.cursor();
 		let next = self.lexer.advance();
-		mem::replace(&mut self.current, next)
+		mem::replace(&mut self.peeked, next)
 	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
 	fn from(sess : &'a mut Session) -> Self {
 		let issues = &mut sess.issues;
 		let mut lexer = Lexer::from(&sess.src);
-		let current = lexer.advance();
-		Self { issues, lexer, current }
+		let location = 0;
+		let peeked = lexer.advance();
+		Self { issues, lexer, location, peeked }
 	}
 }
 

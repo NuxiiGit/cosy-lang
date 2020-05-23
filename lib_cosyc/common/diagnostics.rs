@@ -53,15 +53,16 @@ pub struct SyntaxError {
 impl fmt::Display for SyntaxError {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
 		write!(out, "[{}] {:?}! {}", self.location, self.kind, self.reason)
-    }
+	}
 }
 impl error::Error for SyntaxError {}
 
 /// Represents the differnt kinds of error.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
 pub enum ErrorKind {
-    Warning,
-    Fatal
+	Warning,
+	Bug,
+	Fatal
 }
 impl Default for ErrorKind {
 	fn default() -> Self {
