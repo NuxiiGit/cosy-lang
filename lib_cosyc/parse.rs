@@ -1,6 +1,6 @@
 pub mod lex;
 pub mod ident;
-/*
+
 use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 use ident::Identifier;
 
@@ -9,7 +9,7 @@ use super::common::{
 	diagnostics::{
 		IssueTracker,
 		error::{ Error, ErrorKind },
-		span::{ Span, Cursor }
+		span::Span
 	}
 };
 
@@ -19,11 +19,10 @@ use std::{ fmt, mem, result };
 pub struct Parser<'a> {
 	issues : &'a mut IssueTracker,
 	lexer : Lexer<'a>,
-	current : TokenKind,
-	span : Span
+	current : TokenKind
 }
 impl<'a> Parser<'a> {
-	/// Parses any kind of statement.
+	/*/// Parses any kind of statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
 		let span = self.span();
@@ -39,7 +38,7 @@ impl<'a> Parser<'a> {
 		}
 		let expr = node.submit(content);
 		Ok(Stmt::Expr { expr })
-	}
+	}*/
 
 	/// Parses any kind of expression.
 	pub fn parse_expr(&mut self) -> Result<Expr> {
@@ -80,7 +79,7 @@ impl<'a> Parser<'a> {
 		} else {
 			let error = Error {
 				reason : on_err,
-				span : self.span(),
+				span : self.span().clone(),
 				kind : ErrorKind::Fatal
 			};
 			self.advance();
@@ -94,19 +93,12 @@ impl<'a> Parser<'a> {
 	}
 
 	/// Returns the previous token span.
-	pub fn span(&self) -> Span {
-		self.span.clone()
-	}
-
-	/// Returns the left-most cursor of the lexer.
-	pub fn cursor(&self) -> Cursor {
-		let cursor = &self.lexer.span().begin;
-		cursor.clone()
+	pub fn span(&self) -> &Span {
+		self.lexer.span()
 	}
 
 	/// Advances the parser and returns the the previous lexeme.
 	pub fn advance(&mut self) -> TokenKind {
-		self.span = self.lexer.span().clone();
 		let next = self.lexer.advance();
 		mem::replace(&mut self.current, next)
 	}
@@ -119,19 +111,13 @@ impl<'a> Parser<'a> {
 			kind : ErrorKind::Warning
 		});
 	}
-
-	/// Internal function for creating a node builder.
-	fn new_node(&self) -> NodeBuilder<'a> {
-		NodeBuilder::new(&self.lexer)
-	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
 	fn from(sess : &'a mut Session) -> Self {
 		let issues = &mut sess.issues;
 		let mut lexer = Lexer::from(&sess.src);
 		let current = lexer.advance();
-		let span = Span::new();
-		Self { issues, lexer, current, span }
+		Self { issues, lexer, current }
 	}
 }
 
@@ -147,7 +133,7 @@ pub struct Program {
 /// Represents a block of statements
 #[derive(Debug)]
 pub struct Block {
-	pub stmts : Vec<Node<Stmt>>
+	pub stmts : Vec<Stmt>
 }
 
 /// Represents statement information.
@@ -157,7 +143,7 @@ pub enum Stmt {
 		ident : Identifier
 	},
 	Expr {
-		expr : Node<Expr>
+		expr : Expr
 	}
 }
 
@@ -178,37 +164,3 @@ pub enum Expr {
 pub enum ValueKind {
 	Integer(usize)
 }
-
-/// Represents a piece of data paired with a source position.
-pub struct Node<T> {
-	pub content : T,
-	pub span : Span
-}
-impl<T : fmt::Debug> fmt::Debug for Node<T> {
-	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "{{span={}}} {:?}", self.span, self.content)
-    }
-}
-
-/// Usability feature for constructing spans from the parser lexer.
-struct NodeBuilder<'a> {
-	lexer : *const Lexer<'a>,
-	cursor : Cursor
-}
-impl<'a> NodeBuilder<'a> {
-	fn new(lexer : &Lexer<'a>) -> Self {
-		let cursor = lexer.span().begin.clone();
-		let lexer = lexer as *const Lexer<'a>;
-		NodeBuilder { lexer, cursor }
-	}
-
-	fn submit<T>(self, content : T) -> Node<T> {
-		unsafe {
-			let begin = self.cursor;
-			let end = (*self.lexer).span().begin.clone();
-			let span = Span { begin, end };
-			Node { content, span }
-		}
-	}
-}
-*/

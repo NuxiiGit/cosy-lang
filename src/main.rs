@@ -1,6 +1,6 @@
 use cosyc::{
 	parse::{
-		//Parser, Node,
+		Parser,
 		lex::{ Lexer, TokenKind }
 	},
 	common::{
@@ -13,14 +13,14 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "((( uwu )));";
+	let src = "((( 1 )));";
 	let mut sess = Session::from(String::from(src));
-	/*let mut parser = Parser::from(&mut sess);
-	let result = parser.parse_stmt();
+	let mut parser = Parser::from(&mut sess);
+	let result = parser.parse_expr();
 	match result {
-		Ok(stmt) => println!("{:#?}", stmt),
+		Ok(ast) => println!("{:#?}", ast),
 		Err(e) => println!("{}", e)
-	}*/
+	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());
 	for error in &sess.issues {
