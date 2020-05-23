@@ -1,28 +1,12 @@
--- by reference
-var a : &i32 = &2;
+-- by reference (pointers)
+let a : ^i32 = ^2;
 
-print (*a + 10); -- dereference
+-- dereference
+a^ = 12;
 
 -- by name
 var b : -> i32 = -> irandom 32;
 
-print b; -- 29, random number
-print b; -- 8
-print b; -- 13, etc.
-
--- multiple borrows
-var a = 12;
-var b = &&a;    -- incorrect; `&&` is the boolean and operator
-var b' = &(&a); -- correct
-
--- multiple dereferences
-var c = **b;    -- incorrect; `**` is a custom operator
-var c' = *(*b); -- correct
-
-{- Other examples where this is required are for double negation:
- - |	
- - |	-(-1)
- - |	!(!false)
- - |	~(~0x00)
- - |	
- -}
+print(b); -- 29, random number
+print(b); -- 8
+print(b); -- 13, etc.
