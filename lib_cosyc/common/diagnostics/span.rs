@@ -1,10 +1,10 @@
-use std::fmt;
+use std::{ fmt, cmp };
 
 /// Represents information about some substring of a source file.
 #[derive(Debug, Clone, Default)]
 pub struct Span {
-	pub begin : Cursor,
-	pub end : Cursor
+	pub start : usize,
+	pub end : usize
 }
 impl Span {
 	/// Creates a default span
@@ -14,25 +14,19 @@ impl Span {
 
 	/// Joins two spans together to produce a new span.
 	pub fn join(&self, other: &Self) -> Self {
-		Span {
-			begin : self.begin.clone(),
-			end : other.end.clone()
-		}
+		let start = cmp::min(self.start, other.start);
+		let end = cmp::min(self.end, other.end);
+		Span { start, end }
+	}
+
+	/// Calculates the length of this span.
+	/// A negative number is returned in the case that `start > end`.
+	pub fn length(&self) -> usize {
+		self.end - self.start
 	}
 }
 impl fmt::Display for Span {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "[{}..{}] (row. {}, col. {})", 
-				self.begin.byte, self.end.byte,
-				self.begin.line + 1, self.begin.column + 1)
+		write!(out, "[{}..{}]", self.start, self.end)
 	}
-}
-
-/// Represents a position in a file.
-#[derive(Debug, Clone, Default)]
-pub struct Cursor {
-	pub byte : usize,
-	pub line : usize,
-	/// The number of UTF-8 codepoints since the last new line.
-	pub column : usize
 }
