@@ -22,13 +22,12 @@ pub struct Parser<'a> {
 	current : TokenKind
 }
 impl<'a> Parser<'a> {
-	/*/// Parses any kind of statement.
+	/// Parses an expression statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
-		let span = self.span();
-		let content = match self.token() {
+		let expr = match self.token() {
 			_ => {
-				// expression statements require semicolons
+				// expression statements always require semicolons
 				requires_semicolon = true;
 				self.parse_expr()
 			},
@@ -36,9 +35,8 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
-		let expr = node.submit(content);
 		Ok(Stmt::Expr { expr })
-	}*/
+	}
 
 	/// Parses any kind of expression.
 	pub fn parse_expr(&mut self) -> Result<Expr> {
