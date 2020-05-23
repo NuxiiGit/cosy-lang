@@ -71,12 +71,22 @@ impl<'a> Parser<'a> {
 
 	/// Advances the parser, but returns an error if some predicate isn't held.
 	pub fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> Result<TokenKind> {
-		if p(self.token()) {
-			Ok(self.advance())
+		if let Some(kind) = self.matches(p) {
+			Ok(kind)
 		} else {
 			let error = self.error(ErrorKind::Fatal, on_err);
 			self.advance();
 			Err(error)
+		}
+	}
+
+	/// Advances the parser and returns `Some(TokenKind)` if some predicate is held,
+	/// otherwise `None` is returned and the parser does not advance.
+	pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
+		if p(self.token()) {
+			Some(self.advance())
+		} else {
+			None
 		}
 	}
 
