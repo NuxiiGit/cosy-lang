@@ -2,8 +2,6 @@ pub mod scanner;
 
 use scanner::{ CharReader, CharKind };
 
-use crate::common::diagnostics::span::Span;
-
 use super::ident::{ NameTable, Identifier };
 
 /// Converts a string into individual tokens.
@@ -12,9 +10,9 @@ pub struct Lexer<'a> {
 	name_table : NameTable<'a>
 }
 impl Lexer<'_> {
-	/// Returns the span of the current token.
-	pub fn span(&self) -> &Span {
-		self.reader.span()
+	/// Returns the cursor of the lexer.
+	pub fn cursor(&self) -> usize {
+		self.reader.cursor()
 	}
 
 	/// Returns the next token in the source.

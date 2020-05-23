@@ -1,5 +1,3 @@
-use crate::common::diagnostics::span::Span;
-
 use std::{ str::CharIndices, mem };
 
 /// Iterates over characters of a string, producing useful substrings and tagged data.
@@ -7,7 +5,8 @@ pub struct CharReader<'a> {
 	src : &'a str,
 	chars : CharIndices<'a>,
 	current : CharKind,
-	span : Span,
+	byte_begin : usize,
+	byte_end : usize,
 	/// Used to detect comment lexemes.
 	only_dashes : bool
 }
@@ -32,10 +31,10 @@ impl<'a> CharReader<'a> {
 	/// Advances the reader and returns the next `CharKind`.
 	pub fn advance(&mut self) -> CharKind {
 		let future = if let Some((i, c)) = self.chars.next() {
-			self.span.end = i;
+			self.byte_end = i;
 			CharKind::identify(c)
 		} else {
-			self.span.end = self.src.len();
+			self.byte_end = self.src.len();
 			CharKind::EoF
 		};
 		if self.only_dashes && !matches!(self.current, CharKind::Minus) {
@@ -46,23 +45,23 @@ impl<'a> CharReader<'a> {
 
 	/// Returns the current substring.
 	pub fn slice(&self) -> &'a str {
-		&self.src[self.span.start..self.span.end]
+		&self.src[self.byte_begin..self.byte_end]
 	}
 
 	/// Clears the current span.
 	pub fn reset_span(&mut self) {
-		self.span.start = self.span.end;
+		self.byte_begin = self.byte_end;
 		self.only_dashes = true;
 	}
 	
-	/// Returns a reference to the current span.
-	pub fn span(&self) -> &Span {
-		&self.span
+	/// Returns the current cursor position.
+	pub fn cursor(&self) -> usize {
+		self.byte_begin
 	}
 
 	/// Returns whether the current stream of characters is a comment lexeme.
 	pub fn holds_comment_lexeme(&self) -> bool {
-		self.only_dashes && self.span.length() > 1
+		self.only_dashes && self.byte_end - self.byte_begin > 1
 	}
 }
 impl<'a> From<&'a str> for CharReader<'a> {
@@ -76,7 +75,8 @@ impl<'a> From<&'a str> for CharReader<'a> {
 			src,
 			chars,
 			current,
-			span : Span::new(),
+			byte_begin : 0,
+			byte_end : 0,
 			only_dashes : true
 		}
 	}

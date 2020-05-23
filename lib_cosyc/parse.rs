@@ -8,8 +8,7 @@ use super::common::{
 	Session,
 	diagnostics::{
 		IssueTracker,
-		error::{ Error, ErrorKind },
-		span::Span
+		error::{ Error, ErrorKind }
 	}
 };
 
@@ -47,25 +46,22 @@ impl<'a> Parser<'a> {
 
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
-		match self.token() {
+		let kind = match self.token() {
 			TokenKind::Identifier(ident, ..) => {
 				let ident = *ident;
-				self.advance();
-				Ok(Expr {
-					kind : ExprKind::Variable { ident }
-				})
+				ExprKind::Variable { ident }
 			},
 			TokenKind::Literal(kind) => {
 				let kind = match kind {
 					LiteralKind::Integral(value) => ValueKind::Integer(*value)
 				};
-				self.advance();
-				Ok(Expr {
-					kind : ExprKind::Value { kind }
-				})
+				ExprKind::Value { kind }
 			},
-			_ => self.parse_expr_groupings()
-		}
+			_ => return self.parse_expr_groupings()
+		};
+		let byte = self.lexer.cursor();
+		self.advance();
+		Ok(Expr { kind })
 	}
 
 	/// Parses groupings of expressions.
@@ -83,10 +79,8 @@ impl<'a> Parser<'a> {
 		} else {
 			let error = Error {
 				reason : on_err,
-				span : self.span().clone(),
 				kind : ErrorKind::Fatal
 			};
-			self.advance();
 			Err(error)
 		}
 	}
@@ -94,11 +88,6 @@ impl<'a> Parser<'a> {
 	/// Returns a reference to the current token kind.
 	pub fn token(&self) -> &TokenKind {
 		&self.current
-	}
-
-	/// Returns the previous token span.
-	pub fn span(&self) -> &Span {
-		self.lexer.span()
 	}
 
 	/// Advances the parser and returns the the previous lexeme.
@@ -109,11 +98,18 @@ impl<'a> Parser<'a> {
 
 	/// Inserts a warning into to the `IssueTracker`.
 	pub fn warn(&mut self, reason : &'static str) {
-		self.issues.report(Error {
-			reason,
-			span : self.lexer.span().clone(),
-			kind : ErrorKind::Warning
-		});
+		let kind = ErrorKind::Warning;
+		self.report(Error { reason, kind });
+	}
+
+	/// Reports an error to the `IssueTracker`.
+	pub fn report(&mut self, error : Error) {
+		self.issues.report(self.cursor(), error);
+	}
+
+	/// Returns the current cursor of the parser.
+	pub fn cursor(&self) -> usize {
+		self.lexer.cursor()
 	}
 }
 impl<'a> From<&'a mut Session> for Parser<'a> {
