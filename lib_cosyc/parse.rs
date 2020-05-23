@@ -32,9 +32,8 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
-		Ok(Stmt {
-			kind : StmtKind::Expr { expr }
-		})
+		let kind = StmtKind::Expr { expr };
+		Ok(Stmt { location, kind })
 	}
 
 	/// Parses any kind of expression.
@@ -59,7 +58,7 @@ impl<'a> Parser<'a> {
 			_ => return self.parse_expr_groupings()
 		};
 		self.advance();
-		Ok(Expr { kind })
+		Ok(Expr { location, kind })
 	}
 
 	/// Parses groupings of expressions.
@@ -137,6 +136,7 @@ pub struct Block {
 /// Represents expression information.
 #[derive(Debug)]
 pub struct Stmt {
+	pub location : SourcePosition,
 	pub kind : StmtKind
 }
 
@@ -154,6 +154,7 @@ pub enum StmtKind {
 /// Represents expression information.
 #[derive(Debug)]
 pub struct Expr {
+	pub location : SourcePosition,
 	pub kind : ExprKind
 }
 
