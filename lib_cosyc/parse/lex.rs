@@ -4,6 +4,8 @@ use scanner::{ CharReader, CharKind };
 
 use super::ident::{ NameTable, Identifier };
 
+use crate::common::diagnostics::SourcePosition;
+
 /// Converts a string into individual tokens.
 pub struct Lexer<'a> {
 	reader : CharReader<'a>,
@@ -11,7 +13,7 @@ pub struct Lexer<'a> {
 }
 impl Lexer<'_> {
 	/// Returns the cursor of the lexer.
-	pub fn cursor(&self) -> usize {
+	pub fn cursor(&self) -> SourcePosition {
 		self.reader.cursor()
 	}
 

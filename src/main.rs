@@ -13,17 +13,17 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "((( 1 )));";
+	let src = "((( 1 a)));";
 	let mut sess = Session::from(String::from(src));
 	let mut parser = Parser::from(&mut sess);
 	let result = parser.parse_expr();
 	match result {
 		Ok(ast) => println!("{:#?}", ast),
-		Err(e) => println!("{}", e)
+		Err(e) => println!("[{}] {}", parser.cursor(), e)
 	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());
-	for error in &sess.issues {
-		println!("{}", error);
+	for (i, error) in &sess.issues {
+		println!("[{}] {}", i, error);
 	}
 }

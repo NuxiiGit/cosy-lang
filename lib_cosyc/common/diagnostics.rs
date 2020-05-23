@@ -47,4 +47,7 @@ impl<'a> IntoIterator for &'a IssueTracker {
 }
 
 /// Represents an error and the location it occurred in the source file.
-pub type SyntaxError = (usize, Error);
+pub type SyntaxError = (SourcePosition, Error);
+
+/// Represebts a source location.
+pub type SourcePosition = usize;
