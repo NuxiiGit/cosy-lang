@@ -35,7 +35,9 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
-		Ok(Stmt::Expr { expr })
+		Ok(Stmt {
+			kind : StmtKind::Expr { expr }
+		})
 	}
 
 	/// Parses any kind of expression.
@@ -49,14 +51,18 @@ impl<'a> Parser<'a> {
 			TokenKind::Identifier(ident, ..) => {
 				let ident = *ident;
 				self.advance();
-				Ok(Expr::Variable { ident })
+				Ok(Expr {
+					kind : ExprKind::Variable { ident }
+				})
 			},
 			TokenKind::Literal(kind) => {
 				let kind = match kind {
 					LiteralKind::Integral(value) => ValueKind::Integer(*value)
 				};
 				self.advance();
-				Ok(Expr::Value { kind })
+				Ok(Expr {
+					kind : ExprKind::Value { kind }
+				})
 			},
 			_ => self.parse_expr_groupings()
 		}
@@ -134,9 +140,15 @@ pub struct Block {
 	pub stmts : Vec<Stmt>
 }
 
+/// Represents expression information.
+#[derive(Debug)]
+pub struct Stmt {
+	pub kind : StmtKind
+}
+
 /// Represents statement information.
 #[derive(Debug)]
-pub enum Stmt {
+pub enum StmtKind {
 	Declr {
 		ident : Identifier
 	},
@@ -147,7 +159,13 @@ pub enum Stmt {
 
 /// Represents expression information.
 #[derive(Debug)]
-pub enum Expr {
+pub struct Expr {
+	pub kind : ExprKind
+}
+
+/// Represents a kind of expression.
+#[derive(Debug)]
+pub enum ExprKind {
 	Variable {
 		ident : Identifier
 	},
