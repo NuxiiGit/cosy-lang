@@ -149,6 +149,11 @@ pub enum TokenKind {
 	Unknown
 }
 impl TokenKind {
+	/// Returns whether this token is a valid terminal value.
+	pub fn is_terminal(&self) -> bool {
+		self.is_literal() || self.is_identifier()
+	}
+
 	/// Returns `true` if the token is a literal value.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Literal(..))

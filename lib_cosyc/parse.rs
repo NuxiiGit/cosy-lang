@@ -44,14 +44,13 @@ impl<'a> Parser<'a> {
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
 		let location = self.lexer.cursor();
-		let kind = match self.token() {
-			TokenKind::Identifier(ident, ..) => {
-				let ident = *ident;
+		let kind = match self.matches(TokenKind::is_terminal) {
+			Some(TokenKind::Identifier(ident, ..)) => {
 				ExprKind::Variable { ident }
 			},
-			TokenKind::Literal(kind) => {
+			Some(TokenKind::Literal(kind)) => {
 				let kind = match kind {
-					LiteralKind::Integral(value) => ValueKind::Integer(*value)
+					LiteralKind::Integral(value) => ValueKind::Integer(value)
 				};
 				ExprKind::Value { kind }
 			},
