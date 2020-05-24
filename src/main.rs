@@ -15,7 +15,7 @@ fn main() {
 	let now = Instant::now();
 	let src = "((\nabc_+_coo\r(\n\r\n\r\r l)));";
 	let mut sess = Session::from(String::from(src));
-	println!("newlines : {:?}", sess.prospect_newlines());
+	println!("newlines : {:?}", cosyc::common::prospect_newlines(&sess.src));
 
 	let mut parser = Parser::from(&mut sess);
 	let result = parser.parse_expr();
