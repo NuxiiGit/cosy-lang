@@ -13,8 +13,10 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let src = "(((abc_+_coo l)));";
+	let src = "((\nabc_+_coo\r(\n\r\n\r\r l)));";
 	let mut sess = Session::from(String::from(src));
+	println!("newlines : {:?}", sess.prospect_newlines());
+
 	let mut parser = Parser::from(&mut sess);
 	let result = parser.parse_expr();
 	match result {
