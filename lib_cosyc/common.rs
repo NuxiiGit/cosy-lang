@@ -44,13 +44,14 @@ impl fmt::Display for Session {
 			let (start, end) = newlines.get(line).unwrap();
 			let row = line + 1;
 			let col = location - start + 1;
+			let indent = " ".repeat(digit_count(row));
 			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
-			write!(out, " --> ")?;
+			write!(out, " {}--> ", indent)?;
 			write!(out, "{}:", self.filepath)?;
 			writeln!(out, "[row. {}, col. {}]", row, col)?;
-			writeln!(out, "  | ")?;
-			writeln!(out, "  | {}", &self.src[*start..*end].replace("\t", " "))?;
-			writeln!(out, "  |{}^", " ".repeat(col))?;
+			writeln!(out, " {} | ", indent)?;
+			writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
+			writeln!(out, " {} |{}^", indent, " ".repeat(col))?;
 		}
 		Ok(())
 	}
@@ -83,4 +84,17 @@ fn prospect_newlines(src : &str) -> Vec<(usize, usize)> {
 	}
 	locations.push((start, src.len()));
 	locations
+}
+
+/// Returns the number of digits of this natural number.
+fn digit_count(mut n : usize) -> usize {
+	let mut count = 1;
+	loop {
+		if n < 10 {
+			return count;
+		} else {
+			n /= 10;
+			count += 1;
+		}
+	}
 }

@@ -1,3 +1,4 @@
+
 -- arrays must have an explicit size
 (	let array : [i32; 3] = [1, 2, 3];
 
