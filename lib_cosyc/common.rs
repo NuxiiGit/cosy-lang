@@ -48,6 +48,9 @@ impl fmt::Display for Session {
 			write!(out, " --> ")?;
 			write!(out, "{}:", self.filepath)?;
 			writeln!(out, "[row. {}, col. {}]", row, col)?;
+			writeln!(out, "  | ")?;
+			writeln!(out, "  | {}", &self.src[*start..*end])?;
+			writeln!(out, "  |{}^", " ".repeat(col))?;
 		}
 		Ok(())
 	}
