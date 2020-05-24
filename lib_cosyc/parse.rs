@@ -18,6 +18,18 @@ pub struct Parser<'a> {
 	peeked : TokenKind
 }
 impl<'a> Parser<'a> {
+	/// Parses muliple declarations into a program.
+	pub fn parse_program(&mut self) -> Program {
+		let mut body = Vec::new();
+		while !matches!(self.token(), TokenKind::EoF) {
+			match self.parse_stmt() {
+				Ok(stmt) => body.push(stmt),
+				Err(err) => self.report(err)
+			}
+		}
+		Program { body }
+	}
+
 	/// Parses an expression statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
 		let mut requires_semicolon = false;
@@ -125,7 +137,7 @@ pub type Result<T> = result::Result<T, SyntaxError>;
 /// Represents information about the program.
 #[derive(Debug)]
 pub struct Program {
-	pub body : Block
+	pub body : Vec<Stmt>
 }
 
 /// Represents a block of statements
@@ -144,9 +156,6 @@ pub struct Stmt {
 /// Represents statement information.
 #[derive(Debug)]
 pub enum StmtKind {
-	Declr {
-		ident : Identifier
-	},
 	Expr {
 		expr : Expr
 	}
