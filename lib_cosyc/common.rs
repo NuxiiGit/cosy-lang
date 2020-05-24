@@ -2,17 +2,29 @@ pub mod diagnostics;
 
 use diagnostics::IssueTracker;
 
-use std::fmt;
+use std::{ fmt, fs, io };
 
 /// A struct which stores session information, such as:
 /// - Source code
 /// - Errors
-#[derive(Default)]
 pub struct Session {
+	/// The file location of the source code (if it exists).
+	pub filepath : Option<String>,
 	/// The source code of the script you want o compile.
 	pub src : String,
 	/// Used to log any errors encountered during the session.
 	pub issues : IssueTracker
+}
+impl Session {
+	/// Reads a source file and produces a parser session.
+	pub fn read(filepath : &str) -> io::Result<Session> {
+		let src = fs::read_to_string(filepath)?;
+		Ok(Self {
+			filepath : Some(String::from(filepath)),
+			src,
+			issues : IssueTracker::new()
+		})
+	}
 }
 impl fmt::Display for Session {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
@@ -28,6 +40,7 @@ impl fmt::Display for Session {
 impl From<String> for Session {
 	fn from(src : String) -> Self {
 		Self {
+			filepath : None,
 			src,
 			issues : IssueTracker::new()
 		}
