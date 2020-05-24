@@ -13,7 +13,7 @@ use std::time::Instant;
 
 fn main() {
 	let now = Instant::now();
-	let mut sess = Session::read("examples/arrays.cosy").unwrap();
+	let mut sess = Session::read("workspace/sandbox.cosy").unwrap();
 	let mut parser = Parser::from(&mut sess);
 	let result = parser.parse_expr();
 	match result {
