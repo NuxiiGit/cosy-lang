@@ -9,7 +9,7 @@ use std::{ fmt, fs, io };
 /// - Errors
 pub struct Session {
 	/// The file location of the source code (if it exists).
-	pub filepath : Option<String>,
+	pub filepath : String,
 	/// The source code of the script you want o compile.
 	pub src : String,
 	/// Used to log any errors encountered during the session.
@@ -20,7 +20,7 @@ impl Session {
 	pub fn read(filepath : &str) -> io::Result<Session> {
 		let src = fs::read_to_string(filepath)?;
 		Ok(Self {
-			filepath : Some(String::from(filepath)),
+			filepath : String::from(filepath),
 			src,
 			issues : IssueTracker::new()
 		})
@@ -32,7 +32,9 @@ impl fmt::Display for Session {
 		for issue in &self.issues {
 			let (row, col) = infer_source_location(&newlines, issue.location);
 			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
-			writeln!(out, " --> [row. {}, col. {}]", row, col)?;
+			write!(out, " --> ")?;
+			write!(out, "{}:", self.filepath)?;
+			writeln!(out, "[row. {}, col. {}]", row, col)?;
 		}
 		Ok(())
 	}
@@ -40,7 +42,7 @@ impl fmt::Display for Session {
 impl From<String> for Session {
 	fn from(src : String) -> Self {
 		Self {
-			filepath : None,
+			filepath : String::new(),
 			src,
 			issues : IssueTracker::new()
 		}
