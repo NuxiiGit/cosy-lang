@@ -1,5 +1,5 @@
 -- arrays must have an explicit size
-let array : [i32; 3] = [1, 2, 3];
+(let array : [i32; 3] = [1, 2, 3];
 
 -- the size can be inferred if you use the placeholder symbol `_`
 let array : [bool; _] = [true, false, false, true, true];

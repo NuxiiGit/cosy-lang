@@ -52,21 +52,17 @@ impl From<String> for Session {
 /// Produces a **sorted** list of source positions where a new line occurs.
 pub fn prospect_newlines(src : &str) -> Vec<usize> {
 	let mut locations = Vec::new();
-	let mut ignore_linefeed = false;
-	for (i, x) in src.char_indices() {
-		let contains_newline;
-		if matches!(x, '\r') {
-			contains_newline = true;
-			ignore_linefeed = true;
-		} else if matches!(x, '\n' if !ignore_linefeed) {
-			contains_newline = true;
-		} else {
-			contains_newline = false;
-			ignore_linefeed = false;
+	let mut chars = src.char_indices().peekable();
+	while let Some((_, next)) = chars.next() {
+		match next {
+			'\r' if matches!(chars.peek(), Some((_, '\n'))) => {
+				chars.next();
+			},
+			'\r' | '\n' => (),
+			_ => continue
 		}
-		if contains_newline {
-			locations.push(i);
-		}
+		let location = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
+		locations.push(location);
 	}
 	locations
 }
@@ -83,7 +79,7 @@ pub fn infer_source_location(lines : &[usize], index : usize) -> (usize, usize) 
 		line_no += 1;
 		line_byte = i;
 	}
-	let row = line_no + 1;
+	let row = line_no;
 	let col = index - line_byte;
-	(row, col)
+	(row + 1, col + 1)
 }
