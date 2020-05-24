@@ -45,6 +45,7 @@ impl fmt::Display for Session {
 			let row = line + 1;
 			let col = location - start + 1;
 			let indent = " ".repeat(digit_count(row));
+			writeln!(out, "")?;
 			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
 			write!(out, " {}--> ", indent)?;
 			write!(out, "{}:", self.filepath)?;

@@ -48,7 +48,27 @@ pub struct SyntaxError {
 	pub location : SourcePosition,
 	pub kind : ErrorKind,
 	pub reason : &'static str
-	
+}
+impl SyntaxError {
+	/// Creates a new fatal error
+	pub fn warning(location : SourcePosition, reason : &'static str) -> Self {
+		Self::new(location, ErrorKind::Warning, reason)
+	}
+
+	/// Creates a new fatal error
+	pub fn bug(location : SourcePosition, reason : &'static str) -> Self {
+		Self::new(location, ErrorKind::Bug, reason)
+	}
+
+	/// Creates a new fatal error
+	pub fn fatal(location : SourcePosition, reason : &'static str) -> Self {
+		Self::new(location, ErrorKind::Fatal, reason)
+	}
+
+	/// Creates a new error instance.
+	pub fn new(location : SourcePosition, kind : ErrorKind, reason : &'static str) -> Self {
+		SyntaxError { location, kind, reason }
+	}
 }
 impl fmt::Display for SyntaxError {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {

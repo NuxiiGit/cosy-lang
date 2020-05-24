@@ -15,7 +15,6 @@ use std::{ mem, result };
 pub struct Parser<'a> {
 	issues : &'a mut IssueTracker,
 	lexer : Lexer<'a>,
-	location : SourcePosition,
 	peeked : TokenKind
 }
 impl<'a> Parser<'a> {
@@ -44,6 +43,7 @@ impl<'a> Parser<'a> {
 
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
+		let location = self.location();
 		let kind = match self.matches(TokenKind::is_terminal) {
 			Some(TokenKind::Identifier(ident, ..)) => {
 				ExprKind::Variable { ident }
@@ -54,10 +54,9 @@ impl<'a> Parser<'a> {
 				};
 				ExprKind::Value { kind }
 			},
-			Some(_) => return Err(self.error(ErrorKind::Bug, "unknown terminal value")),
+			Some(_) => return Err(SyntaxError::bug(location, "unknown terminal value")),
 			_ => return self.parse_expr_groupings()
 		};
-		let location = self.location();
 		Ok(Expr { location, kind })
 	}
 
@@ -74,8 +73,9 @@ impl<'a> Parser<'a> {
 		if let Some(kind) = self.matches(p) {
 			Ok(kind)
 		} else {
+			let location = self.location();
 			self.advance();
-			Err(self.error(ErrorKind::Fatal, on_err))
+			Err(SyntaxError::fatal(location, on_err))
 		}
 	}
 
@@ -94,18 +94,6 @@ impl<'a> Parser<'a> {
 		&self.peeked
 	}
 
-	/// Inserts a warning into to the `IssueTracker`.
-	pub fn warn(&mut self, reason : &'static str) {
-		let error = self.error(ErrorKind::Warning, reason);
-		self.report(error);
-	}
-
-	/// Returns an error at the current token position.
-	pub fn error(&self, kind : ErrorKind, reason : &'static str) -> SyntaxError {
-		let location = self.location();
-		SyntaxError { location, kind, reason }
-	}
-
 	/// Reports an error to the `IssueTracker`.
 	pub fn report(&mut self, error : SyntaxError) {
 		self.issues.report(error);
@@ -113,12 +101,11 @@ impl<'a> Parser<'a> {
 
 	/// Returns the current location of the parser.
 	pub fn location(&self) -> SourcePosition {
-		self.location
+		self.lexer.cursor()
 	}
 
 	/// Advances the parser and returns the the previous lexeme.
 	pub fn advance(&mut self) -> TokenKind {
-		self.location = self.lexer.cursor();
 		let next = self.lexer.advance();
 		mem::replace(&mut self.peeked, next)
 	}
@@ -127,9 +114,8 @@ impl<'a> From<&'a mut Session> for Parser<'a> {
 	fn from(sess : &'a mut Session) -> Self {
 		let issues = &mut sess.issues;
 		let mut lexer = Lexer::from(&sess.src);
-		let location = 0;
 		let peeked = lexer.advance();
-		Self { issues, lexer, location, peeked }
+		Self { issues, lexer, peeked }
 	}
 }
 
