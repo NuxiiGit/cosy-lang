@@ -18,7 +18,9 @@ impl fmt::Display for Session {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
 		let newlines = prospect_newlines(&self.src);
 		for issue in &self.issues {
+			let (row, col) = infer_source_location(&newlines, issue.location);
 			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
+			writeln!(out, "  -> [row. {}, col. {}]", row, col)?;
 		}
 		Ok(())
 	}
@@ -56,5 +58,17 @@ pub fn prospect_newlines(src : &str) -> Vec<usize> {
 
 /// Uses a binary search to locate the row and column number of this source location.
 pub fn infer_source_location(lines : &[usize], index : usize) -> (usize, usize) {
-	unimplemented!()
+	let mut line_no = 0;
+	let mut line_byte = 0;
+	// linear search temporarily
+	for &i in lines {
+		if index < i {
+			break;
+		}
+		line_no += 1;
+		line_byte = i;
+	}
+	let row = line_no;
+	let col = index - line_byte;
+	(row, col)
 }
