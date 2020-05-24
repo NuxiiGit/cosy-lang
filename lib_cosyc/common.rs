@@ -20,7 +20,7 @@ impl fmt::Display for Session {
 		for issue in &self.issues {
 			let (row, col) = infer_source_location(&newlines, issue.location);
 			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
-			writeln!(out, "  -> [row. {}, col. {}]", row, col)?;
+			writeln!(out, " --> [row. {}, col. {}]", row, col)?;
 		}
 		Ok(())
 	}
@@ -68,7 +68,7 @@ pub fn infer_source_location(lines : &[usize], index : usize) -> (usize, usize) 
 		line_no += 1;
 		line_byte = i;
 	}
-	let row = line_no;
+	let row = line_no + 1;
 	let col = index - line_byte;
 	(row, col)
 }

@@ -19,7 +19,7 @@ fn main() {
 	let result = parser.parse_expr();
 	match result {
 		Ok(ast) => println!("{:#?}", ast),
-		Err(e) => println!("{}", e)
+		Err(e) => sess.issues.report(e)
 	}
 	let dt = now.elapsed();
 	println!("{} s / {} ms / {} Ms", dt.as_secs(), dt.as_millis(), dt.as_micros());
