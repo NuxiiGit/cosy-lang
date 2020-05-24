@@ -2,6 +2,8 @@ pub mod diagnostics;
 
 use diagnostics::IssueTracker;
 
+use std::fmt;
+
 /// A struct which stores session information, such as:
 /// - Source code
 /// - Errors
@@ -11,6 +13,15 @@ pub struct Session {
 	pub src : String,
 	/// Used to log any errors encountered during the session.
 	pub issues : IssueTracker
+}
+impl fmt::Display for Session {
+	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+		let newlines = prospect_newlines(&self.src);
+		for issue in &self.issues {
+			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
+		}
+		Ok(())
+	}
 }
 impl From<String> for Session {
 	fn from(src : String) -> Self {
@@ -41,4 +52,9 @@ pub fn prospect_newlines(src : &str) -> Vec<usize> {
 		}
 	}
 	locations
+}
+
+/// Uses a binary search to locate the row and column number of this source location.
+pub fn infer_source_location(lines : &[usize], index : usize) -> (usize, usize) {
+	unimplemented!()
 }
