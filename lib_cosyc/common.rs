@@ -30,7 +30,20 @@ impl fmt::Display for Session {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
 		let newlines = prospect_newlines(&self.src);
 		for issue in &self.issues {
-			let (row, col) = infer_source_location(&newlines, issue.location);
+			let location = issue.location;
+			let line = newlines.binary_search_by(|x| {
+				use std::cmp::Ordering;
+				if x.0 > location {
+					Ordering::Greater
+				} else if x.1 < location {
+					Ordering::Less
+				} else {
+					Ordering::Equal
+				}
+			}).unwrap();
+			let (start, end) = newlines.get(line).unwrap();
+			let row = line + 1;
+			let col = location - start + 1;
 			writeln!(out, "{:?}: {}", issue.kind, issue.reason)?;
 			write!(out, " --> ")?;
 			write!(out, "{}:", self.filepath)?;
@@ -67,23 +80,4 @@ fn prospect_newlines(src : &str) -> Vec<(usize, usize)> {
 	}
 	locations.push((start, src.len()));
 	locations
-}
-
-/// Uses a binary search to locate the row and column number of this source location.
-fn infer_source_location(lines : &[(usize, usize)], index : usize) -> (usize, usize) {
-	let mut line_no = 0;
-	let mut line_start = 0;
-	let mut line_end = 0;
-	// linear search temporarily
-	for &(i, j) in lines {
-		line_start = i;
-		line_end = j;
-		if index < line_end {
-			break;
-		}
-		line_no += 1;
-	}
-	let row = line_no;
-	let col = index - line_start;
-	(row + 1, col + 1)
 }
