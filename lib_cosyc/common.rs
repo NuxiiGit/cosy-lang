@@ -1,6 +1,6 @@
 pub mod diagnostics;
 
-use diagnostics::IssueTracker;
+use diagnostics::{ IssueTracker };
 
 use std::{ fmt, fs, io };
 
@@ -50,10 +50,11 @@ impl From<String> for Session {
 }
 
 /// Produces a **sorted** list of source positions where a new line occurs.
-pub fn prospect_newlines(src : &str) -> Vec<usize> {
+fn prospect_newlines(src : &str) -> Vec<(usize, usize)> {
+	let mut start = 0;
 	let mut locations = Vec::new();
 	let mut chars = src.char_indices().peekable();
-	while let Some((_, next)) = chars.next() {
+	while let Some((end, next)) = chars.next() {
 		match next {
 			'\r' if matches!(chars.peek(), Some((_, '\n'))) => {
 				chars.next();
@@ -61,25 +62,28 @@ pub fn prospect_newlines(src : &str) -> Vec<usize> {
 			'\r' | '\n' => (),
 			_ => continue
 		}
-		let location = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
-		locations.push(location);
+		locations.push((start, end));
+		start = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
 	}
+	locations.push((start, src.len()));
 	locations
 }
 
 /// Uses a binary search to locate the row and column number of this source location.
-pub fn infer_source_location(lines : &[usize], index : usize) -> (usize, usize) {
+fn infer_source_location(lines : &[(usize, usize)], index : usize) -> (usize, usize) {
 	let mut line_no = 0;
-	let mut line_byte = 0;
+	let mut line_start = 0;
+	let mut line_end = 0;
 	// linear search temporarily
-	for &i in lines {
-		if index < i {
+	for &(i, j) in lines {
+		line_start = i;
+		line_end = j;
+		if index < line_end {
 			break;
 		}
 		line_no += 1;
-		line_byte = i;
 	}
 	let row = line_no;
-	let col = index - line_byte;
+	let col = index - line_start;
 	(row + 1, col + 1)
 }
