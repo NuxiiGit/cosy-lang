@@ -9,7 +9,7 @@ use super::common::{
 	diagnostics::{ IssueTracker, SourcePosition, SyntaxError, ErrorKind }
 };
 
-use std::{ fmt, mem, result };
+use std::{ mem, result };
 
 /// Produces abstract syntax from concrete syntax. Reports any errors to the available `IssueTracker`.
 pub struct Parser<'a> {

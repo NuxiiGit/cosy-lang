@@ -52,7 +52,7 @@ pub struct SyntaxError {
 }
 impl fmt::Display for SyntaxError {
 	fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-		write!(out, "[{}] {:?}! {}", self.location, self.kind, self.reason)
+		write!(out, "[byte. {}] {:?}! {}", self.location, self.kind, self.reason)
 	}
 }
 impl error::Error for SyntaxError {}
