@@ -55,20 +55,26 @@ impl<'a> Parser<'a> {
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
 		let location = self.location();
-		let kind = match self.matches(TokenKind::is_terminal) {
+		let terminal = match self.matches(TokenKind::is_terminal) {
 			Some(TokenKind::Identifier(ident, ..)) => {
-				ExprKind::Variable { ident }
+				TerminalKind::Variable { ident }
 			},
 			Some(TokenKind::Literal(kind)) => {
 				let kind = match kind {
 					LiteralKind::Integral(value) => ValueKind::Integer(value)
 				};
-				ExprKind::Value { kind }
+				TerminalKind::Value { kind }
 			},
 			Some(_) => return Err(SyntaxError::bug(location, "unknown terminal value")),
 			_ => return self.parse_expr_groupings()
 		};
-		Ok(Expr { location, kind })
+		let kind = ExprKind::Terminal {
+			kind : Terminal {
+				location,
+				kind : terminal
+			}
+		};
+		Ok(Expr { kind })
 	}
 
 	/// Parses groupings of expressions.
@@ -178,13 +184,27 @@ pub enum StmtKind {
 /// Represents expression information.
 #[derive(Debug)]
 pub struct Expr {
-	pub location : SourcePosition,
 	pub kind : ExprKind
 }
 
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
+	Terminal {
+		kind : Terminal
+	}
+}
+
+/// Represents a terminal value or grouping of elements.
+#[derive(Debug)]
+pub struct Terminal {
+	pub location : SourcePosition,
+	pub kind : TerminalKind
+}
+
+/// Represents the different kinds of terminal expression.
+#[derive(Debug)]
+pub enum TerminalKind {
 	Variable {
 		ident : Identifier
 	},
