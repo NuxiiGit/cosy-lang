@@ -5,7 +5,7 @@ let a : ^i32 = ^2;
 a^ = 12;
 
 -- by name
-let b : -> i32 = -> irandom 32;
+let b : -> i32 = -> irandom(32);
 
 print(b); -- 29, random number
 print(b); -- 8
