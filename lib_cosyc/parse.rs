@@ -32,7 +32,6 @@ impl<'a> Parser<'a> {
 
 	/// Parses an expression statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
-		let location = self.location();
 		let mut requires_semicolon = false;
 		let expr = match self.token() {
 			_ => {
@@ -45,7 +44,7 @@ impl<'a> Parser<'a> {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
 		let kind = StmtKind::Expr { expr };
-		Ok(Stmt { location, kind })
+		Ok(Stmt { kind })
 	}
 
 	/// Parses any kind of expression.
@@ -165,7 +164,6 @@ pub struct Block {
 /// Represents expression information.
 #[derive(Debug)]
 pub struct Stmt {
-	pub location : SourcePosition,
 	pub kind : StmtKind
 }
 
