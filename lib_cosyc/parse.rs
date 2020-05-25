@@ -22,9 +22,9 @@ impl<'a> Parser<'a> {
 	pub fn parse_program(&mut self) -> Program {
 		let mut body = Vec::new();
 		while !matches!(self.token(), TokenKind::EoF) {
-			match self.parse_stmt() {
-				Ok(stmt) => body.push(stmt),
-				Err(err) => self.report(err)
+			let result = self.parse_stmt();
+			if let Some(stmt) = self.synchronise(result) {
+				body.push(stmt)
 			}
 		}
 		Program { body }
@@ -101,14 +101,22 @@ impl<'a> Parser<'a> {
 		}
 	}
 
+	/// Attempts to unwrap a result. If an error occurs, it is reported to the parser and
+	/// panic recovery is applied to skip offending tokens. `None` is returned in the case
+	/// where the result variant was `Err`.
+	pub fn synchronise<T>(&mut self, parse_result : Result<T>) -> Option<T> {
+		match parse_result {
+			Ok(x) => Some(x),
+			Err(err) => {
+				self.issues.report(err);
+				None
+			}
+		}
+	}
+
 	/// Returns a reference to the current token kind.
 	pub fn token(&self) -> &TokenKind {
 		&self.peeked
-	}
-
-	/// Reports an error to the `IssueTracker`.
-	pub fn report(&mut self, error : SyntaxError) {
-		self.issues.report(error);
 	}
 
 	/// Returns the current location of the parser.
