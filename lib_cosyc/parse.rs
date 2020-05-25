@@ -109,6 +109,14 @@ impl<'a> Parser<'a> {
 			Ok(x) => Some(x),
 			Err(err) => {
 				self.issues.report(err);
+				loop {
+					if self.matches(|x| matches!(x, TokenKind::SemiColon)).is_some() {
+						break;
+					} else if matches!(self.token(), TokenKind::Var) {
+						break;
+					}
+					self.advance();
+				}
 				None
 			}
 		}
