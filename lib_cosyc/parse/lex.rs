@@ -92,7 +92,7 @@ impl Lexer<'_> {
 					}
 					// match substring for keywords
 					match self.reader.slice() {
-						"var" => TokenKind::Var,
+						"let" => TokenKind::Let,
 						"=" => TokenKind::Assign,
 						_ => {
 							let slice = self.reader.slice();
@@ -142,7 +142,7 @@ pub enum TokenKind {
 	RightBrace,
 	SemiColon,
 	Literal(LiteralKind),
-	Var,
+	Let,
 	Assign,
 	Identifier(Identifier, IdentifierKind),
 	EoF,

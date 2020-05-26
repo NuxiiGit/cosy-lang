@@ -112,7 +112,7 @@ impl<'a> Parser<'a> {
 				loop {
 					if self.matches(|x| matches!(x, TokenKind::SemiColon)).is_some() {
 						break;
-					} else if matches!(self.token(), TokenKind::Var) {
+					} else if matches!(self.token(), TokenKind::Let) {
 						break;
 					}
 					self.advance();
