@@ -38,19 +38,14 @@ impl<'a> Parser<'a> {
 			let decl = self.parse_decl()?;
 			Ok(Stmt::Decl { decl })
 		} else {
-			// expression statement
-			let mut requires_semicolon = false;
-			let expr = match self.token() {
-				_ => {
-					// expression statements always require semicolons
-					requires_semicolon = true;
-					self.parse_expr()
-				},
-			}?;
-			if requires_semicolon {
-				self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
+			let expr = self.parse_expr()?;
+			if self.matches(|x| matches!(x, TokenKind::Assign)).is_some() {
+				Err(self.error(ErrorKind::Bug, "not implemented"))
+			} else {
+				// expression statement
+				self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after expression statement")?;
+				Ok(Stmt::Expr { expr })
 			}
-			Ok(Stmt::Expr { expr })
 		}
 	}
 
