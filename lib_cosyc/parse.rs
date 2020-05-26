@@ -15,7 +15,8 @@ use std::{ mem, result };
 pub struct Parser<'a> {
 	issues : &'a mut IssueTracker,
 	lexer : Lexer<'a>,
-	peeked : TokenKind
+	peeked : TokenKind,
+	location : SourcePosition
 }
 impl<'a> Parser<'a> {
 	/// Parses muliple declarations into a program.
@@ -54,7 +55,6 @@ impl<'a> Parser<'a> {
 
 	/// Parses literals, identifiers, and groupings of expressions.
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
-		let location = self.location();
 		let kind = match self.matches(TokenKind::is_terminal) {
 			Some(TokenKind::Identifier(ident, ..)) => {
 				TerminalKind::Variable { ident }
@@ -65,9 +65,10 @@ impl<'a> Parser<'a> {
 				};
 				TerminalKind::Value { kind }
 			},
-			Some(_) => return Err(SyntaxError::bug(location, "unknown terminal value")),
+			Some(_) => return Err(self.error(ErrorKind::Bug, "unknown terminal value")),
 			_ => return self.parse_expr_groupings()
 		};
+		let location = self.location();
 		let kind = ExprKind::Terminal { location, kind };
 		Ok(Expr { kind })
 	}
@@ -85,9 +86,8 @@ impl<'a> Parser<'a> {
 		if let Some(kind) = self.matches(p) {
 			Ok(kind)
 		} else {
-			let location = self.location();
 			self.advance();
-			Err(SyntaxError::fatal(location, on_err))
+			Err(self.error(ErrorKind::Fatal, on_err))
 		}
 	}
 
@@ -122,6 +122,12 @@ impl<'a> Parser<'a> {
 		}
 	}
 
+	/// Creates an error at the current parser location.
+	pub fn error(&self, kind : ErrorKind, reason : &'static str) -> SyntaxError {
+		let location = self.location();
+		SyntaxError { kind, reason, location }
+	}
+
 	/// Returns a reference to the current token kind.
 	pub fn token(&self) -> &TokenKind {
 		&self.peeked
@@ -129,11 +135,12 @@ impl<'a> Parser<'a> {
 
 	/// Returns the current location of the parser.
 	pub fn location(&self) -> SourcePosition {
-		self.lexer.cursor()
+		self.location
 	}
 
 	/// Advances the parser and returns the the previous lexeme.
 	pub fn advance(&mut self) -> TokenKind {
+		self.location = self.lexer.cursor();
 		let next = self.lexer.advance();
 		mem::replace(&mut self.peeked, next)
 	}
@@ -143,7 +150,8 @@ impl<'a> From<&'a mut Session> for Parser<'a> {
 		let issues = &mut sess.issues;
 		let mut lexer = Lexer::from(&sess.src);
 		let peeked = lexer.advance();
-		Self { issues, lexer, peeked }
+		let location = 0;
+		Self { issues, lexer, peeked, location }
 	}
 }
 
