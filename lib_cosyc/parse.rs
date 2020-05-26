@@ -44,8 +44,7 @@ impl<'a> Parser<'a> {
 		if requires_semicolon {
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
 		}
-		let kind = StmtKind::Expr { expr };
-		Ok(Stmt { kind })
+		Ok(Stmt::Expr { expr })
 	}
 
 	/// Parses any kind of expression.
@@ -57,19 +56,19 @@ impl<'a> Parser<'a> {
 	pub fn parse_expr_terminal(&mut self) -> Result<Expr> {
 		let kind = match self.matches(TokenKind::is_terminal) {
 			Some(TokenKind::Identifier(ident, ..)) => {
-				TerminalKind::Variable { ident }
+				ValueKind::Variable { ident }
 			},
 			Some(TokenKind::Literal(kind)) => {
 				let kind = match kind {
-					LiteralKind::Integral(value) => ValueKind::Integer(value)
+					LiteralKind::Integral(value) => ConstantKind::Integral(value)
 				};
-				TerminalKind::Value { kind }
+				ValueKind::Constant { kind }
 			},
 			Some(_) => return Err(self.error(ErrorKind::Bug, "unknown terminal value")),
 			_ => return self.parse_expr_groupings()
 		};
 		let location = self.location();
-		let kind = ExprKind::Terminal { location, kind };
+		let kind = ExprKind::Value { location, kind };
 		Ok(Expr { kind })
 	}
 
@@ -164,21 +163,9 @@ pub struct Program {
 	pub body : Vec<Stmt>
 }
 
-/// Represents a block of statements
-#[derive(Debug)]
-pub struct Block {
-	pub stmts : Vec<Stmt>
-}
-
-/// Represents expression information.
-#[derive(Debug)]
-pub struct Stmt {
-	pub kind : StmtKind
-}
-
 /// Represents statement information.
 #[derive(Debug)]
-pub enum StmtKind {
+pub enum Stmt {
 	Expr {
 		expr : Expr
 	}
@@ -193,26 +180,25 @@ pub struct Expr {
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
-	Terminal {
+	Value {
 		location : SourcePosition,
-		kind : TerminalKind
+		kind : ValueKind
 	}
 }
 
 /// Represents the different kinds of terminal expression.
 #[derive(Debug)]
-pub enum TerminalKind {
+pub enum ValueKind {
 	Variable {
 		ident : Identifier
 	},
-	Value {
-		kind : ValueKind
-	},
-	NoOp
+	Constant {
+		kind : ConstantKind
+	}
 }
 
 /// Represents the different primitive variants.
 #[derive(Debug)]
-pub enum ValueKind {
-	Integer(usize)
+pub enum ConstantKind {
+	Integral(usize)
 }
