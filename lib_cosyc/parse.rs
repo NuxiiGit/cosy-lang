@@ -31,20 +31,38 @@ impl<'a> Parser<'a> {
 		Program { body }
 	}
 
-	/// Parses an expression statement.
+	/// Parses a statement.
 	pub fn parse_stmt(&mut self) -> Result<Stmt> {
-		let mut requires_semicolon = false;
-		let expr = match self.token() {
-			_ => {
-				// expression statements always require semicolons
-				requires_semicolon = true;
-				self.parse_expr()
-			},
-		}?;
-		if requires_semicolon {
-			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
+		if matches!(self.token(), TokenKind::Let) {
+			// declaration statement
+			let decl = self.parse_decl()?;
+			Ok(Stmt::Decl { decl })
+		} else {
+			// expression statement
+			let mut requires_semicolon = false;
+			let expr = match self.token() {
+				_ => {
+					// expression statements always require semicolons
+					requires_semicolon = true;
+					self.parse_expr()
+				},
+			}?;
+			if requires_semicolon {
+				self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
+			}
+			Ok(Stmt::Expr { expr })
 		}
-		Ok(Stmt::Expr { expr })
+	}
+
+	/// Parses a declaration.
+	pub fn parse_decl(&mut self) -> Result<Decl> {
+		self.expects(|x| matches!(x, TokenKind::Let), "expected `let` in declaration")?;
+		let ident = match self.advance() {
+			TokenKind::Identifier(ident, ..) => ident,
+			_ => return Err(self.error(ErrorKind::Bug, "incompatible declaration value")),
+		};
+		self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semi-colon after `let` declaration")?;
+		Ok(Decl::Variable { ident })
 	}
 
 	/// Parses any kind of expression.
@@ -166,8 +184,23 @@ pub struct Program {
 /// Represents statement information.
 #[derive(Debug)]
 pub enum Stmt {
+	Decl {
+		decl : Decl
+	},
+	Assign {
+		ident : Identifier,
+		expr : Expr
+	},
 	Expr {
 		expr : Expr
+	}
+}
+
+/// Represents declaration information.
+#[derive(Debug)]
+pub enum Decl {
+	Variable {
+		ident : Identifier
 	}
 }
 
