@@ -24,5 +24,5 @@ vec.x = 5.0;     -- record
 point.0 = 12.3;  -- tuple
 
 -- getting members
-var y = vec.y;    -- record
-var b = point.1;  -- tuple
+let y = vec.y;    -- record
+let b = point.1;  -- tuple
