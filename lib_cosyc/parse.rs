@@ -24,6 +24,7 @@ impl<'a> Parser<'a> {
 		let mut body = Vec::new();
 		while !matches!(self.token(), TokenKind::EoF) {
 			let result = self.parse_stmt();
+			println!("{:?}", result);
 			if let Some(stmt) = self.synchronise(result) {
 				body.push(stmt)
 			}
@@ -39,13 +40,17 @@ impl<'a> Parser<'a> {
 			Ok(Stmt::Decl { decl })
 		} else {
 			let expr = self.parse_expr()?;
-			if self.matches(|x| matches!(x, TokenKind::Assign)).is_some() {
-				Err(self.error(ErrorKind::Bug, "not implemented"))
+			let stmt = if self.matches(|x| matches!(x, TokenKind::Assign)).is_some() {
+				// assignment statement
+				let lvalue = expr;
+				let rvalue = self.parse_expr()?;
+				Stmt::Assign { lvalue, rvalue }
 			} else {
 				// expression statement
-				self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after expression statement")?;
-				Ok(Stmt::Expr { expr })
-			}
+				Stmt::Expr { expr }
+			};
+			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
+			Ok(stmt)
 		}
 	}
 
@@ -124,7 +129,9 @@ impl<'a> Parser<'a> {
 				loop {
 					if self.matches(|x| matches!(x, TokenKind::SemiColon)).is_some() {
 						break;
-					} else if matches!(self.token(), TokenKind::Let) {
+					} else if matches!(self.token(),
+							TokenKind::Let
+							| TokenKind::EoF) {
 						break;
 					}
 					self.advance();
@@ -183,8 +190,8 @@ pub enum Stmt {
 		decl : Decl
 	},
 	Assign {
-		ident : Identifier,
-		expr : Expr
+		lvalue : Expr,
+		rvalue : Expr
 	},
 	Expr {
 		expr : Expr
