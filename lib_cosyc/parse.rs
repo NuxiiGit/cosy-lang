@@ -24,7 +24,6 @@ impl<'a> Parser<'a> {
 		let mut body = Vec::new();
 		while !matches!(self.token(), TokenKind::EoF) {
 			let result = self.parse_stmt();
-			println!("{:?}", result);
 			if let Some(stmt) = self.synchronise(result) {
 				body.push(stmt)
 			}
@@ -39,18 +38,10 @@ impl<'a> Parser<'a> {
 			let decl = self.parse_decl()?;
 			Ok(Stmt::Decl { decl })
 		} else {
+			// expression statement
 			let expr = self.parse_expr()?;
-			let stmt = if self.matches(|x| matches!(x, TokenKind::Assign)).is_some() {
-				// assignment statement
-				let lvalue = expr;
-				let rvalue = self.parse_expr()?;
-				Stmt::Assign { lvalue, rvalue }
-			} else {
-				// expression statement
-				Stmt::Expr { expr }
-			};
 			self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semicolon after statement")?;
-			Ok(stmt)
+			Ok(Stmt::Expr { expr })
 		}
 	}
 
@@ -61,8 +52,10 @@ impl<'a> Parser<'a> {
 			TokenKind::Identifier(ident, ..) => ident,
 			_ => return Err(self.error(ErrorKind::Bug, "incompatible declaration value")),
 		};
-		self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semi-colon after `let` declaration")?;
-		Ok(Decl::Variable { ident })
+		self.expects(|x| matches!(x, TokenKind::Assign), "expected assignment operator `=` in declaration")?;
+		let value = self.parse_expr()?;
+		self.expects(|x| matches!(x, TokenKind::SemiColon), "expected semi-colon after declaration")?;
+		Ok(Decl::Variable { ident, value })
 	}
 
 	/// Parses any kind of expression.
@@ -189,10 +182,6 @@ pub enum Stmt {
 	Decl {
 		decl : Decl
 	},
-	Assign {
-		lvalue : Expr,
-		rvalue : Expr
-	},
 	Expr {
 		expr : Expr
 	}
@@ -202,7 +191,8 @@ pub enum Stmt {
 #[derive(Debug)]
 pub enum Decl {
 	Variable {
-		ident : Identifier
+		ident : Identifier,
+		value : Expr
 	}
 }
 
