@@ -1,0 +1,40 @@
+-- special `do` notation which can be used to handle failure types
+
+-- | Unwraps an `Option` and applies some function `f` to the inner value.
+let (mx : Option('a)) >>= (f : 'a -> Option('a)) : Option('a) = case mx {
+	None     = None,
+	Some.(x) = f(x),
+};
+
+-- | Lifts a binary operation on `Option` types.
+let (ml : Option('l)) `lift(f : 'r -> 'l -> 'a)` (mr : Option('r)) : Option('a) = do >>= {
+	l <- ml,
+	r <- mr,
+	Some(l `f` r)
+};
+
+let +_lifted = lift(+);
+
+let a = Some(2);
+let b = None;
+let result = a +_lifted b;  -- result == None
+
+-- The reason `do` does not default to requiring `>>=` is because of two reasons:
+--  1) I want the expressions to be parsable without assuming some identifier (`>>=`)
+--  2) I want to expressions to be usable with other patterns.
+--
+-- Therefore, the expression
+-- |
+-- |	do f { a <- b, a }
+-- |
+-- Is equivalent to
+-- |
+-- |	f(\a -> a)(b)
+-- |
+-- This makes it ideal for handling other higher-order functions, such as filtering lists:
+-- |
+-- |	let xs = [1, 2, 3, 4];
+-- |	let xs' = do filter { x <- xs, x > 12 };
+-- |	-- equivalent to      `let xs' = filter(\x -> x > 12)(xs)`
+-- |	-- or more concisely  `let xs' = filter(>12)(xs)`
+-- |
