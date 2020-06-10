@@ -2,22 +2,22 @@
 
 -- | Unwraps an `Option` and applies some function `f` to the inner value.
 let (mx : Option('a)) >>= (f : 'a -> Option('a)) : Option('a) = case mx {
-	None     = None,
-	Some.(x) = f(x),
-};
+	None     = None
+	Some.(x) = f(x)
+}
 
 -- | Lifts a binary operation on `Option` types.
 let (ml : Option('l)) `lift(f : 'r -> 'l -> 'a)` (mr : Option('r)) : Option('a) = do >>= {
-	l <- ml,
-	r <- mr,
+	l <- ml
+	r <- mr
 	Some.(l `f` r)
-};
+}
 
-let +_lifted = lift(+);
+let +_lifted = lift(+)
 
-let a = Some.(2);
-let b = None;
-let result = a +_lifted b;  -- result == None
+let a = Some.(2)
+let b = None
+let result = a +_lifted b  -- result == None
 
 -- The reason `do` does not default to requiring `>>=` is because of two reasons:
 --  1) I want the expressions to be parsable without assuming some identifier (`>>=`)

@@ -1,29 +1,32 @@
 -- variable
-let     foo : i32 = 3;  -- immutable
-let mut boo : i32 = 3;  -- mutable
+let     foo : i32 = 3  -- immutable
+let mut boo : i32 = 3  -- mutable
 
 -- constant
-let const thing = 'A';  -- constant variables can be assigned to other constant variables
+let const thing = 'A'  -- constant variables can be assigned to other constant variables
 
 -- delayed variable instantiation
-let mut i : i32;
-i = 1;
+let mut i : i32
+i = 1
 
 -- block declaration
-let mut { a = 1, b = "nice" }
+let mut {
+	a = 1
+	b = "nice"
+}
 
 -- block declaration mutual recursion
 let {
-	is_even(n : i32) : bool = if n == 0 { true  } else { is_odd(n) },
-	is_odd(n : i32) : bool  = if n == 0 { false } else { is_even(n) },
+	is_even(n : i32) : bool = if n == 0 { true  } else { is_odd(n) }
+	is_odd(n : i32) : bool  = if n == 0 { false } else { is_even(n) }
 }
 
 -- hidden functions with where clause
 let {
-	public() : str = secret(secret_key),
+	public() : str = secret(secret_key)
 } where {
-	secret(key : str) : str = "shh, it's " ++ key,
+	secret(key : str) : str = "shh, it's " ++ key
 	secret_key : str = "baby"
 }
-let result = public_function();  -- compiles
-let key = secret_key;            -- does not compile
+let result = public_function()  -- compiles
+let key = secret_key            -- does not compile

@@ -1,22 +1,22 @@
 -- alphabetic
-let five = 5;
+let five = 5
 
 -- alphanumeric
-let pi2 = 2 * 3.14;
+let pi2 = 2 * 3.14
 
 -- underscores
-let player_age = 18;
+let player_age = 18
 
 -- operator identifiers
-let ~^_^~ = "hewwo?";
+let ~^_^~ = "hewwo?"
 
 -- mixed identifiers
-let a %_gain b = a * 100.0 / b;
+let a %_gain b = a * 100.0 / b
 if 15 %_gain 12 > 30.0 {
-	print("more than 30% gain");
+	print("more than 30% gain")
 }
 
 -- prime identifiers
-let x   = 0;       -- x
-let x'  = x  + 1;  -- x prime
-let x'' = x' + 1;  -- x prime-prime
+let x   = 0       -- x
+let x'  = x  + 1  -- x prime
+let x'' = x' + 1  -- x prime-prime

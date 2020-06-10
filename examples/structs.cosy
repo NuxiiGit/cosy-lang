@@ -1,28 +1,28 @@
 -- tuples
-let tuple = (1, 2);
+let tuple = (1, 2)
 
 -- records
 let struct = record { name : str, age : i32 }.{
-	name = "Bob",
+	name = "Bob"
 	age = 17
-};
+}
 
 -- typedefs
-type Point = (i32, i32);
-type Empty = ();
+type Point = (i32, i32)
+type Empty = ()
 
 -- newtype
-type Vec2 = distinct record { x : i32, y : i32 };
-type Size = distinct (u32);  -- singleton tuple
+type Vec2 = distinct record { x : i32, y : i32 }
+type Size = distinct (u32)  -- singleton tuple
 
 -- construction
-let vec = Vec2.{ x = 2.0, y = 4.2 };  -- notice the required `.` between the type name and brackets
-let point = Point.(3.0, 2.0);
+let vec = Vec2.{ x = 2.0, y = 4.2 }  -- notice the required `.` between the type name and brackets
+let point = Point.(3.0, 2.0)
 
 -- setting members
-vec.x = 5.0;     -- record
-point.0 = 12.3;  -- tuple
+vec.x = 5.0     -- record
+point.0 = 12.3  -- tuple
 
 -- getting members
-let y = vec.y;    -- record
-let b = point.1;  -- tuple
+let y = vec.y    -- record
+let b = point.1  -- tuple
