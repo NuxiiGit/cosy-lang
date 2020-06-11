@@ -7,7 +7,7 @@ let greatest = max(3, 4)
 -- lambda function
 let f : i32 -> i32 = \x -> x * 2
 let f' : i32 -> i32 = \x -> {
-	let a = x + x;
+	let a = x + x
 	a
 }
 
@@ -45,7 +45,7 @@ let proof (n : i32)
 
 -- functional style functions
 let concat(xss : [['a]]) : ['a] = case xss {
-	[]          = []
+	[]          = [],
 	[xs, ..xss] = xs ++ concat(xss)
 }
 

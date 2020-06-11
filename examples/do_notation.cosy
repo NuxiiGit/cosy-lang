@@ -2,14 +2,14 @@
 
 -- | Unwraps an `Option` and applies some function `f` to the inner value.
 let (mx : Option('a)) >>= (f : 'a -> Option('a)) : Option('a) = case mx {
-	None     = None
+	None     = None,
 	Some.(x) = f(x)
 }
 
 -- | Lifts a binary operation on `Option` types.
 let (ml : Option('l)) `lift(f : 'r -> 'l -> 'a)` (mr : Option('r)) : Option('a) = do >>= {
-	l <- ml
-	r <- mr
+	l <- ml,
+	r <- mr,
 	Some.(l `f` r)
 }
 

@@ -11,13 +11,13 @@ i = 1
 
 -- block declaration
 let mut {
-	a = 1
+	a = 1,
 	b = "nice"
 }
 
 -- block declaration mutual recursion
 let {
-	is_even(n : i32) : bool = if n == 0 { true  } else { is_odd(n) }
+	is_even(n : i32) : bool = if n == 0 { true  } else { is_odd(n) },
 	is_odd(n : i32) : bool  = if n == 0 { false } else { is_even(n) }
 }
 
@@ -25,7 +25,7 @@ let {
 let {
 	public() : str = secret(secret_key)
 } where {
-	secret(key : str) : str = "shh, it's " ++ key
+	secret(key : str) : str = "shh, it's " ++ key,
 	secret_key : str = "baby"
 }
 let result = public_function()  -- compiles
