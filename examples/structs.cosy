@@ -2,7 +2,7 @@
 let tuple = (1, 2)
 
 -- records
-let struct = record { name : str, age : i32 }.{
+let record = {
 	name = "Bob"
 	age = 17
 }
@@ -11,13 +11,15 @@ let struct = record { name : str, age : i32 }.{
 type Point = (i32, i32)
 type Empty = ()
 
--- newtype
-type Vec2 = distinct record { x : i32, y : i32 }
-type Size = distinct (u32)  -- singleton tuple
+-- new type
+struct Vec2 {
+	x : i32,
+	y : i32
+}
 
 -- construction
-let vec = Vec2.{ x = 2.0, y = 4.2 }  -- notice the required `.` between the type name and brackets
-let point = Point.(3.0, 2.0)
+let vec = Vec2 { x = 2.0, y = 4.2 }
+let point = Point(3.0, 2.0)
 
 -- setting members
 vec.x = 5.0     -- record
