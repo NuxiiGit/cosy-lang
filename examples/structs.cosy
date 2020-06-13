@@ -1,18 +1,12 @@
 -- tuples
 let tuple = (1, 2)
 
--- records
-let record = {
-	name = "Bob"
-	age = 17
-}
-
 -- typedefs
 type Point = (i32, i32)
 type Empty = ()
 
--- new type
-struct Vec2 {
+-- records
+record Vec2 {
 	x : i32,
 	y : i32
 }
