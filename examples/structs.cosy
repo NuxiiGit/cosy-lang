@@ -1,19 +1,8 @@
--- tuples
-let tuple = (1, 2)
-
--- typedefs
-type Point = (i32, i32)
-type Empty = ()
-
 -- records
-record Vec2 {
-	x : i32,
-	y : i32
-}
+let vec = record { x = 2.0, y = 4.2 }
 
--- construction
-let vec = Vec2 { x = 2.0, y = 4.2 }
-let point = Point(3.0, 2.0)
+-- tuples
+let point = (3.0, 2.0)
 
 -- setting members
 vec.x = 5.0     -- record
@@ -22,3 +11,7 @@ point.0 = 12.3  -- tuple
 -- getting members
 let y = vec.y    -- record
 let b = point.1  -- tuple
+
+-- typedefs
+type Point = (i32, i32)
+type Empty = ()
