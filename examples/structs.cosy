@@ -7,8 +7,16 @@ record Vec {
 	y : f32
 }
 
+-- variants
+variant Height {
+	Short,
+	Medium,
+	Tall
+}
+
 -- initalisation
 let vec = Vec { x = 2.0, y = 4.2 }
+let height = Height::Short
 
 -- setting members
 vec.x = 5.0     -- record
