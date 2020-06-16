@@ -1,8 +1,14 @@
--- records
-let vec = record { x = 2.0, y = 4.2 }
-
 -- tuples
 let point = (3.0, 2.0)
+
+-- records
+record Vec {
+	x : f32,
+	y : f32
+}
+
+-- initalisation
+let vec = Vec { x = 2.0, y = 4.2 }
 
 -- setting members
 vec.x = 5.0     -- record
