@@ -55,7 +55,7 @@ match result {
 }
 
 -- get subset of variant type
-let variant = i32 | f32 | bool
+let variant : i32 | f32 | bool = false
 match variant {
 	int_or_bool : i32 | bool = do {
 		print("int or bool")
