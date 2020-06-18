@@ -6,7 +6,7 @@ let greatest = max(3, 4)
 
 -- lambda function
 let f : i32 -> i32 = \x -> x * 2
-let f' : i32 -> i32 = \x -> {
+let f' : i32 -> i32 = \x -> do {
 	let a = x + x
 	a
 }
@@ -32,7 +32,7 @@ let (x : 'a) |> (f : 'a -> 'b) : 'b = f $ x
 let greatest'' = 1 |> (2 |> max_curried)
 
 -- procedural style functions
-let izard(a : str, b : str) : str = {
+let izard(a : str, b : str) : str = do {
 	return a ++ "izard" ++ b
 }
 
