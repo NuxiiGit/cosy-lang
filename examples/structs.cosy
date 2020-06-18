@@ -45,3 +45,11 @@ match height {
 	choice AVERAGE = 1,
 	choice TALL    = 2
 }
+
+-- nullable/option type
+type Option('a) = 'a | ()
+let result : Option(i32) = returns_error()
+match result {
+	x : i32 = print(x),
+	()      = print("nothing")
+}
