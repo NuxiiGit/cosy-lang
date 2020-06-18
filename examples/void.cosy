@@ -12,3 +12,15 @@ let d : void = break
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
 let absurd(x : void) : 'a = absurd(x)
+
+-- the unit type is used for programs which accept or return "boring" values
+let boring(_ : unit) : str = "booorrring!"
+
+-- the value `()` has the type of `unit`
+let e : unit = ()
+
+-- it is recommended that if a function accepts or returns the unit type, you should leave its type to be inferred
+let do_a_thing() = do { -- do_a_thing : unit -> unit
+	print("hello!")
+	return
+}
