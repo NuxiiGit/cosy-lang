@@ -53,3 +53,16 @@ match result {
 	x : i32 = print(x),
 	()      = print("nothing")
 }
+
+-- get subset of variant type
+let variant = i32 | f32 | bool
+match variant {
+	int_or_bool : i32 | bool = do {
+		print("int or bool")
+		match int_or_bool {
+			only_int  : i32  = print("only int"),
+			only_bool : bool = print("only bool")
+		}
+	},
+	_ = print("anything else")
+}
