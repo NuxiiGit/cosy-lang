@@ -1,22 +1,13 @@
 -- tuples
 let point = (3.0, 2.0)
 
+-- typedefs
+type Point = (i32, i32)
+type Empty = ()
+
 -- records
-record Vec {
-	x : f32,
-	y : f32
-}
-
--- variants
-variant Height {
-	Short,
-	Medium,
-	Tall
-}
-
--- initalisation
-let vec = Vec { x = 2.0, y = 4.2 }
-let height = Height::Short
+type Vec2 = record { x : f32, y : f32 }
+let vec : Vec2 = { x = 2.0, y = 4.2 }
 
 -- setting members
 vec.x = 5.0     -- record
@@ -26,6 +17,16 @@ point.0 = 12.3  -- tuple
 let y = vec.y    -- record
 let b = point.1  -- tuple
 
--- typedefs
-type Point = (i32, i32)
-type Empty = ()
+-- variants
+type Number = i32 | f32
+let mut number : Number
+number = 12    -- valid
+number = 14.3  -- also valid
+
+-- choices/enum
+type Height = choice {
+	SHORT,
+	AVERAGE,
+	TALL
+}
+let height : Height = choice SHORT
