@@ -28,7 +28,7 @@ type Number = i32 | f32
 let mut number : Number
 number = 12    -- valid
 number = 14.3  -- also valid
-match number {
+case number {
 	i : i32 = 2   * i,
 	f : f32 = 2.0 * f
 }
@@ -40,7 +40,7 @@ type Height = choice {
 	TALL
 }
 let height : Height = choice SHORT
-match height {
+case height {
 	choice SHORT   = 0,
 	choice AVERAGE = 1,
 	choice TALL    = 2
@@ -49,20 +49,32 @@ match height {
 -- nullable/option type
 type Option('a) = 'a | ()
 let result : Option(i32) = returns_error()
-match result {
+case result {
 	x : i32 = print(x),
 	()      = print("nothing")
 }
 
 -- get subset of variant type
 let variant : i32 | f32 | bool = false
-match variant {
+case variant {
 	int_or_bool : i32 | bool = do {
 		print("int or bool")
-		match int_or_bool {
+		case int_or_bool {
 			only_int  : i32  = print("only int"),
 			only_bool : bool = print("only bool")
 		}
 	},
 	_ = print("anything else")
 }
+
+-- variants enable function overloading
+let new_vec2(args : unit | f32 | (f32, f32) | Vec2) : Vec2 = case args {
+	()                 = { x = 0.0,   y = 0.0 },     -- no values
+	(x : f32)          = { x = x,     y = x },     -- single value
+	(x : f32, y : f32) = { x = x,     y = y },     -- pair
+	(vec : Vec2)       = { x = vec.x, y = vec.y }  -- clone existing vector
+}
+let vec_a = new_vec2()
+let vec_b = new_vec2(4.0)
+let vec_c = new_vec2(8.2, 12.1)
+let vec_d = new_vec2(vec_b)
