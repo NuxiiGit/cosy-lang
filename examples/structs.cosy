@@ -1,5 +1,8 @@
 -- tuples
 let point = (3.0, 2.0)
+match point {
+	(l, r) = l * r
+}
 
 -- typedefs
 type Point = (i32, i32)
@@ -8,6 +11,9 @@ type Empty = ()
 -- records
 type Vec2 = record { x : f32, y : f32 }
 let vec : Vec2 = { x = 2.0, y = 4.2 }
+match vec {
+	{ a = x, b = y } = a + b
+}
 
 -- setting members
 vec.x = 5.0     -- record
@@ -22,6 +28,10 @@ type Number = i32 | f32
 let mut number : Number
 number = 12    -- valid
 number = 14.3  -- also valid
+match number {
+	i : i32 = 2   * i,
+	f : f32 = 2.0 * f
+}
 
 -- choices/enum
 type Height = choice {
@@ -30,3 +40,8 @@ type Height = choice {
 	TALL
 }
 let height : Height = choice SHORT
+match height {
+	choice SHORT   = 0,
+	choice AVERAGE = 1,
+	choice TALL    = 2
+}
