@@ -81,6 +81,13 @@ let vec_d = new_vec2(vec_b)
 
 -- recursive data structure
 type List('a) = ('a, ^List('a)) | unit
-let tail : Tree(i32) = ()
-let node : Tree(i32) = (2, ^tail)
-let head : Tree(i32) = (3, ^node)
+let tail : List(i32) = ()
+let node : List(i32) = (2, ^tail)
+let head : List(i32) = (8, ^node)
+
+-- if dependent types are added, this could look like:
+-- |	
+-- |	let List{a : type} = (a, ^List{a}) | unit
+-- |	let (x : a) `(:>){a : type}` (xs : List{a}) = (x, box(xs))
+-- |	
+-- |	let list : List{i32} = 8 :> 2 :> ()
