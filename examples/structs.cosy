@@ -47,7 +47,7 @@ case height {
 }
 
 -- nullable/option type
-type Option('a) = 'a | ()
+type Option('a) = 'a | unit
 let result : Option(i32) = returns_error()
 case result {
 	x : i32 = print(x),
