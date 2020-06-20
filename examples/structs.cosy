@@ -1,6 +1,6 @@
 -- tuples
 let point = (3.0, 2.0);
-case point {
+case point in {
 	(l, r) => l * r
 }
 
@@ -11,7 +11,7 @@ type Empty = unit;
 -- records
 type Vec2 = record { x : f32, y : f32 };
 let vec : Vec2 = { x = 2.0, y = 4.2 };
-case vec {
+case vec in {
 	{ a = x, b = y } => a + b
 }
 
@@ -28,7 +28,7 @@ type Number = i32 | f32;
 let mut number : Number;
 number = 12;    -- valid
 number = 14.3;  -- also valid
-case number {
+case number in {
 	i : i32 => 2   * i,
 	f : f32 => 2.0 * f
 }
@@ -40,7 +40,7 @@ type Height = choice {
 	TALL
 };
 let height : Height = choice SHORT;
-case height {
+case height in {
 	choice SHORT   => 0,
 	choice AVERAGE => 1,
 	choice TALL    => 2
@@ -49,16 +49,16 @@ case height {
 -- nullable/option type
 type Option('a) = 'a | unit;
 let result : Option(i32) = returns_error();
-case result {
+case result in {
 	x : i32 => show(x),
 	()      => "nothing"
 }
 
 -- get subset of variant type
 let variant : i32 | f32 | bool = false;
-case variant {
+case variant in {
 	int_or_bool : i32 | bool => do {
-		case int_or_bool {
+		case int_or_bool in {
 			only_int  : i32  => "only int",
 			only_bool : bool => "only bool"
 		}
@@ -67,7 +67,7 @@ case variant {
 }
 
 -- variants enable function overloading
-let new_vec2(args : unit | f32 | (f32, f32) | Vec2) : Vec2 = case args {
+let new_vec2(args : unit | f32 | (f32, f32) | Vec2) : Vec2 = case args in {
 	()                 => { x = 0.0,   y = 0.0 },     -- no values
 	(x : f32)          => { x = x,     y = x },     -- single value
 	(x : f32, y : f32) => { x = x,     y = y },     -- pair

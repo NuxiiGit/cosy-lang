@@ -1,23 +1,23 @@
 -- if statement
-if condition {
+if condition do {
 	stuff();
 }
 
 -- else clause
-if condition {
+if condition do {
 	stuff();
 } else {
 	otherwise();
 }
 
 -- match case
-case condition {
+case condition in {
 	true  => stuff(),
 	false => otherwise()
 }
 
 -- while loop
-while condition {
+while condition do {
 	stuff();
 }
 
