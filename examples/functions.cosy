@@ -20,15 +20,19 @@ let max_curried : i32 -> i32 -> i32 = curry(max)
 max_curried(1)(3)
 
 -- operator definition
-let (a : i32) <=> (b : i32) : i32 = Math::sign(a - b)
+let (a : i32) <=> (b : i32) : i32 = if a < b { -1 } else if a > b { 1 } else { 0 }
+
+-- operator blocks (allow the use of expressions or non-operator identifiers as operators)
+let (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if x < min { min } else { x }
+let percent : i32 = 0 `clamp(x)` 100
 
 -- identity operator
-let (f : 'a -> 'b) $ (x : 'a) : 'b = f(x)
-let greatest' = (max_curried $ 2) $ 1
+let (f : a -> b) `($){a : type, b : type}` (x : a) : b = f(x)
+let greatest' : i32 = (max_curried $ 2) $ 1
 
 -- pipeline operator
-let (x : 'a) |> (f : 'a -> 'b) : 'b = f $ x
-let greatest'' = 1 |> (2 |> max_curried)
+let (x : a) `(|>){a : type, b : type}` (f : a -> b) : b = f(x)
+let greatest'' : i32 = 1 |> (2 |> max_curried)
 
 -- procedural style functions
 let izard(a : str, b : str) : str = do {
@@ -43,15 +47,13 @@ let proof (n : i32)
           = n == s.length()
 
 -- functional style functions
-let concat(xss : [['a]]) : ['a] = case xss {
+let concat{a : type}(xss : [[a]]) : [a] = case xss {
 	[]          = [],
 	[xs, ..xss] = xs ++ concat(xss)
 }
 
--- operator blocks (allow the use of expressions or non-operator identifiers as operators)
-let (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if x < min { min } else { x }
-let percent = 0 `clamp(x)` 100
-
--- constant function (functions must be pure to qualify as constants)
-let const double(a : i32) : i32 = 2 * a  -- let const double : i32 -> i32 = \(a : i32) -> 2 * a
-let const pi_2 = double(pi)              -- evaluated at compile time
+-- impure function functions must be pure under certain circumstances, typically if they have side-effects
+let impure notify(a : i32) : i32 = do {
+	print(a) -- printing and file input/output is an impure side-effect
+	a
+}
