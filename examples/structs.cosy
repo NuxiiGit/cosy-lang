@@ -1,33 +1,33 @@
 -- tuples
-let point = (3.0, 2.0)
+let point = (3.0, 2.0);
 match point {
 	(l, r) = l * r
 }
 
 -- typedefs
-type Point = (i32, i32)
-type Empty = ()
+type Point = (i32, i32);
+type Empty = ();
 
 -- records
-type Vec2 = record { x : f32, y : f32 }
-let vec : Vec2 = { x = 2.0, y = 4.2 }
+type Vec2 = record { x : f32, y : f32 };
+let vec : Vec2 = { x = 2.0, y = 4.2 };
 match vec {
 	{ a = x, b = y } = a + b
 }
 
 -- setting members
-vec.x = 5.0     -- record
-point.0 = 12.3  -- tuple
+vec.x = 5.0;     -- record
+point.0 = 12.3;  -- tuple
 
 -- getting members
-let y = vec.y    -- record
-let b = point.1  -- tuple
+let y = vec.y;    -- record
+let b = point.1;  -- tuple
 
 -- variants
-type Number = i32 | f32
-let mut number : Number
-number = 12    -- valid
-number = 14.3  -- also valid
+type Number = i32 | f32;
+let mut number : Number;
+number = 12;    -- valid
+number = 14.3;  -- also valid
 case number {
 	i : i32 = 2   * i,
 	f : f32 = 2.0 * f
@@ -38,8 +38,8 @@ type Height = choice {
 	SHORT,
 	AVERAGE,
 	TALL
-}
-let height : Height = choice SHORT
+};
+let height : Height = choice SHORT;
 case height {
 	choice SHORT   = 0,
 	choice AVERAGE = 1,
@@ -47,24 +47,23 @@ case height {
 }
 
 -- nullable/option type
-type Option('a) = 'a | unit
-let result : Option(i32) = returns_error()
+type Option('a) = 'a | unit;
+let result : Option(i32) = returns_error();
 case result {
-	x : i32 = print(x),
-	()      = print("nothing")
+	x : i32 = show(x),
+	()      = "nothing"
 }
 
 -- get subset of variant type
-let variant : i32 | f32 | bool = false
+let variant : i32 | f32 | bool = false;
 case variant {
 	int_or_bool : i32 | bool = do {
-		print("int or bool")
 		case int_or_bool {
-			only_int  : i32  = print("only int"),
-			only_bool : bool = print("only bool")
+			only_int  : i32  = "only int",
+			only_bool : bool = "only bool"
 		}
 	},
-	_ = print("anything else")
+	_ = "anything else"
 }
 
 -- variants enable function overloading
@@ -73,21 +72,8 @@ let new_vec2(args : unit | f32 | (f32, f32) | Vec2) : Vec2 = case args {
 	(x : f32)          = { x = x,     y = x },     -- single value
 	(x : f32, y : f32) = { x = x,     y = y },     -- pair
 	(vec : Vec2)       = { x = vec.x, y = vec.y }  -- clone existing vector
-}
-let vec_a = new_vec2()
-let vec_b = new_vec2(4.0)
-let vec_c = new_vec2(8.2, 12.1)
-let vec_d = new_vec2(vec_b)
-
--- recursive data structure
-type List('a) = ('a, ^List('a)) | unit
-let tail : List(i32) = ()
-let node : List(i32) = (2, ^tail)
-let head : List(i32) = (8, ^node)
-
--- if dependent types are added, this could look like:
--- |	
--- |	let List{a : type} = (a, ^List{a}) | unit
--- |	let (x : a) `(:>){a : type}` (xs : List{a}) = (x, box(xs))
--- |	
--- |	let list : List{i32} = 8 :> 2 :> ()
+};
+let vec_a = new_vec2();
+let vec_b = new_vec2(4.0);
+let vec_c = new_vec2(8.2, 12.1);
+let vec_d = new_vec2(vec_b);

@@ -1,13 +1,13 @@
 -- if statement
 if condition {
-	stuff()
+	stuff();
 }
 
 -- else clause
 if condition {
-	stuff()
+	stuff();
 } else {
-	otherwise()
+	otherwise();
 }
 
 -- match case
@@ -18,15 +18,15 @@ case condition {
 
 -- while loop
 while condition {
-	stuff()
+	stuff();
 }
 
 -- infinite loops
 repeat {
-	stuff()
+	stuff();
 }
 
 -- repeat while
 repeat {
-	stuff()
+	stuff();
 } while condition

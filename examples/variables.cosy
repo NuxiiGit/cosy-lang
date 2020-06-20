@@ -1,22 +1,22 @@
 -- variable
-let     foo : i32 = 3  -- immutable
-let mut boo : i32 = 3  -- mutable
+let     foo : i32 = 3;  -- immutable
+let mut boo : i32 = 3;  -- mutable
 
 -- delayed variable instantiation
-let i : i32
-i = 1
+let i : i32;
+i = 1;
 
 -- block declaration
 let {
 	a = 1,
 	b = "nice"
-}
+};
 
 -- block declaration mutual recursion
 let {
 	is_even(n : i32) : bool = if n == 0 { true  } else { is_odd (n) },
 	is_odd (n : i32) : bool = if n == 0 { false } else { is_even(n) }
-}
+};
 
 -- hidden functions with where clause
 let {
@@ -24,6 +24,6 @@ let {
 } where {
 	secret(key : str) : str = "shh, it's " ++ key,
 	secret_key : str = "baby"
-}
-let result : str = public_function()  -- compiles
-let key : str = secret_key            -- does not compile
+};
+let result : str = public_function();  -- compiles
+let key : str = secret_key;            -- does not compile

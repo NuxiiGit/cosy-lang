@@ -1,19 +1,19 @@
 -- alphabetic
-let five : i32 = 5
+let five : i32 = 5;
 
 -- alphanumeric
-let impure pi2 : f32 = 2 * 3.14
+let impure pi2 : f32 = 2 * 3.14;
 
 -- underscores
-let player_age : i32 = 18
+let player_age : i32 = 18;
 
 -- operator identifiers
-let ~^_^~ : str = "hewwo?"
+let ~^_^~ : str = "hewwo?";
 
 -- mixed identifiers
-let impure (a : f32) %_gain (b : f32) : f32 = a * 100.0 / b
+let impure (a : f32) %_gain (b : f32) : f32 = a * 100.0 / b;
 
 -- prime identifiers
-let x   : i32 = 0       -- x
-let x'  : i32 = x  + 1  -- x prime
-let x'' : i32 = x' + 1  -- x prime-prime
+let x   : i32 = 0;       -- x
+let x'  : i32 = x  + 1;  -- x prime
+let x'' : i32 = x' + 1;  -- x prime-prime
