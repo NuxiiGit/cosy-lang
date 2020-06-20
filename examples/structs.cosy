@@ -6,7 +6,7 @@ case point {
 
 -- typedefs
 type Point = (i32, i32);
-type Empty = ();
+type Empty = unit;
 
 -- records
 type Vec2 = record { x : f32, y : f32 };

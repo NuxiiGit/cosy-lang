@@ -61,3 +61,11 @@ let impure notify(a : i32) : i32 = do {
 	print(a);  -- printing and file input/output is an impure side-effect
 	a
 };
+
+-- implicit argument with a default value
+let {l : i32 = 0} - (r : i32) : i32 = subtract(l, r);  -- assuming `subtract` is a function which subtracts two `i32`
+let result : i32        = -10;  -- implicit argument should be assigned to `0`
+let result : i32 -> i32 = -10;  -- implicit argument should become a concrete argument
+-- why does this need to be implemented?
+-- this must be implemented because it will allow for compile-time function overloading without poluting global scope with identifiers of the same name
+-- i.e. `let (-) : i32 = 3;` will be invalid, since the identifier `-` already exists. This would not be the case with Idris.
