@@ -1,7 +1,7 @@
 -- tuples
 let point = (3.0, 2.0);
-match point {
-	(l, r) = l * r
+case point {
+	(l, r) => l * r
 }
 
 -- typedefs
@@ -11,8 +11,8 @@ type Empty = ();
 -- records
 type Vec2 = record { x : f32, y : f32 };
 let vec : Vec2 = { x = 2.0, y = 4.2 };
-match vec {
-	{ a = x, b = y } = a + b
+case vec {
+	{ a = x, b = y } => a + b
 }
 
 -- setting members
@@ -29,8 +29,8 @@ let mut number : Number;
 number = 12;    -- valid
 number = 14.3;  -- also valid
 case number {
-	i : i32 = 2   * i,
-	f : f32 = 2.0 * f
+	i : i32 => 2   * i,
+	f : f32 => 2.0 * f
 }
 
 -- choices/enum
@@ -41,26 +41,26 @@ type Height = choice {
 };
 let height : Height = choice SHORT;
 case height {
-	choice SHORT   = 0,
-	choice AVERAGE = 1,
-	choice TALL    = 2
+	choice SHORT   => 0,
+	choice AVERAGE => 1,
+	choice TALL    => 2
 }
 
 -- nullable/option type
 type Option('a) = 'a | unit;
 let result : Option(i32) = returns_error();
 case result {
-	x : i32 = show(x),
-	()      = "nothing"
+	x : i32 => show(x),
+	()      => "nothing"
 }
 
 -- get subset of variant type
 let variant : i32 | f32 | bool = false;
 case variant {
-	int_or_bool : i32 | bool = do {
+	int_or_bool : i32 | bool => do {
 		case int_or_bool {
-			only_int  : i32  = "only int",
-			only_bool : bool = "only bool"
+			only_int  : i32  => "only int",
+			only_bool : bool => "only bool"
 		}
 	},
 	_ = "anything else"
@@ -68,10 +68,10 @@ case variant {
 
 -- variants enable function overloading
 let new_vec2(args : unit | f32 | (f32, f32) | Vec2) : Vec2 = case args {
-	()                 = { x = 0.0,   y = 0.0 },     -- no values
-	(x : f32)          = { x = x,     y = x },     -- single value
-	(x : f32, y : f32) = { x = x,     y = y },     -- pair
-	(vec : Vec2)       = { x = vec.x, y = vec.y }  -- clone existing vector
+	()                 => { x = 0.0,   y = 0.0 },     -- no values
+	(x : f32)          => { x = x,     y = x },     -- single value
+	(x : f32, y : f32) => { x = x,     y = y },     -- pair
+	(vec : Vec2)       => { x = vec.x, y = vec.y }  -- clone existing vector
 };
 let vec_a = new_vec2();
 let vec_b = new_vec2(4.0);

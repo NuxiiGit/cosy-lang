@@ -5,11 +5,15 @@ let max(a : i32, b : i32) : i32 = if a > b { a } else { b };
 let greatest : i32 = max(3, 4);
 
 -- lambda function
-let double  : i32 -> i32 = \x -> x * 2;
-let double' : i32 -> i32 = \x -> do {
+let double  : i32 -> i32 = \(x) => x * 2;
+let double' : i32 -> i32 = \(x) => do {
 	let a = x + x;
 	a
 };
+
+-- curried lambda function
+let f : i32 -> i32 -> i32 = \(x)(y) => x + y;
+                      -- OR \(x) => \(y) => x + y
 
 -- parameterised function
 let id{a : type}(x : a) : a = x;
@@ -48,8 +52,8 @@ let proof (n : i32)
 
 -- functional style functions
 let concat{a : type}(xss : [[a]]) : [a] = case xss {
-	[]          = [],
-	[xs, ..xss] = xs ++ concat(xss)
+	[]          => [],
+	[xs, ..xss] => xs ++ concat(xss)
 };
 
 -- impure function functions must be pure under certain circumstances, typically if they have side-effects

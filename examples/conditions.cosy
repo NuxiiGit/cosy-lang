@@ -12,8 +12,8 @@ if condition {
 
 -- match case
 case condition {
-	true  = stuff(),
-	false = otherwise()
+	true  => stuff(),
+	false => otherwise()
 }
 
 -- while loop
@@ -29,4 +29,4 @@ repeat {
 -- repeat while
 repeat {
 	stuff();
-} while condition
+} while condition;

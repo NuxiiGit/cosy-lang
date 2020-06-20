@@ -22,4 +22,4 @@ let e : unit = ();
 -- it is recommended that if a function accepts or returns the unit type, you should leave its type to be inferred
 let impure say_hello() = do { -- say_hello : unit -> unit
 	print("hello!");
-}
+};
