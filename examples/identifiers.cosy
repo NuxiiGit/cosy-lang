@@ -1,22 +1,19 @@
 -- alphabetic
-let five = 5
+let five : i32 = 5
 
 -- alphanumeric
-let pi2 = 2 * 3.14
+let impure pi2 : f32 = 2 * 3.14
 
 -- underscores
-let player_age = 18
+let player_age : i32 = 18
 
 -- operator identifiers
-let ~^_^~ = "hewwo?"
+let ~^_^~ : str = "hewwo?"
 
 -- mixed identifiers
-let a %_gain b = a * 100.0 / b
-if 15 %_gain 12 > 30.0 {
-	print("more than 30% gain")
-}
+let impure (a : f32) %_gain (b : f32) : f32 = a * 100.0 / b
 
 -- prime identifiers
-let x   = 0       -- x
-let x'  = x  + 1  -- x prime
-let x'' = x' + 1  -- x prime-prime
+let x   : i32 = 0       -- x
+let x'  : i32 = x  + 1  -- x prime
+let x'' : i32 = x' + 1  -- x prime-prime
