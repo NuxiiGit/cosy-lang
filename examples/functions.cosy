@@ -2,21 +2,20 @@
 let max(a : i32, b : i32) : i32 = if a > b { a } else { b }
 
 -- function application
-let greatest = max(3, 4)
+let greatest : i32 = max(3, 4)
 
 -- lambda function
-let f : i32 -> i32 = \x -> x * 2
-let f' : i32 -> i32 = \x -> do {
+let double  : i32 -> i32 = \x -> x * 2
+let double' : i32 -> i32 = \x -> do {
 	let a = x + x
 	a
 }
 
--- delayed function definition
-let max' : (i32, i32) -> i32
-max' = \(a, b) -> max(a, b)
+-- parameterised function
+let id{a : type}(x : a) : a = x
 
 -- currying
-let curry(f : ('a, 'b) -> 'c)(a : 'a)(b : 'b) : 'c = f(a, b)
+let curry{a : type, b : type, c : type}(f : (a, b) -> c)(x : a)(y : b) : c = f(x, y)
 let max_curried : i32 -> i32 -> i32 = curry(max)
 max_curried(1)(3)
 

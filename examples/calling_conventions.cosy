@@ -3,10 +3,3 @@ let a : ^i32 = ^2
 
 -- dereference
 a^ = 12
-
--- by name
-let b : -> i32 = -> irandom(32)
-
-print(b) -- 29, random number
-print(b) -- 8
-print(b) -- 13, etc.
