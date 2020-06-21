@@ -1,5 +1,5 @@
 -- void type is used for non-terminating programs
-let impure error(msg : str) : void = do {
+let error(msg : str) : void = do {
 	print(msg);
 	exit()
 };
@@ -20,6 +20,6 @@ let boring(_ : unit) : str = "booorrring!";
 let e : unit = ();
 
 -- it is recommended that if a function accepts or returns the unit type, you should leave its type to be inferred
-let impure say_hello() = do { -- say_hello : unit -> unit
+let say_hello() = do { -- say_hello : unit -> unit
 	print("hello!");
 };

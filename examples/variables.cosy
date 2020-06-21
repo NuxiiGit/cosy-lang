@@ -2,6 +2,9 @@
 let     foo : i32 = 3;  -- immutable
 let mut boo : i32 = 3;  -- mutable
 
+-- constant
+let const x : f32 = 12.3;
+
 -- delayed variable instantiation
 let i : i32;
 i = 1;

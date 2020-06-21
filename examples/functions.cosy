@@ -56,11 +56,32 @@ let concat{a : type}(xss : [[a]]) : [a] = case xss in {
 	[xs, ..xss] => xs ++ concat(xss)
 };
 
--- impure function functions must be pure under certain circumstances, typically if they have side-effects
-let impure notify(a : i32) : i32 = do {
-	print(a);  -- printing and file input/output is an impure side-effect
-	a
+-- constant function
+let const template(option : u8) : type = case option in {
+	0 => bool,
+	1 => i8,
+	2 => i16,
+	3 => i32,
+	4 => i64,
+	5 => f32,
+	6 => f64,
+	_ => void
 };
+
+-- dependently typed function
+let negate{option : bool}(x : template(option)) : template(option) = case option in {
+	0 => !x,
+	1 => -x,
+	2 => -x,
+	3 => -x,
+	4 => -x,
+	5 => -x,
+	6 => -x,
+	_ => x
+};
+print(negate(true));  -- false
+print(negate(2));     -- -2
+print(negate(-3.2));  -- 3.2
 
 -- unary/binary operator duality
 let (-){is_unary : bool}(x : i32) : if is_unary { i32 } else { i32 -> i32 } = do {
