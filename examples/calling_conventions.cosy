@@ -3,3 +3,8 @@ let a : ^i32 = ^2;
 
 -- dereference
 a^ = 12;
+
+-- by name, using dependent types
+let b  : {_ : unit} -> i32 = 4;
+-- OR    {}         -> i32
+-- OR               -> i32
