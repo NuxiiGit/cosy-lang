@@ -3,77 +3,33 @@ let point = (3.0, 2.0);
 case point in {
 	(l, r) => l * r
 }
+point.0 = 12.3;
+let a = point.1;
 
--- typedefs
-type Point = (i32, i32);
-type Empty = unit;
-
--- records
-type Vec2 = record { x : f32, y : f32 };
-let vec : Vec2 = { x = 2.0, y = 4.2 };
-case vec in {
-	{ a = x, b = y } => a + b
+-- named tuples/records
+let record = (| name = "bob", teeth_count = 103 |);
+case record in {
+	(| n = teeth_count |) => n + 10
 }
+record.name = "frank";
+let b = record.teeth_count;
 
--- setting members
-vec.x = 5.0;     -- record
-point.0 = 12.3;  -- tuple
+-- type alias
+let const POINT : type = (f32, f32);  -- MUST be `const`
+let point' : POINT = (1.1, 3.4);
 
--- getting members
-let y = vec.y;    -- record
-let b = point.1;  -- tuple
+-- distinct data types
+struct Vec2(| x : f32, y : f32 |);
 
--- variants
-type Number = i32 | f32;
-let mut number : Number;
-number = 12;    -- valid
-number = 14.3;  -- also valid
-case number in {
-	i : i32 => 2   * i,
-	f : f32 => 2.0 * f
-}
-
--- choices/enum
-type Height = choice {
-	SHORT,
-	AVERAGE,
-	TALL
+-- enums
+choice Height {
+	Short,
+	Average,
+	Tall
 };
-let height : Height = choice SHORT;
-case height in {
-	choice SHORT   => 0,
-	choice AVERAGE => 1,
-	choice TALL    => 2
-}
 
--- nullable/option type
-type Option('a) = 'a | unit;
-let result : Option(i32) = returns_error();
-case result in {
-	x : i32 => show(x),
-	()      => "nothing"
+-- tagged union
+choice Maybe(a : type) {
+	Just(a),
+	Nothing
 }
-
--- get subset of variant type
-let variant : i32 | f32 | bool = false;
-case variant in {
-	int_or_bool : i32 | bool => do {
-		case int_or_bool in {
-			only_int  : i32  => "only int",
-			only_bool : bool => "only bool"
-		}
-	},
-	_ = "anything else"
-}
-
--- variants enable function overloading
-let new_vec2(args : unit | f32 | (f32, f32) | Vec2) : Vec2 = case args in {
-	()                 => { x = 0.0,   y = 0.0 },     -- no values
-	(x : f32)          => { x = x,     y = x },     -- single value
-	(x : f32, y : f32) => { x = x,     y = y },     -- pair
-	(vec : Vec2)       => { x = vec.x, y = vec.y }  -- clone existing vector
-};
-let vec_a = new_vec2();
-let vec_b = new_vec2(4.0);
-let vec_c = new_vec2(8.2, 12.1);
-let vec_d = new_vec2(vec_b);
