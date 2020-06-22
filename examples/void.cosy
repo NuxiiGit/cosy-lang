@@ -11,4 +11,4 @@ let c : void = return;
 let d : void = break;
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
-fn absurd|a : type|(x : void) : a = absurd(x);
+fn absurd[a : type](x : void) : a = absurd(x);

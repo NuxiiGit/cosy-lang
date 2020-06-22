@@ -13,7 +13,3 @@ case record in {
 }
 record.name = "frank";
 let b = record.teeth_count;
-
--- type alias
-const POINT : type = (f32, f32);          -- MUST be `const`
-const fn pair|a : type| : type = (a, a);  -- `const fn` is used for parameterised type aliases
