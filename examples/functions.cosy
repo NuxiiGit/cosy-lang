@@ -59,12 +59,8 @@ let concat{a : type}(xss : [[a]]) : [a] = case xss in {
 -- constant function
 let const template(option : u8) : type = case option in {
 	0 => bool,
-	1 => i8,
-	2 => i16,
-	3 => i32,
-	4 => i64,
-	5 => f32,
-	6 => f64,
+	1 => i32,
+	2 => f32,
 	_ => void
 };
 
@@ -73,10 +69,6 @@ let negate{option : bool}(x : template(option)) : template(option) = case option
 	0 => !x,
 	1 => -x,
 	2 => -x,
-	3 => -x,
-	4 => -x,
-	5 => -x,
-	6 => -x,
 	_ => x
 };
 print(negate(true));  -- false
@@ -89,6 +81,6 @@ let (-){is_unary : bool}(x : i32) : if is_unary { i32 } else { i32 -> i32 } = do
 	if is_unary do {
 		inverse
 	} else {
-		\(y) => y + inverse
+		\(y : i32) => y + inverse
 	}
 };
