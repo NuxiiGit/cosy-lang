@@ -11,7 +11,7 @@ let c : void = return;
 let d : void = break;
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
-let absurd{a : type}(x : void) : a = absurd(x);
+let absurd(a : type)?(x : void) : a = absurd(x);
 
 -- the unit type is used for programs which accept or return "boring" values
 let boring(_ : unit) : str = "booorrring!";

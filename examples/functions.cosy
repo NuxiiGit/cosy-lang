@@ -16,10 +16,10 @@ let f : i32 -> i32 -> i32 = \(x)(y) => x + y;
                       -- OR \(x) => \(y) => x + y
 
 -- parameterised function
-let id{a : type}(x : a) : a = x;
+let id(a : type)?(x : a) : a = x;
 
 -- currying
-let curry{a : type, b : type, c : type}(f : (a, b) -> c)(x : a)(y : b) : c = f(x, y);
+let curry(a : type, b : type, c : type)?(f : (a, b) -> c)(x : a)(y : b) : c = f(x, y);
 let max_curried : i32 -> i32 -> i32 = curry(max);
 max_curried(1)(3);
 
@@ -31,11 +31,11 @@ let (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max do { max } else 
 let percent : i32 = 0 `clamp(x)` 100;
 
 -- identity operator
-let (f : a -> b) `($){a : type, b : type}` (x : a) : b = f(x);
+let (f : a -> b) $ (x : a) : b = f(x);
 let greatest' : i32 = (max_curried $ 2) $ 1;
 
 -- pipeline operator
-let (x : a) `(|>){a : type, b : type}` (f : a -> b) : b = f(x);
+let (x : a) |> (f : a -> b) : b = f(x);
 let greatest'' : i32 = 1 |> (2 |> max_curried);
 
 -- procedural style functions
@@ -51,7 +51,7 @@ let proof (n : i32)
           = n == s.length();
 
 -- functional style functions
-let concat{a : type}(xss : [[a]]) : [a] = case xss in {
+let concat(a : type)?(xss : [[a]]) : [a] = case xss in {
 	[]          => [],
 	[xs, ..xss] => xs ++ concat(xss)
 };
@@ -65,7 +65,7 @@ let const template(option : u8) : type = case option in {
 };
 
 -- dependently typed function
-let negate{option : bool}(x : template(option)) : template(option) = case option in {
+let negate(option : bool)?(x : template(option)) : template(option) = case option in {
 	0 => !x,
 	1 => -x,
 	2 => -x,
@@ -76,7 +76,7 @@ print(negate(2));     -- -2
 print(negate(-3.2));  -- 3.2
 
 -- unary/binary operator duality
-let (-){is_unary : bool}(x : i32) : if is_unary { i32 } else { i32 -> i32 } = do {
+let (-)(is_unary : bool)?(x : i32) : if is_unary { i32 } else { i32 -> i32 } = do {
 	let inverse = negate(x);
 	if is_unary do {
 		inverse
