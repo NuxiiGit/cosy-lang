@@ -3,12 +3,3 @@ let a : ^i32 = ^2;
 
 -- dereference
 a^ = 12;
-
--- by name, using implicit arguments
-let b : (_ : unit)? -> i32 = 4;
--- OR               -> i32
-
--- can be used to implement short-circuiting
-let const (l : bool)  &&   (r : -> bool) : bool = if l do { r    } else { false };
-let const (l : bool)  ||   (r : -> bool) : bool = if l do { true } else { r     };
-let const (l : bool) `xor` (r : -> bool) : bool = if l do { !r   } else { r     };

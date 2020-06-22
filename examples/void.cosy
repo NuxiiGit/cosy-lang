@@ -1,5 +1,5 @@
 -- void type is used for non-terminating programs
-let error(msg : str) : void = do {
+fn error(msg :str) : void = do {
 	print(msg);
 	exit()
 };
@@ -11,15 +11,4 @@ let c : void = return;
 let d : void = break;
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
-let absurd(a : type)?(x : void) : a = absurd(x);
-
--- the unit type is used for programs which accept or return "boring" values
-let boring(_ : unit) : str = "booorrring!";
-
--- the value `()` has the type of `unit`
-let e : unit = ();
-
--- it is recommended that if a function accepts or returns the unit type, you should leave its type to be inferred
-let say_hello() = do { -- say_hello : unit -> unit
-	print("hello!");
-};
+fn absurd|a : type|(x : void) : a = absurd(x);

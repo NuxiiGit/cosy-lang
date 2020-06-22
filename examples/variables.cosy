@@ -1,32 +1,26 @@
 -- variable
-let     foo : i32 = 3;  -- immutable
-let mut boo : i32 = 3;  -- mutable
+let     foo = 3;  -- immutable
+let mut boo = 3;  -- mutable
 
 -- constant
-let const x : f32 = 12.3;
+const x : f32 = 12.3;
 
--- delayed variable instantiation
+-- deferred variable instantiation
 let i : i32;
 i = 1;
 
--- block declaration
-let {
-	a = 1,
-	b = "nice"
-};
-
--- block declaration mutual recursion
-let {
-	is_even(n : i32) : bool = if n == 0 do { true  } else { is_odd (n) },
-	is_odd (n : i32) : bool = if n == 0 do { false } else { is_even(n) }
-};
+-- mutual declaration
+mutual {
+	fn is_even(n : i32) : bool = if n == 0 do { true  } else { is_odd (n) };
+	fn is_odd (n : i32) : bool = if n == 0 do { false } else { is_even(n) };
+}
 
 -- hidden functions with where clause
-let {
-	public() : str = secret(secret_key)
+mutual {
+	fn public() : str = secret(secret_key);
 } where {
-	secret(key : str) : str = "shh, it's " ++ key,
-	secret_key : str = "baby"
-};
-let result : str = public_function();  -- compiles
-let key : str = secret_key;            -- does not compile
+	fn secret(key : str) : str = "shh, it's " ++ key;
+	const secret_key : str = "baby";
+}
+let result = public_function();  -- compiles
+let key    = secret_key;         -- does not compile

@@ -15,21 +15,5 @@ record.name = "frank";
 let b = record.teeth_count;
 
 -- type alias
-let const POINT : type = (f32, f32);  -- MUST be `const`
-let point' : POINT = (1.1, 3.4);
-
--- distinct data type
-data Vec2 { x : f32, y : f32 };
-
--- enum
-data Height in {
-	Short,
-	Average,
-	Tall
-}
-
--- tagged union
-data Maybe(a : type) in {
-	Just(a),
-	Nothing
-};
+const POINT : type = (f32, f32);          -- MUST be `const`
+const fn pair|a : type| : type = (a, a);  -- `const fn` is used for parameterised type aliases
