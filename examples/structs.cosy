@@ -13,3 +13,7 @@ case record in {
 }
 record.name = "frank";
 let b = record.teeth_count;
+
+-- typedef
+const Point : type = (f32, f32);
+const fn Pair(a : type) : type = (a, a);

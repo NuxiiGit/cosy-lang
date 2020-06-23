@@ -47,7 +47,7 @@ fn proof (n : i32)
          = n == s.length();
 
 -- dependently typed function
-fn forall a b c. (-)[is_unary : bool](x : i32) : if is_unary do { i32 } else { i32 -> i32 } = do {
+fn (-)[is_unary : bool](x : i32) : if is_unary do { i32 } else { i32 -> i32 } = do {
 	let inverse = neg(x);
 	if is_unary do {
 		inverse
