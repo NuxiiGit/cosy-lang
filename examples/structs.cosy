@@ -17,3 +17,7 @@ let b = record.teeth_count;
 -- typedef
 const Point : type = (f32, f32);
 const fn Pair[a : type] : type = (a, a);
+
+-- higher-kinded types
+const fn Make[m[type] : type, a : type] : type = m[a];
+const IntPair : type = Make[Pair, i32];
