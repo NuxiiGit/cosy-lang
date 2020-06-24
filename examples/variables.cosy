@@ -5,10 +5,6 @@ let mut boo = 3;  -- mutable
 -- constant
 const x : f32 = 12.3;
 
--- deferred variable instantiation
-let i : i32;
-i = 1;
-
 -- mutual declaration
 mutual {
 	fn is_even(n : i32) : bool = if n == 0 do { true  } else { is_odd (n) };

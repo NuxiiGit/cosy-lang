@@ -1,5 +1,5 @@
 -- arrays must have an explicit size
-let mut array : Buffer[i32; 3];
+let mut array : Buffer[i32, 3];
 
 -- array access
 array !! 1 += 1;
