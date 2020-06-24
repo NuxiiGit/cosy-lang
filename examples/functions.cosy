@@ -47,12 +47,12 @@ fn proof (n : i32)
          = n == s.length();
 
 -- constant function
-const fn factorial(n : u32) : u32 = case n in {
+const fn Factorial(n : u32) : u32 = case n in {
 	0 => 1,
 	1 => 1,
 	_ => factorial(n) + factorial(n - 1)
 };
-let fact_32 = factorial(32); -- evaluated at compile time, since the value is constant
+let fact_32 = Factorial(32); -- evaluated at compile time, since the value is constant
 
 -- constrained dependent values (divisor must be constant)
 fn safe_divide[divisor : i32](dividend : i32) : i32 where divisor != 0 = dividend / divisor;
