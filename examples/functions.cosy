@@ -54,8 +54,14 @@ const fn factorial(n : u32) : u32 = case n in {
 };
 let fact_32 = factorial(32); -- evaluated at compile time, since the value is constant
 
+-- constrained dependent values (divisor must be constant)
+fn safe_divide[divisor : i32](dividend : i32) : i32 where divisor != 0 = dividend / divisor;
+
+-- type functions/compile-time functions
+const fn If[condition : bool, a : type, b : type] : type = if condition do { a } else { b };
+
 -- dependently typed function
-fn (-)[is_unary : bool](x : i32) : if is_unary do { i32 } else { i32 -> i32 } = do {
+fn (-)[is_unary : bool](x : i32) : If[is_unary, i32, i32 -> i32] = do {
 	let inverse = neg(x);
 	if is_unary do {
 		inverse
@@ -63,6 +69,3 @@ fn (-)[is_unary : bool](x : i32) : if is_unary do { i32 } else { i32 -> i32 } = 
 		\(y) => y + inverse
 	}
 };
-
--- constrained dependent values (divisor must be constant)
-fn safe_divide[divisor : i32](dividend : i32) : i32 where divisor != 0 = dividend / divisor;
