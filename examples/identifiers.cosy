@@ -10,6 +10,9 @@ let player_age = 18;
 -- operator identifiers
 let >_< = "bleh!";
 
+-- mixed identifiers
+let a_1_+ = 100;
+
 -- prime identifiers
 let x   = 0;       -- x
 let x'  = x  + 1;  -- x prime
