@@ -1,5 +1,5 @@
 -- void type is used for non-terminating programs
-fn error(msg :str) : void = do {
+fn error(msg : str) : void = do {
 	print(msg);
 	exit()
 };
