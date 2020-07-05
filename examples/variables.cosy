@@ -3,20 +3,20 @@ let     foo = 3;  -- immutable
 let mut boo = 3;  -- mutable
 
 -- constant
-const x : f32 = 12.3;
+def x : f32 = 12.3;
 
 -- mutual declaration
 mutual {
-	fn is_even(n : i32) : bool = if n == 0 do { true  } else { is_odd (n) };
-	fn is_odd (n : i32) : bool = if n == 0 do { false } else { is_even(n) };
+	def is_even(n : i32) : bool = if n == 0 do { true  } else { is_odd (n) };
+	def is_odd (n : i32) : bool = if n == 0 do { false } else { is_even(n) };
 }
 
 -- hidden functions with where clause
 mutual {
-	fn public() : str = secret(secret_key);
+	def public() : str = secret(secret_key);
 } where {
-	fn secret(key : str) : str = "shh, it's " ++ key;
-	const secret_key : str = "baby";
+	def secret(key : str) : str = "shh, it's " ++ key;
+	def secret_key : str = "baby";
 }
 let result = public_function();  -- compiles
 let key    = secret_key;         -- does not compile

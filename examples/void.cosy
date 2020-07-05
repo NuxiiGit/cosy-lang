@@ -1,5 +1,5 @@
 -- void type is used for non-terminating programs
-fn error(msg : str) : void = do {
+def error(msg : str) : void = do {
 	print(msg);
 	exit()
 };
@@ -11,4 +11,4 @@ let c : void = return;
 let d : void = break;
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
-fn absurd[a : type](x : void) : a = absurd(x);
+def absurd[a : type](x : void) : a = absurd(x);
