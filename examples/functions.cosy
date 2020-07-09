@@ -58,7 +58,7 @@ let fact_32 = factorial(32); -- evaluated at compile time, since the value is co
 def safe_divide[divisor : i32](dividend : i32) : i32 where divisor != 0 = dividend / divisor;
 def compare_stuff[a : type](x : a, y : a) : bool where a impl Eq = x == y;
 
--- type functions/compile-time functions
+-- strictly compile-time functions
 pure def choice[condition : bool, a : type, b : type] : type = if condition do { a } else { b };
 
 -- dependently typed function
@@ -70,3 +70,8 @@ def (-)[is_unary : bool](x : i32) : choice[is_unary, i32, i32 -> i32] = do {
 		\(y) => y + inverse
 	}
 };
+
+-- type functions
+pure def apply(f : type -> type, a : type) : type = f(a);
+pure def make_pair(a : type) : type = (a, a);
+def vec2 : type = apply(make_pair, f32);
