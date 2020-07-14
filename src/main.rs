@@ -18,7 +18,7 @@ use std::time::Instant;
 
 fn main() {
     let now = Instant::now();
-    let mut sess = Session::read("tmp/sandbox/sandbox.cosy").unwrap();
+    let mut sess = Session::read("sandbox/sandbox.cosy").unwrap();
     let mut lexer = Lexer::from(&sess.src);
     //let mut parser = Parser::from(&mut sess);
     //let ast = parser.parse_program();
