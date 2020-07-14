@@ -1,5 +1,5 @@
 -- function definition
-def max(a : i32, b : i32) : i32 = if a > b do { a } else { b };
+def max(a : i32, b : i32) : i32 = if a > b { a } else { b };
 
 -- function application
 let greatest = max(3, 4);
@@ -7,27 +7,27 @@ let greatest = max(3, 4);
 -- lambda function
 def double  : i32 -> i32 = \(x) => x * 2;
 def double' : i32 -> i32 = \(x) => do {
-	let a = x + x;
-	a
+    let a = x + x;
+    a
 };
 
 -- curried lambda function
 def f : i32 -> i32 -> i32 = \(x)(y) => x + y;
-                     -- OR \(x) => \(y) => x + y
+                      -- OR \(x) => \(y) => x + y
 
 -- parameterised function
 def id[a : type](x : a) : a = x;
 
 -- currying
-def curry[a : type, b : type, c : type](f : (a, b) -> c)(x : a)(y : b) : c = f(x, y);
+def curry[a : type, b : type, c : type](f : a, b -> c)(x : a)(y : b) : c = f(x, y);
 def max_curried : i32 -> i32 -> i32 = curry(max);
 max_curried(1)(3);
 
 -- operator definition
-def (a : i32) <=> (b : i32) : i8 = if a < b do { -1 } else if a > b do { 1 } else { 0 };
+def (a : i32) <=> (b : i32) : i8 = if a < b { -1 } else if a > b { 1 } else { 0 };
 
 -- operator blocks (allow the use of expressions or non-operator identifiers as operators)
-def (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max do { max } else if x < min do { min } else { x };
+def (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if x < min { min } else { x };
 let percent = 0 `clamp(x)` 100;
 
 -- pipeline operator
@@ -36,21 +36,21 @@ let greatest'' = 1 |> (2 |> max_curried);
 
 -- procedural style functions
 def izard(s : str, t : str) : str = do {
-	return s ++ "izard" ++ t;
+    return s ++ "izard" ++ t;
 };
 
 -- sequent style functions
 def proof (n : i32)
-         (s : str)
-         ---------
-         : bool
-         = n == s.length();
+          (s : str)
+          ---------
+          : bool
+          = n == s.length();
 
 -- pure function
-pure def factorial(n : u32) : u32 = case n in {
-	0 => 1,
-	1 => 1,
-	_ => factorial(n) + factorial(n - 1)
+pure def factorial(n : u32) : u32 = case n {
+    0 => 1;
+    1 => 1;
+    _ => factorial(n) + factorial(n - 1);
 };
 let fact_32 = factorial(32); -- evaluated at compile time, since the value is constant
 
@@ -59,16 +59,16 @@ def safe_divide[divisor : i32](dividend : i32) : i32 where divisor != 0 = divide
 def compare_stuff[a : type](x : a, y : a) : bool where a impl Eq = x == y;
 
 -- strictly compile-time functions
-pure def choice[condition : bool, a : type, b : type] : type = if condition do { a } else { b };
+pure def choice[condition : bool, a : type, b : type] : type = if condition { a } else { b };
 
 -- dependently typed function
 def (-)[is_unary : bool](x : i32) : choice[is_unary, i32, i32 -> i32] = do {
-	let inverse = neg(x);
-	if is_unary do {
-		inverse
-	} else {
-		\(y) => y + inverse
-	}
+    let inverse = neg(x);
+    if is_unary {
+        inverse
+    } else {
+        \(y) => y + inverse
+    }
 };
 
 -- type functions

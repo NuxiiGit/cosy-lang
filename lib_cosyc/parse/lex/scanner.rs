@@ -124,7 +124,6 @@ impl CharKind {
                 | Hashtag
                 | Address
                 | Bar
-                | Caret
                 | Ampersand
                 | Bang
                 | Hook

@@ -1,7 +1,7 @@
 -- void type is used for non-terminating programs
 def error(msg : str) : void = do {
-	print(msg);
-	exit()
+    print(msg);
+    exit()
 };
 
 -- some control structures may also have a type of `void`

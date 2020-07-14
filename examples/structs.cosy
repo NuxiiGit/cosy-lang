@@ -1,15 +1,24 @@
 -- tuples
-let point = (3.0, 2.0);
-case point in {
-	(l, r) => l * r
+let point = 3.0, 2.0;
+case point {
+    l, r => l * r;
 }
 point.0 = 12.3;
 let a = point.1;
 
 -- records
-let record = { name = "bob", teeth_count = 103 };
-case record in {
-	{ n = teeth_count } => n + 10
+let record = { name = "bob"; teeth_count = 103; };
+case record {
+    { n = teeth_count } => n + 10;
 }
 record.name = "frank";
 let b = record.teeth_count;
+
+-- types
+def Pair[a : type] = a, a;
+def Vec2[a : type] = struct { x : a; b : a; };
+let pair : Pair[bool] = true, false;
+let vec2 = Vec2[f32] :- {
+    x = 0.0;
+    y = 10.0;
+};

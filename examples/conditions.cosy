@@ -1,32 +1,33 @@
 -- if statement
-if condition do {
-	stuff();
+if condition {
+    stuff();
 }
 
 -- else clause
-if condition do {
-	stuff();
+if condition {
+    stuff();
 } else {
-	otherwise();
+    otherwise();
 }
 
 -- match case
-case condition in {
-	true  => stuff(),
-	false => otherwise()
+case condition {
+    true  => stuff();
+    false => otherwise();
 }
 
 -- while loop
-while condition do {
-	stuff();
+for condition {
+    stuff();
 }
 
--- infinite loops
-repeat {
-	stuff();
+-- infinite loop
+for {
+    stuff();
 }
 
--- repeat while
-repeat {
-	stuff();
-} while condition;
+-- for loop
+let n = 100;
+for let i = 0; i < n; i += 1 {
+    stuff();
+}
