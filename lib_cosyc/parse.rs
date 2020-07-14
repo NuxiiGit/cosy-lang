@@ -1,5 +1,93 @@
 pub mod lex;
 pub mod ident;
+
+use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
+use ident::Identifier;
+
+use super::common::{
+    Session,
+    diagnostics::{ IssueTracker, SourcePosition, Error, ErrorKind }
+};
+
+use std::{ mem, result };
+
+/// Represents an error case.
+pub type ParseResult<T> = Result<T, Error>;
+
+/// Produces a concrete syntax tree from concrete syntax.
+pub struct Parser<'a> {
+    lexer : Lexer<'a>,
+    peeked : TokenKind,
+    location : SourcePosition
+}
+impl<'a> Parser<'a> {
+	/// Advances the parser, but returns an error if some predicate isn't held.
+	pub fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> ParseResult<TokenKind> {
+		if let Some(kind) = self.matches(p) {
+			Ok(kind)
+		} else {
+			self.advance();
+			Err(self.error(ErrorKind::Fatal, on_err))
+		}
+	}
+
+	/// Advances the parser and returns `Some(TokenKind)` if some predicate is held,
+	/// otherwise `None` is returned and the parser does not advance.
+	pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
+		if p(self.token()) {
+			Some(self.advance())
+		} else {
+			None
+		}
+	}
+
+	/// Attempts to unwrap a `ParseResult`. If an error occurs, it is reported to the parser and
+	/// panic recovery is applied to skip offending tokens. `None` is returned in the case
+	/// where the result variant was `Err`.
+	pub fn synchronise<T>(&mut self, parse_result : ParseResult<T>, issues : &mut IssueTracker) -> Option<T> {
+		match parse_result {
+			Ok(x) => Some(x),
+			Err(err) => {
+				issues.report(err);
+				loop {
+					if self.matches(|x| matches!(x, TokenKind::SemiColon)).is_some() {
+						break;
+					} else if matches!(self.token(),
+							TokenKind::Let
+							| TokenKind::EoF) {
+						break;
+					}
+					self.advance();
+				}
+				None
+			}
+		}
+	}
+
+	/// Creates an error at the current parser location.
+	pub fn error(&self, kind : ErrorKind, reason : &'static str) -> Error {
+		let location = self.location();
+		Error { kind, reason, location }
+	}
+
+	/// Returns a reference to the current token kind.
+	pub fn token(&self) -> &TokenKind {
+		&self.peeked
+	}
+
+	/// Returns the current location of the parser.
+	pub fn location(&self) -> SourcePosition {
+		self.location
+	}
+
+	/// Advances the parser and returns the the previous lexeme.
+	pub fn advance(&mut self) -> TokenKind {
+		self.location = self.lexer.cursor();
+		let next = self.lexer.advance();
+		mem::replace(&mut self.peeked, next)
+	}
+}
+
 /*
 use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 use ident::Identifier;
