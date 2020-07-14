@@ -1,14 +1,14 @@
 -- tuples
 let point = 3.0, 2.0;
-case point {
+match point {
     l, r => l * r;
 }
 point.0 = 12.3;
 let a = point.1;
 
 -- records
-let record = { name = "bob"; teeth_count = 103; };
-case record {
+let mut record = { name = "bob"; teeth_count = 103; };
+match record {
     { n = teeth_count } => n + 10;
 }
 record.name = "frank";

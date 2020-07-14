@@ -16,10 +16,10 @@ def f : i32 -> i32 -> i32 = \(x)(y) => x + y;
                       -- OR \(x) => \(y) => x + y
 
 -- parameterised function
-def id[a : type](x : a) : a = x;
+def id(of a : type)(x : a) : a = x;
 
 -- currying
-def curry[a : type, b : type, c : type](f : a, b -> c)(x : a)(y : b) : c = f(x, y);
+def curry(of a : type, b : type, c : type)(f : a, b -> c)(x : a)(y : b) : c = f(x, y);
 def max_curried : i32 -> i32 -> i32 = curry(max);
 max_curried(1)(3);
 
@@ -31,12 +31,22 @@ def (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if 
 let percent = 0 `clamp(x)` 100;
 
 -- pipeline operator
-def (|>)[a : type, b : type] : (a -> b) -> (a -> b) = id;
+def (|>)(of a : type, b : type) : (a -> b) -> (a -> b) = id;
 let greatest'' = 1 |> (2 |> max_curried);
 
 -- procedural style functions
 def izard(s : str, t : str) : str = do {
     return s ++ "izard" ++ t;
+};
+
+-- functional style function
+def is_less_than_5(n : u8) : bool = match n {
+    0;  -- fallthrough matching case
+    1;
+    2;
+    3;
+    4 => true;
+    _ => false;
 };
 
 -- sequent style functions
@@ -47,7 +57,7 @@ def proof (n : i32)
           = n == s.length();
 
 -- pure function
-pure def factorial(n : u32) : u32 = case n {
+pure def factorial(n : u32) : u32 = match n {
     0;  -- fallthrough case
     1 => 1;
     _ => factorial(n) + factorial(n - 1);
@@ -55,14 +65,14 @@ pure def factorial(n : u32) : u32 = case n {
 let fact_32 = factorial(32); -- evaluated at compile time, since the value is constant
 
 -- constrained dependent values (divisor must be constant)
-def safe_divide[divisor : i32](dividend : i32) : i32 where divisor != 0 = dividend / divisor;
-def compare_stuff[a : type](x : a, y : a) : bool where a impl Eq = x == y;
+def safe_divide(of divisor : i32)(dividend : i32) : i32 where divisor != 0 = dividend / divisor;
+def compare_stuff(of a : type)(x : a, y : a) : bool where a impl Eq = x == y;
 
 -- strictly compile-time functions
-pure def choice[condition : bool, a : type, b : type] : type = if condition { a } else { b };
+pure def choice(of condition : bool, a : type, b : type) : type = if condition { a } else { b };
 
 -- dependently typed function
-def (-)[is_unary : bool](x : i32) : choice[is_unary, i32, i32 -> i32] = do {
+def (-)(of is_unary : bool)(x : i32) : choice(of is_unary, i32, i32 -> i32) = do {
     let inverse = neg(x);
     if is_unary {
         inverse

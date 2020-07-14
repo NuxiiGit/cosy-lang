@@ -8,10 +8,15 @@ let pi2 = 2 * 3.14;
 let player_age = 18;
 
 -- operator identifiers
-let >_< = "bleh!";
+let (>_<) = "bleh!";
 
 -- mixed identifiers
 let a_1_+ = 100;
+
+-- numerical identifiers
+let 1st = 1;
+let 2nd = 2;
+let 1_+_2 = 3;
 
 -- prime identifiers
 let x   = 0;       -- x
