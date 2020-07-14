@@ -15,10 +15,10 @@ record.name = "frank";
 let b = record.teeth_count;
 
 -- types
-def Pair[a : type] = a, a;
-def Vec2[a : type] = struct { x : a; b : a; };
-let pair : Pair[bool] = true, false;
-let vec2 = Vec2[f32] :- {
+def Pair(of a : type) = a, a;
+def Vec2(of a : type) = struct { x : a; b : a; };
+let pair : Pair(of bool) = true, false;
+let vec2 = Vec2(of f32) :- {
     x = 0.0;
     y = 10.0;
 };
