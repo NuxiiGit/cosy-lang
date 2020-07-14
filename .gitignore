@@ -1,4 +1,4 @@
-/temp
+/tmp
 /target
 **/*.rs.bk
 *.lock
