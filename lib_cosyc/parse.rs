@@ -1,6 +1,6 @@
 pub mod lex;
 pub mod ident;
-
+/*
 use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 use ident::Identifier;
 
@@ -226,4 +226,4 @@ pub enum ValueKind {
 #[derive(Debug)]
 pub enum ConstantKind {
 	Integral(usize)
-}
+}*/
