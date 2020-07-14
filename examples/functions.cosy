@@ -48,7 +48,7 @@ def proof (n : i32)
 
 -- pure function
 pure def factorial(n : u32) : u32 = case n {
-    0 => 1;
+    0;  -- fallthrough case
     1 => 1;
     _ => factorial(n) + factorial(n - 1);
 };
