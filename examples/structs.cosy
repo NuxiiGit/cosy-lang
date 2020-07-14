@@ -22,3 +22,11 @@ let vec2 = Vec2(of f32) :- {
     x = 0.0;
     y = 10.0;
 };
+
+-- unions
+def Maybe(of a : type) : type = a | nothing;
+let mx : Maybe(of bool) = ();  -- `()` has the type of `nothing`
+match mx {
+    x : bool => print("success");
+    _ => print("failure");
+}

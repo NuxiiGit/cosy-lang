@@ -54,7 +54,7 @@ def proof (n : i32)
           (s : str)
           ---------
           : bool
-          = n == s.length();
+          = n == len(s);
 
 -- pure function
 pure def factorial(n : u32) : u32 = match n {
