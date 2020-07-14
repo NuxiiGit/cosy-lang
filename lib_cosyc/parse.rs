@@ -14,6 +14,21 @@ use std::{ mem, result };
 /// Represents an error case.
 pub type ParseResult<T> = Result<T, Error>;
 
+/// Represents a kind of expression.
+#[derive(Debug)]
+pub enum ExprKind {
+    Variable {
+        ident : Identifier
+    }
+}
+
+/// Represents expression information
+#[derive(Debug)]
+pub struct Expr {
+    location : SourcePosition,
+    kind : ExprKind
+}
+
 /// Produces a concrete syntax tree from concrete syntax.
 pub struct Parser<'a> {
     lexer : Lexer<'a>,
@@ -21,7 +36,19 @@ pub struct Parser<'a> {
     location : SourcePosition
 }
 impl<'a> Parser<'a> {
-	/// Advances the parser, but returns an error if some predicate isn't held.
+    /// Parses literals, identifiers, and groupings of expressions.
+    pub fn parse_expr_terminal(&mut self) -> ParseResult<Expr> {
+        let kind = match self.matches(TokenKind::is_terminal) {
+            Some(TokenKind::Identifier(ident,
+                    IdentifierKind::Alphanumeric)) => ExprKind::Variable { ident },
+            _ => return Err(self.error(ErrorKind::Bug,
+                    "unknown terminal value")),
+        };
+        let location = self.location();
+        Ok(Expr { location, kind })
+    }
+
+    /// Advances the parser, but returns an error if some predicate isn't held.
 	pub fn expects(&mut self, p : fn(&TokenKind) -> bool, on_err : &'static str) -> ParseResult<TokenKind> {
 		if let Some(kind) = self.matches(p) {
 			Ok(kind)
@@ -86,6 +113,13 @@ impl<'a> Parser<'a> {
 		let next = self.lexer.advance();
 		mem::replace(&mut self.peeked, next)
 	}
+}
+impl<'a> From<Lexer<'a>> for Parser<'a> {
+    fn from(mut lexer : Lexer<'a>) -> Self {
+		let peeked = lexer.advance();
+		let location = 0;
+		Self { lexer, peeked, location }
+    }
 }
 
 /*
