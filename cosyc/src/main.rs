@@ -9,7 +9,9 @@ fn main() {
     };
     span.make_diagnostic()
             .reason(format!("just testing uwu"))
-            .error_level(ErrorLevel::Bug)
+            .note(format!("alright"))
+            .note(format!("but did you know that uhhhhh"))
+            .level(ErrorLevel::Bug)
             .report(&mut sess);
     println!("{}", sess);
 }

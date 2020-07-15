@@ -154,12 +154,19 @@ impl fmt::Display for Session {
 pub struct Diagnostic {
     pub span : Span,
     pub error_level : ErrorLevel,
-    pub reason : String
+    pub reason : String,
+    pub notes : Vec<String>
 }
 impl Diagnostic {
     /// Sets the error level of the diagnostic.
-    pub fn error_level(mut self, level : ErrorLevel) -> Self {
+    pub fn level(mut self, level : ErrorLevel) -> Self {
         self.error_level = level;
+        self
+    }
+
+    /// Adds a note to the diagnostic.
+    pub fn note(mut self, note : String) -> Self {
+        self.notes.push(note);
         self
     }
 
@@ -175,7 +182,7 @@ impl Diagnostic {
             span : self.span,
             level : self.error_level,
             reason : self.reason,
-            notes : vec![format!("hello world")]
+            notes : self.notes
         })
     }
 }
