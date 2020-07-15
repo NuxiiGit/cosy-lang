@@ -131,8 +131,8 @@ impl fmt::Display for Session {
                 let indent = " ".repeat(digit_count(row));
                 writeln!(out, "")?;
                 writeln!(out, "{:?}: {}", error.level, error.reason)?;
-                write!(out, " {}--> ", indent)?;
-                write!(out, "{}:", self.filepath)?;
+                write!(out, " {}>>> ", indent)?;
+                write!(out, "{}@", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
                 writeln!(out, " {} | ", indent)?;
                 writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
@@ -153,6 +153,12 @@ pub struct Diagnostic {
     pub reason : String
 }
 impl Diagnostic {
+    /// Sets the error level of the diagnostic.
+    pub fn error_level(mut self, level : ErrorLevel) -> Self {
+        self.error_level = level;
+        self
+    }
+
     /// Update the diagnostic reason.
     pub fn reason(mut self, reason : String) -> Self {
         self.reason = reason;
@@ -168,10 +174,12 @@ impl Diagnostic {
         })
     }
 }
-impl From<Span> for Diagnostic {
-    fn from(span : Span) -> Self {
+impl Span {
+    /// Creates a diagnostic from the location data of this span.
+    pub fn make_diagnostic(&self) -> Diagnostic {
         let mut diagnostic = Diagnostic::default();
-        diagnostic.span = span;
+        diagnostic.span.begin = self.begin;
+        diagnostic.span.end = self.end;
         diagnostic
     }
 }
