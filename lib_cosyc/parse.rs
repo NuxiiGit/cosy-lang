@@ -14,18 +14,28 @@ use std::{ mem, result };
 /// Represents an error case.
 pub type ParseResult<T> = Result<T, Error>;
 
+/// Represents a kind of terminal expression.
+#[derive(Debug)]
+pub enum TerminalKind {
+    Variable(Identifier)
+}
+
+/// Represents a terminal value
+#[derive(Debug)]
+pub struct Terminal {
+    location : SourcePosition,
+    kind : TerminalKind
+}
+
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
-    Variable {
-        ident : Identifier
-    }
+    Terminal(Terminal)
 }
 
 /// Represents expression information
 #[derive(Debug)]
 pub struct Expr {
-    location : SourcePosition,
     kind : ExprKind
 }
 
@@ -40,12 +50,14 @@ impl<'a> Parser<'a> {
     pub fn parse_expr_terminal(&mut self) -> ParseResult<Expr> {
         let kind = match self.matches(TokenKind::is_terminal) {
             Some(TokenKind::Identifier(ident,
-                    IdentifierKind::Alphanumeric)) => ExprKind::Variable { ident },
+                    IdentifierKind::Alphanumeric)) => TerminalKind::Variable(ident),
             _ => return Err(self.error(ErrorKind::Bug,
                     "unknown terminal value")),
         };
         let location = self.location();
-        Ok(Expr { location, kind })
+        let terminal = Terminal { location, kind };
+        let kind = ExprKind::Terminal(terminal);
+        Ok(Expr { kind })
     }
 
     /// Advances the parser, but returns an error if some predicate isn't held.
