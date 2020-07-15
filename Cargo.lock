@@ -5,9 +5,17 @@ name = "cosyc"
 version = "0.1.0"
 dependencies = [
  "libcosyc_diagnostics 0.1.0",
+ "libcosyc_span 0.1.0",
 ]
 
 [[package]]
 name = "libcosyc_diagnostics"
+version = "0.1.0"
+dependencies = [
+ "libcosyc_span 0.1.0",
+]
+
+[[package]]
+name = "libcosyc_span"
 version = "0.1.0"
 

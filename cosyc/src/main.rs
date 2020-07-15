@@ -1,4 +1,5 @@
 use libcosyc_diagnostics::*;
+use libcosyc_span::*;
 
 fn main() {
     let mut sess = Session::from(format!("hello world"));
@@ -7,7 +8,7 @@ fn main() {
         begin : 2,
         end : 7
     };
-    span.make_diagnostic()
+    Diagnostic::from(&span)
             .reason(format!("just testing uwu"))
             .note(format!("alright"))
             .note(format!("but did you know that uhhhhh"))

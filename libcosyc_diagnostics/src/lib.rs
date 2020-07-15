@@ -1,16 +1,6 @@
-use std::{ vec, slice, fmt, error };
+use libcosyc_span::Span;
 
-/// Represents a source location.
-#[derive(Default, Debug, Clone)]
-pub struct Span {
-    pub begin : usize,
-    pub end : usize,
-}
-impl fmt::Display for Span {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "[{}..{}]", self.begin, self.end)
-    }
-}
+use std::fmt;
 
 /// Represents different kinds of error.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
@@ -186,12 +176,11 @@ impl Diagnostic {
         })
     }
 }
-impl Span {
-    /// Creates a diagnostic from the location data of this span.
-    pub fn make_diagnostic(&self) -> Diagnostic {
-        let mut diagnostic = Diagnostic::default();
-        diagnostic.span.begin = self.begin;
-        diagnostic.span.end = self.end;
+impl<'a> From<&'a Span> for Diagnostic {
+    fn from(span : &'a Span) -> Self {
+        let mut diagnostic = Self::default();
+        diagnostic.span.begin = span.begin;
+        diagnostic.span.end = span.end;
         diagnostic
     }
 }
