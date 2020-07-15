@@ -1,4 +1,4 @@
-use lib_diagnostics;
+use libcosyc_diagnostics;
 
 fn main() {
     println!("Hello, world!");
