@@ -29,7 +29,8 @@ impl Default for ErrorLevel {
 struct Error {
     pub span : Span,
     pub level : ErrorLevel,
-    pub reason : String
+    pub reason : String,
+    pub notes : Vec<String>
 }
 impl fmt::Display for Error {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
@@ -137,6 +138,9 @@ impl fmt::Display for Session {
                 writeln!(out, " {} | ", indent)?;
                 writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
                 writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(col_len))?;
+                for note in &error.notes {
+                    writeln!(out, " {} ? Note: {}", indent, note)?;
+                }
             }
             Ok(())
         } else {
@@ -170,7 +174,8 @@ impl Diagnostic {
         sess.report(Error {
             span : self.span,
             level : self.error_level,
-            reason : self.reason
+            reason : self.reason,
+            notes : vec![format!("hello world")]
         })
     }
 }
