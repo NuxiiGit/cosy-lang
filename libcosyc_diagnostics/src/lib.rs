@@ -73,6 +73,18 @@ impl From<String> for Session {
         sess
     }
 }
+impl fmt::Display for Session {
+    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+        if self.contains_errors() {
+            for error in &self.errors {
+                write!(out, "{}", error)?;
+            }
+            Ok(())
+        } else {
+            write!(out, "no errors occurred")
+        }
+    }
+}
 
 /// Represents a diagnostic
 #[derive(Default, Debug)]
@@ -82,6 +94,11 @@ pub struct Diagnostic {
     pub reason : String
 }
 impl Diagnostic {
+    /// Update the diagnostic reason.
+    pub fn reason(mut self, reason : String) -> Self {
+        self.reason = reason;
+        self
+    }
 
     /// Report the diagnostic to a session.
     pub fn report(self, sess : &mut Session) {
