@@ -1,12 +1,12 @@
 use std::{ vec, slice, fmt, error };
 
 /// Represents a source location.
-pub struct Span<T> {
+#[derive(Default, Debug, Clone)]
+pub struct Span {
     pub begin : usize,
     pub end : usize,
-    pub content : T
 }
-impl<T> fmt::Display for Span<T> {
+impl fmt::Display for Span {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         write!(out, "[{}..{}]", self.begin, self.end)
     }
@@ -27,8 +27,9 @@ impl Default for ErrorLevel {
 
 #[derive(Debug, Clone)]
 struct Error {
+    pub span : Span,
     pub level : ErrorLevel,
-    pub reason : &'static str
+    pub reason : String
 }
 impl fmt::Display for Error {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
@@ -39,7 +40,7 @@ impl fmt::Display for Error {
 /// Represents a compiler session.
 #[derive(Default)]
 pub struct Session {
-    errors : Vec<Span<Error>>,
+    errors : Vec<Error>,
     /// The highest `ErrorLevel` registered by the issue tracker.
     pub error_level : ErrorLevel,
     /// The filepath of the script to consider.
@@ -58,9 +59,9 @@ impl Session {
         !self.errors.is_empty()
     }
 
-    fn report(&mut self, error : Span<Error>) {
-        if error.content.level > self.error_level {
-            self.error_level = error.content.level.clone();
+    fn report(&mut self, error : Error) {
+        if error.level > self.error_level {
+            self.error_level = error.level.clone();
         }
         self.errors.push(error);
     }
@@ -70,5 +71,31 @@ impl From<String> for Session {
         let mut sess = Self::default();
         sess.src = src;
         sess
+    }
+}
+
+/// Represents a diagnostic
+#[derive(Default, Debug)]
+pub struct Diagnostic {
+    pub span : Span,
+    pub error_level : ErrorLevel,
+    pub reason : String
+}
+impl Diagnostic {
+
+    /// Report the diagnostic to a session.
+    pub fn report(self, sess : &mut Session) {
+        sess.report(Error {
+            span : self.span,
+            level : self.error_level,
+            reason : self.reason
+        })
+    }
+}
+impl From<Span> for Diagnostic {
+    fn from(span : Span) -> Self {
+        let mut diagnostic = Diagnostic::default();
+        diagnostic.span = span;
+        diagnostic
     }
 }
