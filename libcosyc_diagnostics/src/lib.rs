@@ -110,13 +110,14 @@ impl fmt::Display for Session {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         if self.contains_errors() {
             let newlines = prospect_newlines(&self.src);
-            for issue in &self.errors {
-                let location = issue.span.begin;
+            for error in &self.errors {
+                let error_begin = error.span.begin;
+                let error_end = error.span.end;
                 let line = newlines.binary_search_by(|x| {
                     use std::cmp::Ordering;
-                    if x.0 > location {
+                    if x.0 > error_begin {
                         Ordering::Greater
-                    } else if x.1 < location {
+                    } else if x.1 < error_begin {
                         Ordering::Less
                     } else {
                         Ordering::Equal
@@ -124,16 +125,18 @@ impl fmt::Display for Session {
                 }).unwrap();
                 let (start, end) = newlines.get(line).unwrap();
                 let row = line + 1;
-                let col = location - start + 1;
+                let col = error_begin - start + 1;
+                let col_end = if error_end < *end { error_end } else { *end } - start + 1;
+                let col_len = col_end + 1 - col;
                 let indent = " ".repeat(digit_count(row));
                 writeln!(out, "")?;
-                writeln!(out, "{:?}: {}", issue.level, issue.reason)?;
+                writeln!(out, "{:?}: {}", error.level, error.reason)?;
                 write!(out, " {}--> ", indent)?;
                 write!(out, "{}:", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
                 writeln!(out, " {} | ", indent)?;
                 writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
-                writeln!(out, " {} |{}^", indent, " ".repeat(col))?;
+                writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(col_len))?;
             }
             Ok(())
         } else {

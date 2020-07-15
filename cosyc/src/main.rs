@@ -1,10 +1,10 @@
 use libcosyc_diagnostics::*;
 
 fn main() {
-    let mut sess = Session::from(format!("hello world"));
+    let mut sess = Session::from(format!("hello\nworld"));
     let span = Span {
-        begin : 2,
-        end : 5
+        begin : 3,
+        end : 6
     };
     Diagnostic::from(span)
             .reason(format!("just testing uwu"))
