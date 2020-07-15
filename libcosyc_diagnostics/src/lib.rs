@@ -37,6 +37,39 @@ impl fmt::Display for Error {
     }
 }
 
+/// Produces a **sorted** list of source positions where a new line occurs.
+fn prospect_newlines(src : &str) -> Vec<(usize, usize)> {
+    let mut start = 0;
+    let mut locations = Vec::new();
+    let mut chars = src.char_indices().peekable();
+    while let Some((end, next)) = chars.next() {
+        match next {
+            '\r' if matches!(chars.peek(), Some((_, '\n'))) => {
+                chars.next();
+            },
+            '\r' | '\n' => (),
+            _ => continue
+        }
+        locations.push((start, end));
+        start = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
+    }
+    locations.push((start, src.len()));
+    locations
+}
+
+/// Returns the number of digits of this natural number.
+fn digit_count(mut n : usize) -> usize {
+    let mut count = 1;
+    loop {
+        if n < 10 {
+            return count;
+        } else {
+            n /= 10;
+            count += 1;
+        }
+    }
+}
+
 /// Represents a compiler session.
 #[derive(Default)]
 pub struct Session {
@@ -76,8 +109,31 @@ impl From<String> for Session {
 impl fmt::Display for Session {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         if self.contains_errors() {
-            for error in &self.errors {
-                write!(out, "{}", error)?;
+            let newlines = prospect_newlines(&self.src);
+            for issue in &self.errors {
+                let location = issue.span.begin;
+                let line = newlines.binary_search_by(|x| {
+                    use std::cmp::Ordering;
+                    if x.0 > location {
+                        Ordering::Greater
+                    } else if x.1 < location {
+                        Ordering::Less
+                    } else {
+                        Ordering::Equal
+                    }
+                }).unwrap();
+                let (start, end) = newlines.get(line).unwrap();
+                let row = line + 1;
+                let col = location - start + 1;
+                let indent = " ".repeat(digit_count(row));
+                writeln!(out, "")?;
+                writeln!(out, "{:?}: {}", issue.level, issue.reason)?;
+                write!(out, " {}--> ", indent)?;
+                write!(out, "{}:", self.filepath)?;
+                writeln!(out, "[row. {}, col. {}]", row, col)?;
+                writeln!(out, " {} | ", indent)?;
+                writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
+                writeln!(out, " {} |{}^", indent, " ".repeat(col))?;
             }
             Ok(())
         } else {
