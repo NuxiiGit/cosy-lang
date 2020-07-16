@@ -139,11 +139,13 @@ impl fmt::Display for Session {
                         let Span { begin : start, end } = newlines.get(line).unwrap();
                         writeln!(out, "{}! | {}", indent, &self.src[*start..*end].replace("\t", " "))?;
                     }
-                    writeln!(out, " {} | ", indent)?;
                 }
-                // display notes
-                for note in &error.notes {
-                    writeln!(out, " {} ? Note: {}", indent, note)?;
+                if !error.notes.is_empty() {
+                    // display notes
+                    writeln!(out, " {} | ", indent)?;
+                    for note in &error.notes {
+                        writeln!(out, " {} ? Note: {}", indent, note)?;
+                    }
                 }
             }
             Ok(())

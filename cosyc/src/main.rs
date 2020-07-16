@@ -1,10 +1,11 @@
 use libcosyc_diagnostics::*;
 use libcosyc_span::*;
+use libcosyc_lexer;
 
 fn main() {
-    let mut sess = Session::from(format!("he\nllo\nwo\nrld"));
+    let mut sess = Session::from(format!("hello wo\nrld"));
     sess.filepath = format!("some_location.cosy");
-    Diagnostic::from(&Span { begin : 2, end : 7 })
+    Diagnostic::from(&Span { begin : 2, end : 5 })
             .reason(format!("just testing uwu"))
             .note(format!("alright"))
             .note(format!("but did you know that uhhhhh"))
