@@ -19,7 +19,7 @@ def f : i32 -> i32 -> i32 = \(x)(y) => x + y;
 def id(of a : type)(x : a) : a = x;
 
 -- currying
-def curry(of a : type, b : type, c : type)(f : a, b -> c)(x : a)(y : b) : c = f(x, y);
+def curry(of a : type, b : type, c : type)(f : a & b -> c)(x : a)(y : b) : c = f(x, y);
 def max_curried : i32 -> i32 -> i32 = curry(max);
 max_curried(1)(3);
 
@@ -83,5 +83,5 @@ def (-)(of is_unary : bool)(x : i32) : choice(of is_unary, i32, i32 -> i32) = do
 
 -- type functions
 pure def apply(f : type -> type, a : type) : type = f(a);
-pure def make_pair(a : type) : type = (a, a);
+pure def make_pair(a : type) : type = a & a;
 def vec2 : type = apply(make_pair, f32);

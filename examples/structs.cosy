@@ -7,7 +7,7 @@ point.0 = 12.3;
 let a = point.1;
 
 -- records
-let mut record = { name = "bob"; teeth_count = 103; };
+let mut record = { name = "bob"; teeth_count = 103 };
 match record {
     { n = teeth_count } => n + 10;
 }
@@ -15,17 +15,14 @@ record.name = "frank";
 let b = record.teeth_count;
 
 -- types
-def Pair(of a : type) = a, a;
-def Vec2(of a : type) = struct { x : a; b : a; };
+def Pair(of a : type) = a & a;             -- tuple type
+def Vec2(of a : type) = { x : a; b : a };  -- structure type
 let pair : Pair(of bool) = true, false;
-let vec2 = Vec2(of f32) :- {
-    x = 0.0;
-    y = 10.0;
-};
+let vec2 = Vec2(of f32) :- { x = 0.0; y = 10.0 };
 
 -- unions
-def Maybe(of a : type) : type = a | nothing;
-let mx : Maybe(of bool) = ();  -- `()` has the type of `nothing`
+def Maybe(of a : type) : type = a | empty;
+let mx : Maybe(of bool) = nothing;  -- `nothing` has the type of `empty`
 match mx {
     x : bool => print("success");
     _ => print("failure");
