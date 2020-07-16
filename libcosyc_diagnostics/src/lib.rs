@@ -61,6 +61,19 @@ fn digit_count(mut n : usize) -> usize {
     }
 }
 
+fn binary_search_newlines(lines : &[(usize, usize)], pos : usize) -> Result<usize, usize> {
+    lines.binary_search_by(|x| {
+        use std::cmp::Ordering;
+        if x.0 > pos {
+            Ordering::Greater
+        } else if x.1 < pos {
+            Ordering::Less
+        } else {
+            Ordering::Equal
+        }
+    })
+}
+
 /// Represents a compiler session.
 #[derive(Default)]
 pub struct Session {
@@ -104,16 +117,7 @@ impl fmt::Display for Session {
             for error in &self.errors {
                 let error_begin = error.span.begin;
                 let error_end = error.span.end;
-                let line = newlines.binary_search_by(|x| {
-                    use std::cmp::Ordering;
-                    if x.0 > error_begin {
-                        Ordering::Greater
-                    } else if x.1 < error_begin {
-                        Ordering::Less
-                    } else {
-                        Ordering::Equal
-                    }
-                }).unwrap();
+                let line = binary_search_newlines(&newlines, error_begin).unwrap();
                 let (start, end) = newlines.get(line).unwrap();
                 let row = line + 1;
                 let col = error_begin - start + 1;
