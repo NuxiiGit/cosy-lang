@@ -29,8 +29,8 @@ impl fmt::Display for Error {
 }
 
 /// Produces a **sorted** list of source positions where a new line occurs.
-fn prospect_newlines(src : &str) -> Vec<(usize, usize)> {
-    let mut start = 0;
+fn prospect_newlines(src : &str) -> Vec<Span> {
+    let mut begin = 0;
     let mut locations = Vec::new();
     let mut chars = src.char_indices().peekable();
     while let Some((end, next)) = chars.next() {
@@ -41,10 +41,10 @@ fn prospect_newlines(src : &str) -> Vec<(usize, usize)> {
             '\r' | '\n' => (),
             _ => continue
         }
-        locations.push((start, end));
-        start = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
+        locations.push(Span { begin, end });
+        begin = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
     }
-    locations.push((start, src.len()));
+    locations.push(Span { begin, end : src.len() });
     locations
 }
 
@@ -61,12 +61,12 @@ fn digit_count(mut n : usize) -> usize {
     }
 }
 
-fn binary_search_newlines(lines : &[(usize, usize)], pos : usize) -> Result<usize, usize> {
+fn binary_search_newlines(lines : &[Span], pos : usize) -> Result<usize, usize> {
     lines.binary_search_by(|x| {
         use std::cmp::Ordering;
-        if x.0 > pos {
+        if x.begin > pos {
             Ordering::Greater
-        } else if x.1 < pos {
+        } else if x.end < pos {
             Ordering::Less
         } else {
             Ordering::Equal
@@ -117,12 +117,12 @@ impl fmt::Display for Session {
             for error in &self.errors {
                 let error_begin = error.span.begin;
                 let error_end = error.span.end;
-                let line = binary_search_newlines(&newlines, error_begin).unwrap();
-                let (start, end) = newlines.get(line).unwrap();
-                let row = line + 1;
-                let col = error_begin - start + 1;
-                let col_end = if error_end < *end { error_end } else { *end } - start + 1;
-                let col_len = col_end + 1 - col;
+                let line_begin = binary_search_newlines(&newlines, error_begin).unwrap();
+                let line_end = binary_search_newlines(&newlines, error_end).unwrap();
+                let span_begin = newlines.get(line_begin).unwrap();
+                let span_end = newlines.get(line_end).unwrap();
+                let row = line_begin + 1;
+                let col = error_begin - span_begin.begin + 1;
                 let indent = " ".repeat(digit_count(row));
                 writeln!(out, "")?;
                 writeln!(out, "{:?}: {}", error.level, error.reason)?;
@@ -130,8 +130,12 @@ impl fmt::Display for Session {
                 write!(out, "{}@", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
                 writeln!(out, " {} | ", indent)?;
-                writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
-                writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(col_len))?;
+                if line_begin == line_end {
+                    // underline error
+                    writeln!(out, " {} | {}", row, &self.src[span_begin.begin..span_begin.end].replace("\t", " "))?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(error_end - error_begin + 1))?;
+                }
+                // display notes
                 for note in &error.notes {
                     writeln!(out, " {} ? Note: {}", indent, note)?;
                 }
