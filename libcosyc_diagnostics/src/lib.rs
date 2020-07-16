@@ -135,8 +135,8 @@ impl fmt::Display for Session {
                     writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(error_end - error_begin + 1))?;
                 } else {
                     // display lines of error
-                    for line in line_begin..line_end {
-                        let Span { begin : start, end } = newlines.get(line + 1).unwrap();
+                    for line in (line_begin + 1)..=line_end {
+                        let Span { begin : start, end } = newlines.get(line).unwrap();
                         writeln!(out, "{}! | {}", indent, &self.src[*start..*end].replace("\t", " "))?;
                     }
                     writeln!(out, " {} | ", indent)?;
