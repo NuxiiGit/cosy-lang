@@ -3,5 +3,6 @@ members = [
     "cosyc",
     "libcosyc_diagnostics",
     "libcosyc_span",
-    "libcosyc_lexer"
+    "libcosyc_lexer",
+    "libcosyc_ident"
 ]
