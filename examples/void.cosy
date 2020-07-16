@@ -5,10 +5,14 @@ def error(msg : str) : void = do {
 };
 
 -- some control structures may also have a type of `void`
-let a : void = repeat { };
-let b : void = continue;
-let c : void = return;
-let d : void = break;
+let a : void = continue;
+let b : void = return;
+let c : void = break;
 
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
-def absurd(of a : type)(x : void) : a = absurd(x);
+def absurd(of a : type)(x : void) : a = absurd(of a)(x);
+
+-- unit type is used for terminating programs which return nothing of interest
+def say_hello(message : str) : unit = do {
+    printf("{}, and to that I say: hello!")(message);
+};

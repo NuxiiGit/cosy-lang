@@ -21,13 +21,12 @@ for condition {
     stuff();
 }
 
--- infinite loop
-for {
+-- for loop
+for let i = 0; i < 100; i += 1 {
     stuff();
 }
 
--- for loop
-let n = 100;
-for let i = 0; i < n; i += 1 {
+-- infinite loop
+for {
     stuff();
 }

@@ -3,7 +3,3 @@ let mut a : ^i32 = ^2;
 
 -- dereference
 a^ = 12;
-
--- by name (nullary functions)
-let f : -> i32 = 12;
-          -- AKA \() -> 12

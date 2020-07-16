@@ -36,7 +36,7 @@ let greatest'' = 1 |> (2 |> max_curried);
 
 -- procedural style functions
 def izard(s : str, t : str) : str = do {
-    return s ++ "izard" ++ t;
+    return s ++ "izard" ++ t
 };
 
 -- functional style function
