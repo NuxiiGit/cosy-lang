@@ -119,10 +119,9 @@ impl fmt::Display for Session {
                 let error_end = error.span.end;
                 let line_begin = binary_search_newlines(&newlines, error_begin).unwrap();
                 let line_end = binary_search_newlines(&newlines, error_end).unwrap();
-                let span_begin = newlines.get(line_begin).unwrap();
-                let span_end = newlines.get(line_end).unwrap();
+                let Span { begin : start, end } = newlines.get(line_begin).unwrap();
                 let row = line_begin + 1;
-                let col = error_begin - span_begin.begin + 1;
+                let col = error_begin - start + 1;
                 let indent = " ".repeat(digit_count(row));
                 writeln!(out, "")?;
                 writeln!(out, "{:?}: {}", error.level, error.reason)?;
@@ -130,10 +129,17 @@ impl fmt::Display for Session {
                 write!(out, "{}@", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
                 writeln!(out, " {} | ", indent)?;
+                writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
                 if line_begin == line_end {
                     // underline error
-                    writeln!(out, " {} | {}", row, &self.src[span_begin.begin..span_begin.end].replace("\t", " "))?;
                     writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(error_end - error_begin + 1))?;
+                } else {
+                    // display lines of error
+                    for line in line_begin..line_end {
+                        let Span { begin : start, end } = newlines.get(line + 1).unwrap();
+                        writeln!(out, "{}! | {}", indent, &self.src[*start..*end].replace("\t", " "))?;
+                    }
+                    writeln!(out, " {} | ", indent)?;
                 }
                 // display notes
                 for note in &error.notes {

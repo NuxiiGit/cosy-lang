@@ -2,7 +2,7 @@ use libcosyc_diagnostics::*;
 use libcosyc_span::*;
 
 fn main() {
-    let mut sess = Session::from(format!("hello world"));
+    let mut sess = Session::from(format!("he\nllo\nwo\nrld"));
     sess.filepath = format!("some_location.cosy");
     Diagnostic::from(&Span { begin : 2, end : 7 })
             .reason(format!("just testing uwu"))
