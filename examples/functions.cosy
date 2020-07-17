@@ -34,6 +34,9 @@ let percent = 0 `clamp(x)` 100;
 def (|>)(of a : type, b : type) : (a -> b) -> (a -> b) = id;
 let greatest'' = 1 |> (2 |> max_curried);
 
+-- operator sections
+let a : i32 -> i32 = max_curried(2) |> _
+
 -- procedural style functions
 def izard(s : str, t : str) : str = do {
     return s ++ "izard" ++ t
