@@ -82,7 +82,7 @@ impl Lexer<'_> {
     }
 
     fn read_digit_identifier(&mut self) {
-        self.reader.advance_while(CharKind::is_valid_digit);
+        self.reader.advance_while(|x| x.is_valid_digit() || matches!(x, CharKind::SingleQuote));
     }
 
     fn read_alphabetic_identifier(&mut self) {
