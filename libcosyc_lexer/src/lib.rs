@@ -13,7 +13,7 @@ pub enum LiteralKind {
 /// Represents identifier types.
 #[derive(PartialEq, Debug, Clone)]
 pub enum IdentifierKind {
-    Alphanumeric,
+    Graphic,
     Multiplication,
     Addition,
     Comparison,
@@ -51,8 +51,8 @@ impl TokenKind {
     }
 
     /// Returns `true` if the token is an alphabetic identifier.
-    pub fn is_alphanumeric(&self) -> bool {
-        matches!(self, Self::Identifier(.., IdentifierKind::Alphanumeric))
+    pub fn is_graphic(&self) -> bool {
+        matches!(self, Self::Identifier(.., IdentifierKind::Graphic))
     }
 
     /// Returns whether this token is a valid terminal value.
@@ -62,7 +62,7 @@ impl TokenKind {
 
     /// Returns `true` if the token is an operator identifier.
     pub fn is_operator(&self) -> bool {
-        self.is_identifier() && !self.is_alphanumeric()
+        self.is_identifier() && !self.is_graphic()
     }
 
     /// Returns `true` if the token is the end of the file.
@@ -85,6 +85,10 @@ impl Lexer<'_> {
         self.reader.advance_while(CharKind::is_valid_digit);
     }
 
+    fn read_alphabetic_identifier(&mut self) {
+        self.reader.advance_while(CharKind::is_valid_graphic);
+    }
+
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
     'search:
@@ -105,6 +109,11 @@ impl Lexer<'_> {
                     self.read_digit_identifier();
                     TokenKind::Literal(LiteralKind::Integral)
                 },
+                // alphabetic
+                x if x.is_valid_graphic() => {
+                    self.read_alphabetic_identifier();
+                    TokenKind::Identifier(IdentifierKind::Graphic)
+                }
                 // end of file
                 CharKind::EoF => TokenKind::EoF,
                 // unknown symbol
