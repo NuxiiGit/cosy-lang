@@ -81,6 +81,10 @@ impl Lexer<'_> {
         self.reader.span()
     }
 
+    fn read_digit_identifier(&mut self) {
+        self.reader.advance_while(CharKind::is_valid_digit);
+    }
+
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
     'search:
@@ -96,6 +100,11 @@ impl Lexer<'_> {
                 CharKind::LeftParen => TokenKind::LeftParen,
                 CharKind::RightParen => TokenKind::RightParen,
                 CharKind::SemiColon => TokenKind::SemiColon,
+                // numbers
+                x if x.is_valid_digit() => {
+                    self.read_digit_identifier();
+                    TokenKind::Literal(LiteralKind::Integral)
+                },
                 // end of file
                 CharKind::EoF => TokenKind::EoF,
                 // unknown symbol
