@@ -3,7 +3,7 @@ use libcosyc_span::*;
 use libcosyc_lexer::Lexer;
 
 fn main() {
-    let mut lexer = Lexer::from("bwh1244");
+    let mut lexer = Lexer::from("+bwh1244");
     println!("{:?}", lexer.generate_token());
     let mut sess = Session::from(format!("hello wo\nrld"));
     sess.filepath = format!("some_location.cosy");

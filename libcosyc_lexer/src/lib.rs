@@ -89,6 +89,10 @@ impl Lexer<'_> {
         self.reader.advance_while(CharKind::is_valid_graphic);
     }
 
+    fn read_operator_identifier(&mut self) {
+        self.reader.advance_while(CharKind::is_valid_operator);
+    }
+
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
     'search:
@@ -113,7 +117,29 @@ impl Lexer<'_> {
                 x if x.is_valid_graphic() => {
                     self.read_alphabetic_identifier();
                     TokenKind::Identifier(IdentifierKind::Graphic)
-                }
+                },
+                // operator
+                x if x.is_valid_operator() => {
+                    self.read_operator_identifier();
+                    TokenKind::Identifier(match x {
+                        CharKind::Asterisk
+                        | CharKind::Solidus
+                        | CharKind::ReverseSolidus
+                        | CharKind::Percent => IdentifierKind::Multiplication,
+                        CharKind::Plus
+                        | CharKind::Minus => IdentifierKind::Addition,
+                        CharKind::GreaterThan
+                        | CharKind::LessThan => IdentifierKind::Comparison,
+                        CharKind::Ampersand => IdentifierKind::And,
+                        CharKind::Bar => IdentifierKind::Or,
+                        CharKind::Equals
+                        | CharKind::Bang 
+                        | CharKind::Hook
+                        | CharKind::Tilde => IdentifierKind::Equality,
+                        CharKind::Dollar => IdentifierKind::Application,
+                        _ => IdentifierKind::Other
+                    })
+                },
                 // end of file
                 CharKind::EoF => TokenKind::EoF,
                 // unknown symbol
