@@ -2,7 +2,7 @@
 let five = 5;
 
 -- alphanumeric
-let pi2 = 2 * 3.14;
+let pi_2 = 2 * 3.14;
 
 -- underscores
 let player_age = 18;
@@ -14,8 +14,8 @@ let (>_<) = "bleh!";
 let a_1_+ = 100;
 
 -- numerical identifiers
-let 1st = 1;
-let 2nd = 2;
+let 1_st = 1;
+let 2_nd = 2;
 let 1_+_2 = 3;
 
 -- prime identifiers
