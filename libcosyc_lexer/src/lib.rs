@@ -93,6 +93,27 @@ impl Lexer<'_> {
         self.reader.advance_while(CharKind::is_valid_operator);
     }
 
+    fn identifier_separator_exists(&mut self) -> bool {
+        if matches!(self.reader.current(), CharKind::Underscore) {
+            self.reader.advance_while(|x| matches!(x, CharKind::Underscore));
+            true
+        } else {
+            false
+        }
+    }
+
+    fn read_identifier(&mut self) {
+        match self.reader.current() {
+            x if x.is_valid_digit() => self.read_digit_identifier(),
+            x if x.is_valid_graphic() => self.read_alphabetic_identifier(),
+            x if x.is_valid_operator() => self.read_operator_identifier(),
+            _ => return // complete
+        }
+        if self.identifier_separator_exists() {
+            self.read_identifier();
+        }
+    }
+
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
     'search:
@@ -111,7 +132,12 @@ impl Lexer<'_> {
                 // numbers
                 x if x.is_valid_digit() => {
                     self.read_digit_identifier();
-                    TokenKind::Literal(LiteralKind::Integral)
+                    if self.identifier_separator_exists() {
+                        self.read_identifier();
+                        TokenKind::Identifier(IdentifierKind::Graphic)
+                    } else {
+                        TokenKind::Literal(LiteralKind::Integral)
+                    }
                 },
                 // alphabetic
                 x if x.is_valid_graphic() => {
