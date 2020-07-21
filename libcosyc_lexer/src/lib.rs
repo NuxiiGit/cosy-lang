@@ -80,6 +80,26 @@ impl Lexer<'_> {
     pub fn span(&self) -> &Span {
         self.reader.span()
     }
+
+    /// Returns the next token of the source.
+    pub fn generate_token(&mut self) -> TokenKind {
+    'search:
+        loop {
+            self.reader.reset_span();
+            let kind = match self.reader.advance() {
+                // whitestuff
+                CharKind::Whitestuff => {
+                    self.reader.advance_while(|x| matches!(x, CharKind::Whitestuff));
+                    continue 'search;
+                },
+                // symbols
+                CharKind::LeftParen => TokenKind::LeftParen,
+                CharKind::RightParen => TokenKind::RightParen,
+                // identifiers and numbers
+
+            }
+        }
+    }
 }
 impl<'a> From<&'a str> for Lexer<'a> {
     fn from(src : &'a str) -> Self {

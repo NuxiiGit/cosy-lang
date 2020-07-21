@@ -89,11 +89,6 @@ impl CharKind {
         }
     }
 
-    /// Returns whether the char is valid whitespace.
-    pub fn is_valid_whitespace(&self) -> bool {
-        matches!(self, CharKind::Whitestuff)
-    }
-
     /// Returns whether the char is a valid graphic.
     pub fn is_valid_graphic(&self) -> bool {
         matches!(self, CharKind::Graphic) || self.is_valid_digit()
