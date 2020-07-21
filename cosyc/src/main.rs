@@ -3,7 +3,7 @@ use libcosyc_span::*;
 use libcosyc_lexer::Lexer;
 
 fn main() {
-    let src = "__+_1____2_+__ b";
+    let src = "a''_b''_1_+_3";
     let mut lexer = Lexer::from(src);
     println!("{:?}", lexer.generate_token());
     let span = lexer.span();

@@ -87,6 +87,8 @@ impl Lexer<'_> {
 
     fn read_alphabetic_identifier(&mut self) {
         self.reader.advance_while(CharKind::is_valid_graphic);
+        // alphabetic identifiers can end with any number of `'` (called "prime")
+        self.reader.advance_while(|x| matches!(x, CharKind::SingleQuote));
     }
 
     fn read_operator_identifier(&mut self) {
