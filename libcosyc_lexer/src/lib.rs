@@ -95,9 +95,13 @@ impl Lexer<'_> {
                 // symbols
                 CharKind::LeftParen => TokenKind::LeftParen,
                 CharKind::RightParen => TokenKind::RightParen,
-                // identifiers and numbers
-
-            }
+                CharKind::SemiColon => TokenKind::SemiColon,
+                // end of file
+                CharKind::EoF => TokenKind::EoF,
+                // unknown symbol
+                _ => TokenKind::Unknown
+            };
+            break kind;
         }
     }
 }
