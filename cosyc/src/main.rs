@@ -1,13 +1,10 @@
 use libcosyc_diagnostics::*;
 use libcosyc_span::*;
-use libcosyc_lexer::scanner::CharReader;
+use libcosyc_lexer::Lexer;
 
 fn main() {
-    let mut reader = CharReader::from("bweh");
-    reader.advance();
-    reader.advance();
-    reader.advance();
-    println!("{}", reader.substring());
+    let mut lexer = Lexer::from("");
+    println!("{:?}", lexer.generate_token());
     let mut sess = Session::from(format!("hello wo\nrld"));
     sess.filepath = format!("some_location.cosy");
     Diagnostic::from(&Span { begin : 2, end : 5 })

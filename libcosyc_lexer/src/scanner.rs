@@ -91,7 +91,7 @@ impl CharKind {
 
     /// Returns whether the char is a valid graphic.
     pub fn is_valid_graphic(&self) -> bool {
-        matches!(self, CharKind::Graphic) || self.is_valid_digit()
+        matches!(self, CharKind::Graphic)
     }
 
     /// Returns whether the char is a valid digit.
