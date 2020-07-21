@@ -142,11 +142,17 @@ impl Lexer<'_> {
                 // alphabetic
                 x if x.is_valid_graphic() => {
                     self.read_alphabetic_identifier();
+                    if self.identifier_separator_exists() {
+                        self.read_identifier();
+                    }
                     TokenKind::Identifier(IdentifierKind::Graphic)
                 },
                 // operator
                 x if x.is_valid_operator() => {
                     self.read_operator_identifier();
+                    if self.identifier_separator_exists() {
+                        self.read_identifier();
+                    }
                     TokenKind::Identifier(match x {
                         CharKind::Asterisk
                         | CharKind::Solidus
@@ -166,6 +172,12 @@ impl Lexer<'_> {
                         _ => IdentifierKind::Other
                     })
                 },
+                // underscore
+                CharKind::Underscore => {
+                    self.identifier_separator_exists();
+                    self.read_identifier();
+                    TokenKind::Identifier(IdentifierKind::Graphic)
+                }
                 // end of file
                 CharKind::EoF => TokenKind::EoF,
                 // unknown symbol

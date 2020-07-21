@@ -3,8 +3,11 @@ use libcosyc_span::*;
 use libcosyc_lexer::Lexer;
 
 fn main() {
-    let mut lexer = Lexer::from("1 _bwh1244");
+    let src = "__+_1____2_+__ b";
+    let mut lexer = Lexer::from(src);
     println!("{:?}", lexer.generate_token());
+    let span = lexer.span();
+    println!("{:?}", &src[span.begin..span.end]);
     let mut sess = Session::from(format!("hello wo\nrld"));
     sess.filepath = format!("some_location.cosy");
     Diagnostic::from(&Span { begin : 2, end : 5 })
