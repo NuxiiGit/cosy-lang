@@ -176,8 +176,9 @@ impl Lexer<'_> {
                 },
                 // underscore
                 CharKind::Underscore => {
-                    self.identifier_separator_exists();
-                    self.read_identifier();
+                    if self.identifier_separator_exists() {
+                        self.read_identifier();
+                    }
                     TokenKind::Identifier(IdentifierKind::Graphic)
                 }
                 // end of file
