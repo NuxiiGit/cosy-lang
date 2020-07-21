@@ -70,3 +70,20 @@ impl TokenKind {
         matches!(self, Self::EoF)
     }
 }
+
+/// Converts a stream of characters into lexemes, ignoring whitespace.
+pub struct Lexer<'a> {
+    reader : CharReader<'a>
+}
+impl Lexer<'_> {
+    /// Returns the span of the current lexeme.
+    pub fn span(&self) -> &Span {
+        self.reader.span()
+    }
+}
+impl<'a> From<&'a str> for Lexer<'a> {
+    fn from(src : &'a str) -> Self {
+        let reader = CharReader::from(src);
+        Self { reader }
+    }
+}
