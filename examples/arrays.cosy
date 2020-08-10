@@ -1,8 +1,0 @@
--- arrays must have an explicit size
-let mut array : [i32; 3];
-
--- array access
-array[1] += 1;
-
--- cannot access from outside of the array
-let x = array[12];  -- compile error

@@ -12,8 +12,8 @@ if condition {
 
 -- match case
 match condition {
-    true  => stuff();
-    false => otherwise();
+    true  => stuff(),
+    false => otherwise()
 }
 
 -- while loop
@@ -22,7 +22,7 @@ for condition {
 }
 
 -- for loop
-for let i = 0; i < 100; i += 1 {
+for let mut i = 0; i < 100; i = i + 1 {
     stuff();
 }
 
