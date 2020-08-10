@@ -5,21 +5,20 @@ def max(a : i32, b : i32) : i32 = if a > b { a } else { b };
 let greatest = max(3, 4);
 
 -- lambda function
-def double  : i32 -> i32 = \(x) => x * 2;
-def double' : i32 -> i32 = \(x) => do {
+def double  : i32 -> i32 = (x) => x * 2;
+def double' : i32 -> i32 = (x) => do {
     let a = x + x;
     a
 };
 
 -- curried lambda function
-def f : i32 -> i32 -> i32 = \(x)(y) => x + y;
-                      -- OR \(x) => \(y) => x + y
+def f : i32 -> i32 -> i32 = (x) => (y) => x + y
 
 -- parameterised function
-def id(of a : type)(x : a) : a = x;
+def id[a : type](x : a) : a = x;
 
 -- currying
-def curry(of a : type, b : type, c : type)(f : a & b -> c)(x : a)(y : b) : c = f(x, y);
+def curry[a : type, b : type, c : type](f : a & b -> c)(x : a)(y : b) : c = f(x, y);
 def max_curried : i32 -> i32 -> i32 = curry(max);
 max_curried(1)(3);
 
@@ -31,7 +30,7 @@ def (min : i32) `clamp(x : i32)` (max : i32) : i32 = if x > max { max } else if 
 let percent = 0 `clamp(x)` 100;
 
 -- pipeline operator
-def (|>)(of a : type, b : type) : (a -> b) -> (a -> b) = id;
+def (|>)[a : type, b : type] : (a -> b) -> (a -> b) = id;
 let greatest'' = 1 |> (2 |> max_curried);
 
 -- operator sections
@@ -39,7 +38,7 @@ let a : i32 -> i32 = max_curried(2) |> _
 
 -- procedural style functions
 def izard(s : str, t : str) : str = do {
-    return s ++ "izard" ++ t
+    return s ++ "izard" ++ t;
 };
 
 -- functional style function
@@ -68,34 +67,10 @@ pure def factorial(n : u32) : u32 = match n {
 let fact_32 = factorial(32); -- evaluated at compile time, since the value is constant
 
 -- constrained dependent values (divisor must be constant)
-def safe_divide(of divisor : i32)(dividend : i32) : i32 where divisor != 0 = dividend / divisor;
-def compare_stuff(of a : type)(x : a, y : a) : bool where a impl Eq = x == y;
+def safe_divide[divisor : i32](dividend : i32) : if divisor != 0 { i32 } else { void } = dividend / divisor;
 
 -- strictly compile-time functions
-pure def choice(of condition : bool, a : type, b : type) : type = if condition { a } else { b };
-
--- dependently typed function
-def (-)(of is_unary : bool)(x : i32) : choice(of is_unary, i32, i32 -> i32) = do {
-    let inverse = neg(x);
-    if is_unary {
-        inverse
-    } else {
-        \(y) => y + inverse
-    }
-};
-
--- runtime types?????? (not really)
-pure def vector(of a : type, size : u32) : type where size != 0 = do {
-    let mut t : type = a;
-    let mut count = 1;
-    while count < size {
-        count += 1;
-        t = (a, t);
-    }
-    t
-};
-def vec2 : vector(of f32, 2) = (3.0, 2.0);
-def vec3 : vector(of f32, 3) = (3.0, 1.3, 8.2);
+def choice[condition : bool, a : type, b : type] : type = if condition { a } else { b };
 
 -- type functions
 pure def apply(f : type -> type, a : type) : type = f(a);

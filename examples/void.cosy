@@ -12,16 +12,16 @@ let c : void = break;
 -- absurd, which lets you coerce `void` into any type ("ex falso quodlibet")
 def absurd[a : type](x : void) : a = absurd[a](x);
 
--- unit type is used for terminating programs which return nothing of interest
-def say_hello(message : str) : unit = {
+-- `nothing` type is used for terminating programs which return nothing of interest
+def say_hello(message : str) : nothing = {
     printf["{}, and to that I say: hello!"](message);
 };
 
--- the empty tuple `()` is the only element of the unit type
-let boring : unit = ();
+-- the empty tuple `()` is the only element of the nothing type
+let boring : nothing = ();
 
--- blocks may also return the unit type if no implicit return is given
-let boring' : unit = {
+-- blocks may also return the nothing type if no implicit return is given
+let boring' : nothing = {
     println("hello");
     println("hi again");
 };
