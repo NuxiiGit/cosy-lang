@@ -17,8 +17,12 @@ def say_hello(message : str) : nothing = {
     printf["{}, and to that I say: hello!"](message);
 };
 
--- the empty tuple `()` is the only element of the nothing type
+-- the empty grouping `()` is the only element of the nothing type
 let boring : nothing = ();
+let boring' : nothing = (
+    -- whitespace doesn't matter!
+    -- so long as lexeme `)` follows `(`, it will be the uninhabited grouping
+);
 
 -- blocks may also return the nothing type if no implicit return is given
 let boring' : nothing = {

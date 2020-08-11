@@ -2,7 +2,7 @@
 let five = 5;
 
 -- alphanumeric
-let pi_2 = 2 * 3.14;
+let pi2 = 2 * 3.14;
 
 -- underscores
 let player_age = 18;

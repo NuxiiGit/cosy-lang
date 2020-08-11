@@ -66,4 +66,4 @@ def choice[condition : bool, a : type, b : type] : type = if condition { a } els
 -- type functions
 pure def apply(f : type -> type, a : type) : type = f(a);
 pure def make_pair(a : type) : type = a & a;
-def vec2 : type = apply(make_pair, f32);
+def vec2 : type = apply(make_pair, f32);  -- produces the type `f32 & f32`
