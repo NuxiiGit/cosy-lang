@@ -13,7 +13,7 @@ let c : void = break;
 def absurd[a : type](x : void) : a = absurd[a](x);
 
 -- `nothing` type is used for terminating programs which return nothing of interest
-def say_hello(message : str) : nothing = {
+def say_hello = fn(message : str) : nothing => {
     printf["{}, and to that I say: hello!"](message);
 };
 
