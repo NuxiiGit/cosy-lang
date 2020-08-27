@@ -5,20 +5,20 @@ def max = fn(a : i32, b : i32) : i32 => if a > b { a } else { b };
 let greatest = max(3, 4);
 
 -- lambda function
-def double  : i32 -> i32 = fn(x) => x * 2;
-def double' : i32 -> i32 = fn(x) => {
+def double  = fn(x : i32) : i32 => x * 2;
+def double' = fn(x : i32) : i32 => {
     let a = x + x;
     a
 };
 
 -- curried lambda function
-def f : i32 -> i32 -> i32 = fn(x) => fn(y) => x + y;
+def f = fn(x : i32) => fn(y : i32) : i32 => x + y;
 
 -- parameterised function
 def id[a : type] = fn(x : a) : a => x;
 
 -- currying
-def curry[a : type, b : type, c : type] = fn(f : a & b -> c)(x : a)(y : b) : c => f(x, y);
+def curry[a : type, b : type, c : type] = fn(f : a & b -> c) => fn(x : a) => fn(y : b) : c => f(x, y);
 def max_curried = curry(max);
 max_curried(1)(3);
 
@@ -66,4 +66,4 @@ def choice[condition : bool, a : type, b : type] : type = if condition { a } els
 -- type functions
 pure def apply = fn(f : type -> type, a : type) : type = f(a);
 pure def make_pair = fn(a : type) : type = a & a;
-def vec2 : type = apply(make_pair, f32);  -- produces the type `f32 & f32`
+def vec2 = apply(make_pair, f32);  -- produces the type `f32 & f32`
