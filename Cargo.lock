@@ -28,6 +28,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "libcosyc_parse"
+version = "0.1.0"
+
+[[package]]
 name = "libcosyc_span"
 version = "0.1.0"
 

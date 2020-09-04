@@ -4,5 +4,6 @@ members = [
     "libcosyc_diagnostics",
     "libcosyc_span",
     "libcosyc_lexer",
-    "libcosyc_ident"
+    "libcosyc_ident",
+    "libcosyc_parse"
 ]
