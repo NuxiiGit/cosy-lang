@@ -1,5 +1,5 @@
 [package]
-name = "libcosyc_lexer"
+name = "libcosyc_concrete"
 version = "0.1.0"
 authors = ["NuxiiGit <nuxii09@gmail.com>"]
 edition = "2018"
