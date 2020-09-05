@@ -137,6 +137,14 @@ impl fmt::Display for Session {
                 } else {
                     // display lines of error
                     for line in (line_begin + 1)..=line_end {
+                        if line > line_begin + 1 {
+                            if line < line_end - 2 {
+                                continue;
+                            } else if line < line_end - 1 {
+                                writeln!(out, " {}...", indent)?;
+                                continue;
+                            }
+                        }
                         let Span { begin : start, end } = newlines.get(line).unwrap();
                         writeln!(out, " {:width$} | {}", line + 1, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                     }
