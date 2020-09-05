@@ -112,6 +112,7 @@ impl From<String> for Session {
 }
 impl fmt::Display for Session {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+        // it works, i don't care if it's trash
         if self.contains_errors() {
             let newlines = prospect_newlines(&self.src);
             for error in &self.errors {
