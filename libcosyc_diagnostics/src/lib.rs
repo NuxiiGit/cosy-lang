@@ -1,6 +1,6 @@
 use libcosyc_span::Span;
 
-use std::fmt;
+use std::{ fmt, cmp };
 
 /// Represents different kinds of error.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
@@ -122,14 +122,15 @@ impl fmt::Display for Session {
                 let Span { begin : start, end } = newlines.get(line_begin).unwrap();
                 let row = line_begin + 1;
                 let col = error_begin - start + 1;
-                let indent = " ".repeat(digit_count(row));
+                let indent_length = digit_count(line_end + 1);
+                let indent = " ".repeat(indent_length);
                 writeln!(out, "")?;
                 writeln!(out, "{:?}: {}", error.level, error.reason)?;
                 write!(out, " {}>>> ", indent)?;
                 write!(out, "{}@", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
                 writeln!(out, " {} | ", indent)?;
-                writeln!(out, " {} | {}", row, &self.src[*start..*end].replace("\t", " "))?;
+                writeln!(out, " {:width$} | {}", row, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                 if line_begin == line_end {
                     // underline error
                     writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(error_end - error_begin + 1))?;
@@ -137,7 +138,7 @@ impl fmt::Display for Session {
                     // display lines of error
                     for line in (line_begin + 1)..=line_end {
                         let Span { begin : start, end } = newlines.get(line).unwrap();
-                        writeln!(out, "{}! | {}", indent, &self.src[*start..*end].replace("\t", " "))?;
+                        writeln!(out, " {:width$} | {}", line + 1, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                     }
                 }
                 if !error.notes.is_empty() {
