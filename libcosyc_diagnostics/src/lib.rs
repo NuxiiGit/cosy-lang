@@ -30,6 +30,68 @@ impl fmt::Display for Error {
     }
 }
 
+/// Records any issues that occurred, including the highest error level achieved.
+#[derive(Default)]
+pub struct IssueTracker {
+    errors : Vec<Error>,
+    /// The highest `ErrorLevel` registered by the issue tracker.
+    pub error_level : ErrorLevel
+}
+impl IssueTracker {
+    fn report(&mut self, error : Error) {
+        if error.level > self.error_level {
+            self.error_level = error.level.clone();
+        }
+        self.errors.push(error);
+    }
+}
+
+/// Represents a diagnostic
+#[derive(Default, Debug)]
+pub struct Diagnostic {
+    pub span : Span,
+    pub error_level : ErrorLevel,
+    pub reason : String,
+    pub notes : Vec<String>
+}
+impl Diagnostic {
+    /// Sets the error level of the diagnostic.
+    pub fn level(mut self, level : ErrorLevel) -> Self {
+        self.error_level = level;
+        self
+    }
+
+    /// Adds a note to the diagnostic.
+    pub fn note(mut self, note : String) -> Self {
+        self.notes.push(note);
+        self
+    }
+
+    /// Update the diagnostic reason.
+    pub fn reason(mut self, reason : String) -> Self {
+        self.reason = reason;
+        self
+    }
+
+    /// Report the diagnostic to an issue tracker.
+    pub fn report(self, issues : &mut IssueTracker) {
+        issues.report(Error {
+            span : self.span,
+            level : self.error_level,
+            reason : self.reason,
+            notes : self.notes
+        })
+    }
+}
+impl<'a> From<&'a Span> for Diagnostic {
+    fn from(span : &'a Span) -> Self {
+        let mut diagnostic = Self::default();
+        diagnostic.span.begin = span.begin;
+        diagnostic.span.end = span.end;
+        diagnostic
+    }
+}
+
 /// Produces a **sorted** list of source positions where a new line occurs.
 fn prospect_newlines(src : &str) -> Vec<Span> {
     let mut begin = 0;
@@ -79,9 +141,8 @@ fn binary_search_newlines(lines : &[Span], pos : usize) -> Result<usize, usize> 
 /// Represents a compiler session.
 #[derive(Default)]
 pub struct Session {
-    errors : Vec<Error>,
-    /// The highest `ErrorLevel` registered by the issue tracker.
-    pub error_level : ErrorLevel,
+    /// The issue tracker that registers compiler errors.
+    pub issues : IssueTracker,
     /// The filepath of the script to consider.
     pub filepath : String,
     /// The source of the script to consider.
@@ -93,16 +154,9 @@ impl Session {
         Self::default()
     }
 
-    /// Returns whether errors occurred.
+    /// Returns whether errors occurred in the current session.
     pub fn contains_errors(&self) -> bool {
-        !self.errors.is_empty()
-    }
-
-    fn report(&mut self, error : Error) {
-        if error.level > self.error_level {
-            self.error_level = error.level.clone();
-        }
-        self.errors.push(error);
+        !self.issues.errors.is_empty()
     }
 }
 impl From<String> for Session {
@@ -117,7 +171,7 @@ impl fmt::Display for Session {
         // it works, i don't care if it's trash
         if self.contains_errors() {
             let newlines = prospect_newlines(&self.src);
-            for error in &self.errors {
+            for error in &self.issues.errors {
                 let error_begin = error.span.begin;
                 let error_end = error.span.end;
                 let line_begin = binary_search_newlines(&newlines, error_begin).unwrap();
@@ -167,48 +221,3 @@ impl fmt::Display for Session {
     }
 }
 
-/// Represents a diagnostic
-#[derive(Default, Debug)]
-pub struct Diagnostic {
-    pub span : Span,
-    pub error_level : ErrorLevel,
-    pub reason : String,
-    pub notes : Vec<String>
-}
-impl Diagnostic {
-    /// Sets the error level of the diagnostic.
-    pub fn level(mut self, level : ErrorLevel) -> Self {
-        self.error_level = level;
-        self
-    }
-
-    /// Adds a note to the diagnostic.
-    pub fn note(mut self, note : String) -> Self {
-        self.notes.push(note);
-        self
-    }
-
-    /// Update the diagnostic reason.
-    pub fn reason(mut self, reason : String) -> Self {
-        self.reason = reason;
-        self
-    }
-
-    /// Report the diagnostic to a session.
-    pub fn report(self, sess : &mut Session) {
-        sess.report(Error {
-            span : self.span,
-            level : self.error_level,
-            reason : self.reason,
-            notes : self.notes
-        })
-    }
-}
-impl<'a> From<&'a Span> for Diagnostic {
-    fn from(span : &'a Span) -> Self {
-        let mut diagnostic = Self::default();
-        diagnostic.span.begin = span.begin;
-        diagnostic.span.end = span.end;
-        diagnostic
-    }
-}
