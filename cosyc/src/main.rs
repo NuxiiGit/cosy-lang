@@ -1,6 +1,6 @@
 use libcosyc_diagnostics::*;
 use libcosyc_span::*;
-use libcosyc_concrete::lexer::Lexer;
+use libcosyc_concrete::lex::Lexer;
 
 fn main() {
     let src = "1_st";

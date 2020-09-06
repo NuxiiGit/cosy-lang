@@ -1,6 +1,6 @@
 use libcosyc_span::Span;
 
-use std::{ fmt, cmp };
+use std::fmt;
 
 /// Represents different kinds of error.
 #[derive(PartialOrd, PartialEq, Debug, Clone)]
