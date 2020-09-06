@@ -15,11 +15,11 @@ fn main() {
             .note(format!("alright"))
             .note(format!("but did you know that uhhhhh"))
             .level(ErrorLevel::Bug)
-            .report(&mut sess);
+            .report(&mut sess.issues);
     Diagnostic::from(&Span { begin : 5, end : 15 })
             .reason(format!("another one"))
             .note(format!("bwehhh,,,"))
             .level(ErrorLevel::Fatal)
-            .report(&mut sess);
+            .report(&mut sess.issues);
     println!("{}", sess);
 }
