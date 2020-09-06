@@ -4,10 +4,17 @@ use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
 
 use libcosyc_diagnostics::{ Diagnostic, Session, IssueTracker, span::Span };
 
+/// Represents the different primitive variants.
+#[derive(Debug)]
+pub enum ValueKind {
+    Integral
+}
+
 /// Represents a kind of terminal expression.
 #[derive(Debug)]
 pub enum TerminalKind {
-    Variable
+    Variable,
+    Value(ValueKind)
 }
 
 /// Represents a terminal value
