@@ -2,7 +2,6 @@
 members = [
     "cosyc",
     "libcosyc_diagnostics",
-    "libcosyc_span",
     "libcosyc_concrete",
     "libcosyc_ident"
 ]

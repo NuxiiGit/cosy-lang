@@ -1,4 +1,4 @@
-use libcosyc_span::Span;
+use libcosyc_diagnostics::span::Span;
 
 use std::{ str::CharIndices, mem };
 

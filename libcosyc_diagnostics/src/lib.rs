@@ -1,4 +1,6 @@
-use libcosyc_span::Span;
+pub mod span;
+
+use span::Span;
 
 use std::fmt;
 
