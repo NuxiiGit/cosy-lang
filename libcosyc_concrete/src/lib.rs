@@ -1,6 +1,6 @@
 pub mod lex;
 
-use lex::{ Lexer, TokenKind, LiteralKind, IdentifierKind };
+use lex::{ Lexer, lexeme::* };
 
 use libcosyc_source::Span;
 
