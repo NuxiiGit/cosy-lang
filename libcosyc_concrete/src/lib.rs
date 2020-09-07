@@ -12,17 +12,11 @@ pub enum ValueKind {
     Integral
 }
 
-/// Represents a kind of terminal value.
-#[derive(Debug)]
-pub enum TerminalKind {
-    Variable,
-    Value(ValueKind)
-}
-
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
-    Terminal(TerminalKind)
+    Variable,
+    Value(ValueKind)
 }
 
 /// Represents expression information
@@ -43,9 +37,9 @@ impl<'a> Parser<'a> {
         &self.peeked
     }
 
-    /// Returns the current location of the parser.
-    pub fn span(&self) -> &Span {
-        self.lexer.span()
+    /// Returns a clone of the curren lexeme span.
+    pub fn span(&self) -> Span {
+        self.lexer.span().clone()
     }
 
     /// Advances the parser and returns the the previous lexeme.
@@ -65,12 +59,11 @@ impl<'a> Parser<'a> {
 
     /// Parses literals, identifiers, and groupings of expressions.
     pub fn parse_expr_terminal(&mut self) -> Expr {
-        let terminal_kind = self.matches(TokenKind::is_terminal).and_then(|x| match x {
-            TokenKind::Identifier(IdentifierKind::Graphic) => Some(TerminalKind::Variable),
+        let kind = self.matches(TokenKind::is_terminal).and_then(|x| match x {
+            TokenKind::Identifier(IdentifierKind::Graphic) => Some(ExprKind::Variable),
             _ => None
         });
-        let kind = terminal_kind.map(ExprKind::Terminal);
-        let span = self.span().clone();
+        let span = self.span();
         Expr { span, kind }
     }
 }
