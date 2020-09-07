@@ -6,6 +6,8 @@ use libcosyc_source::Span;
 
 use std::mem;
 
+pub type Branch<T> = Option<T>;
+
 /// Represents the different primitive variants.
 #[derive(Debug)]
 pub enum ValueKind {
@@ -23,7 +25,7 @@ pub enum ExprKind {
 #[derive(Debug)]
 pub struct Expr {
     span : Span,
-    kind : Option<ExprKind>
+    kind : Branch<ExprKind>
 }
 
 /// Produces a concrete syntax tree from concrete syntax.
