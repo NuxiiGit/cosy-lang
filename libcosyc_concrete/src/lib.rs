@@ -19,9 +19,9 @@ impl<'a> Parser<'a> {
         &self.peeked
     }
 
-    /// Returns a clone of the current lexeme span.
-    pub fn span(&self) -> Span {
-        self.lexer.span().clone()
+    /// Returns a the current lexeme span.
+    pub fn span(&self) -> &Span {
+        self.lexer.span()
     }
 
     /// Advances the parser and returns the the previous lexeme.
@@ -38,7 +38,7 @@ impl<'a> Parser<'a> {
     /// Parses literals, identifiers, and groupings of expressions.
     pub fn parse_expr_terminal(&mut self) -> Expr {
         if self.matches(TokenKind::is_terminal) {
-            let span = self.span();
+            let span = self.span().clone();
             let kind = match self.advance() {
                 TokenKind::Identifier(IdentifierKind::Graphic) => Some(ExprKind::Variable),
                 TokenKind::Literal(literal) => Some(ExprKind::Value(match literal {
