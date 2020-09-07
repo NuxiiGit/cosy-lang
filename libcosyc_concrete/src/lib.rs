@@ -45,13 +45,18 @@ pub struct Parser<'a> {
     peeked : TokenKind
 }
 impl<'a> Parser<'a> {
+    /// Creates a diagnostic at the current parser location.
+    pub fn diagnose(&self) -> Diagnostic {
+        Diagnostic::from(self.span())
+    }
+
     /// Returns a reference to the current token kind.
     pub fn token(&self) -> &TokenKind {
         &self.peeked
     }
 
     /// Returns the current location of the parser.
-    pub fn location(&self) -> &Span {
+    pub fn span(&self) -> &Span {
         self.lexer.span()
     }
 
