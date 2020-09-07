@@ -190,11 +190,6 @@ impl Lexer<'_> {
         }
     }
 }
-impl<'a> From<&'a String> for Lexer<'a> {
-    fn from(src : &'a String) -> Self {
-        Self::from(src as &str)
-    }
-}
 impl<'a> From<&'a str> for Lexer<'a> {
     fn from(src : &'a str) -> Self {
         let reader = CharReader::from(src);
