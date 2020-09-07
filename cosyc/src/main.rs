@@ -3,7 +3,7 @@ use libcosyc_diagnostics::{ Diagnostic, Session, ErrorLevel };
 use libcosyc_concrete::Parser;
 
 fn main() {
-    let src = "1_st";
+    let src = "1 1_st";
     let mut parser = Parser::from(src);
     let syntax = parser.parse_expr_terminal();
     println!("{:?}", syntax);

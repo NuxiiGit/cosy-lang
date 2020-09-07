@@ -6,8 +6,6 @@ use libcosyc_source::Span;
 
 use std::mem;
 
-pub type Branch<T> = Option<T>;
-
 /// Represents the different primitive variants.
 #[derive(Debug)]
 pub enum ValueKind {
@@ -25,7 +23,7 @@ pub enum ExprKind {
 #[derive(Debug)]
 pub struct Expr {
     span : Span,
-    kind : Branch<ExprKind>
+    kind : Option<ExprKind>
 }
 
 /// Produces a concrete syntax tree from concrete syntax.
@@ -39,7 +37,7 @@ impl<'a> Parser<'a> {
         &self.peeked
     }
 
-    /// Returns a clone of the curren lexeme span.
+    /// Returns a clone of the current lexeme span.
     pub fn span(&self) -> Span {
         self.lexer.span().clone()
     }
@@ -51,22 +49,25 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns whether the current peeked token holds a predicate.
-    pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
-        if p(self.token()) {
-            Some(self.advance())
-        } else {
-            None
-        }
+    pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> bool {
+        p(self.token())
     }
 
     /// Parses literals, identifiers, and groupings of expressions.
     pub fn parse_expr_terminal(&mut self) -> Expr {
-        let span = self.span();
-        let kind = self.matches(TokenKind::is_terminal).and_then(|x| match x {
-            TokenKind::Identifier(IdentifierKind::Graphic) => Some(ExprKind::Variable),
-            _ => None
-        });
-        Expr { span, kind }
+        if self.matches(TokenKind::is_terminal) {
+            let span = self.span();
+            let kind = match self.advance() {
+                TokenKind::Identifier(IdentifierKind::Graphic) => Some(ExprKind::Variable),
+                TokenKind::Literal(literal) => Some(ExprKind::Value(match literal {
+                    LiteralKind::Integral => ValueKind::Integral
+                })),
+                _ => None
+            };
+            Expr { span, kind  }
+        } else {
+            unimplemented!()
+        }
     }
 }
 impl<'a> From<&'a str> for Parser<'a> {
