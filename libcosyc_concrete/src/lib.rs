@@ -12,30 +12,24 @@ pub enum ValueKind {
     Integral
 }
 
-/// Represents a kind of terminal expression.
+/// Represents a kind of terminal value.
 #[derive(Debug)]
 pub enum TerminalKind {
     Variable,
     Value(ValueKind)
 }
 
-/// Represents a terminal value
-#[derive(Debug)]
-pub struct Terminal {
-    span : Span,
-    kind : TerminalKind
-}
-
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
-    Terminal(Terminal)
+    Terminal(TerminalKind)
 }
 
 /// Represents expression information
 #[derive(Debug)]
 pub struct Expr {
-    kind : ExprKind
+    span : Span,
+    kind : Option<ExprKind>
 }
 
 /// Produces a concrete syntax tree from concrete syntax.
@@ -61,8 +55,23 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns whether the current peeked token holds a predicate.
-    pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> bool {
-        p(self.token())
+    pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
+        if p(self.token()) {
+            Some(self.advance())
+        } else {
+            None
+        }
+    }
+
+    /// Parses literals, identifiers, and groupings of expressions.
+    pub fn parse_expr_terminal(&mut self) -> Expr {
+        let kind = self.matches(TokenKind::is_terminal).and_then(|x| match x {
+            TokenKind::Identifier(IdentifierKind::Graphic) =>
+                    Some(ExprKind::Terminal(TerminalKind::Variable)),
+            _ => None
+        });
+        let span = self.span().clone();
+        Expr { span, kind }
     }
 }
 impl<'a> From<&'a str> for Parser<'a> {
