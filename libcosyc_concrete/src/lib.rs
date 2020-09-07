@@ -61,11 +61,11 @@ impl<'a> Parser<'a> {
 
     /// Parses literals, identifiers, and groupings of expressions.
     pub fn parse_expr_terminal(&mut self) -> Expr {
+        let span = self.span();
         let kind = self.matches(TokenKind::is_terminal).and_then(|x| match x {
             TokenKind::Identifier(IdentifierKind::Graphic) => Some(ExprKind::Variable),
             _ => None
         });
-        let span = self.span();
         Expr { span, kind }
     }
 }

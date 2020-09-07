@@ -1,13 +1,12 @@
 use libcosyc_source::Span;
 use libcosyc_diagnostics::{ Diagnostic, Session, ErrorLevel };
-use libcosyc_concrete::lex::Lexer;
+use libcosyc_concrete::Parser;
 
 fn main() {
     let src = "1_st";
-    let mut lexer = Lexer::from(src);
-    println!("{:?}", lexer.generate_token());
-    let span = lexer.span();
-    println!("{}", &src[span.begin..span.end]);
+    let mut parser = Parser::from(src);
+    let syntax = parser.parse_expr_terminal();
+    println!("{:?}", syntax);
     let mut sess = Session::from(format!("hello wo\n\n\nrld\n\n\nhihihihihihihihihih"));
     sess.filepath = format!("some_location.cosy");
     Diagnostic::from(&Span { begin : 2, end : 5 })
