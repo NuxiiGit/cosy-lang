@@ -1,30 +1,12 @@
 pub mod lex;
+pub mod syntax;
 
 use lex::{ Lexer, lexeme::* };
+use syntax::*;
 
 use libcosyc_source::Span;
 
 use std::mem;
-
-/// Represents the different primitive variants.
-#[derive(Debug)]
-pub enum ValueKind {
-    Integral
-}
-
-/// Represents a kind of expression.
-#[derive(Debug)]
-pub enum ExprKind {
-    Variable,
-    Value(ValueKind)
-}
-
-/// Represents expression information
-#[derive(Debug)]
-pub struct Expr {
-    span : Span,
-    kind : Option<ExprKind>
-}
 
 /// Produces a concrete syntax tree from concrete syntax.
 pub struct Parser<'a> {
