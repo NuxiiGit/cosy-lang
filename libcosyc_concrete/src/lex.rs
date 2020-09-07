@@ -2,7 +2,7 @@ pub mod scanner;
 
 use scanner::{ CharReader, CharKind };
 
-use libcosyc_diagnostics::span::Span;
+use libcosyc_source::Span;
 
 /// Represents literal types.
 #[derive(PartialEq, Debug, Clone)]

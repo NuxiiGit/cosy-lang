@@ -1,5 +1,5 @@
-use libcosyc_diagnostics::*;
-use libcosyc_diagnostics::span::Span;
+use libcosyc_source::Span;
+use libcosyc_diagnostics::{ Diagnostic, Session, ErrorLevel };
 use libcosyc_concrete::lex::Lexer;
 
 fn main() {

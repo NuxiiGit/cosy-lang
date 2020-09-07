@@ -6,6 +6,7 @@ version = "0.1.0"
 dependencies = [
  "libcosyc_concrete 0.1.0",
  "libcosyc_diagnostics 0.1.0",
+ "libcosyc_source 0.1.0",
 ]
 
 [[package]]
@@ -13,13 +14,21 @@ name = "libcosyc_concrete"
 version = "0.1.0"
 dependencies = [
  "libcosyc_diagnostics 0.1.0",
+ "libcosyc_source 0.1.0",
 ]
 
 [[package]]
 name = "libcosyc_diagnostics"
 version = "0.1.0"
+dependencies = [
+ "libcosyc_source 0.1.0",
+]
 
 [[package]]
 name = "libcosyc_ident"
+version = "0.1.0"
+
+[[package]]
+name = "libcosyc_source"
 version = "0.1.0"
 
