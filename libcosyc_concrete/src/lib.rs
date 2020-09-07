@@ -45,6 +45,16 @@ pub struct Parser<'a> {
     peeked : TokenKind
 }
 impl<'a> Parser<'a> {
+    /// Advances the parser and returns `Some(TokenKind)` if some predicate is held,
+    /// otherwise `None` is returned and the parser does not advance.
+    pub fn matches(&mut self, p : fn(&TokenKind) -> bool) -> Option<TokenKind> {
+        if p(self.token()) {
+            Some(self.advance())
+        } else {
+            None
+        }
+    }
+
     /// Creates a diagnostic at the current parser location.
     pub fn diagnose(&self) -> Diagnostic {
         Diagnostic::from(self.span())
