@@ -49,6 +49,11 @@ impl TokenKind {
         matches!(self, Self::Identifier(IdentifierKind::Graphic))
     }
 
+    /// Returns whether this token is a valid terminal value.
+    pub fn is_terminal(&self) -> bool {
+        self.is_literal() || self.is_identifier()
+    }
+
     /// Returns `true` if the token is an operator identifier.
     pub fn is_operator(&self) -> bool {
         self.is_identifier() && !self.is_graphic()

@@ -1,21 +1,21 @@
 use libcosyc_source::Span;
 
-/// Represents the different primitive variants.
+/// Represents a kind of terminal value.
 #[derive(Debug)]
-pub enum ValueKind {
+pub enum TerminalKind {
+    Variable,
     Integral
 }
 
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
-    Variable,
-    Value(ValueKind)
+    Terminal(Option<TerminalKind>)
 }
 
 /// Represents expression information.
 #[derive(Debug)]
 pub struct Expr {
     pub span : Span,
-    pub kind : Option<ExprKind>
+    pub kind : ExprKind
 }

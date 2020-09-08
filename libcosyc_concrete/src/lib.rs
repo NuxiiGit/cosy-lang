@@ -39,13 +39,13 @@ impl<'a> Parser<'a> {
     pub fn parse_expr_terminal(&mut self) -> Expr {
         if self.matches(TokenKind::is_terminal) {
             let span = self.span().clone();
-            let kind = match self.advance() {
-                TokenKind::Identifier(IdentifierKind::Graphic) => Some(ExprKind::Variable),
-                TokenKind::Literal(literal) => Some(ExprKind::Value(match literal {
-                    LiteralKind::Integral => ValueKind::Integral
-                })),
+            let kind = ExprKind::Terminal(match self.advance() {
+                TokenKind::Identifier(IdentifierKind::Graphic) => Some(TerminalKind::Variable),
+                TokenKind::Literal(literal) => Some(match literal {
+                    LiteralKind::Integral => TerminalKind::Integral
+                }),
                 _ => None
-            };
+            });
             Expr { span, kind  }
         } else {
             self.parse_expr_groupings()
