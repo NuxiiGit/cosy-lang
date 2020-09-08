@@ -19,22 +19,10 @@ impl Desugar for concrete::Expr {
     type Out = Option<Expr>;
     fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
         let span = self.span;
-        match self.kind {
-            concrete::ExprKind::Terminal(option) => {
-                if let Some(terminal_kind) = option {
-                    let kind = match terminal_kind {
-                        concrete::TerminalKind::Variable => ExprKind::Variable,
-                        concrete::TerminalKind::Integral => ExprKind::Value(ValueKind::Integral)
-                    };
-                    Some(Expr { span, kind })
-                } else {
-                    Diagnostic::from(&span)
-                            .level(ErrorLevel::Bug)
-                            .reason(format!("malformed terminal expression"))
-                            .report(issues);
-                    None
-                }
-            }
-        }
+        let kind = match self.kind {
+            concrete::ExprKind::Variable => ExprKind::Variable,
+            concrete::ExprKind::Integral => ExprKind::Integral
+        };
+        Some(Expr { span, kind })
     }
 }

@@ -37,24 +37,13 @@ impl<'a> Parser<'a> {
 
     /// Parses literals, identifiers, and groupings of expressions.
     pub fn parse_expr_terminal(&mut self) -> Expr {
-        if self.matches(TokenKind::is_terminal) {
-            let span = self.span().clone();
-            let kind = ExprKind::Terminal(match self.advance() {
-                TokenKind::Identifier(IdentifierKind::Graphic) => Some(TerminalKind::Variable),
-                TokenKind::Literal(literal) => Some(match literal {
-                    LiteralKind::Integral => TerminalKind::Integral
-                }),
-                _ => None
-            });
-            Expr { span, kind  }
-        } else {
-            self.parse_expr_groupings()
-        }
-    }
-
-    /// Parses groupings of expressions.
-    pub fn parse_expr_groupings(&mut self) -> Expr {
-        unimplemented!()
+        let mut span = self.span().clone();
+        let kind = match self.advance() {
+            TokenKind::Identifier(IdentifierKind::Graphic) => ExprKind::Variable,
+            TokenKind::Literal(LiteralKind::Integral) => ExprKind::Integral,
+            _ => unimplemented!()
+        };
+        Expr { span, kind }
     }
 }
 impl<'a> From<&'a str> for Parser<'a> {

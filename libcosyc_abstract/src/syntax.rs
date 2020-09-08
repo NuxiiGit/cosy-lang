@@ -1,16 +1,10 @@
 use libcosyc_source::Span;
 
-/// Represents the different primitive variants.
-#[derive(Debug)]
-pub enum ValueKind {
-    Integral
-}
-
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
     Variable,
-    Value(ValueKind)
+    Integral
 }
 
 /// Represents expression information.

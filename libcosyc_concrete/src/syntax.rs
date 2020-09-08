@@ -1,16 +1,10 @@
 use libcosyc_source::Span;
 
-/// Represents a kind of terminal value.
-#[derive(Debug)]
-pub enum TerminalKind {
-    Variable,
-    Integral
-}
-
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum ExprKind {
-    Terminal(Option<TerminalKind>)
+    Variable,
+    Integral
 }
 
 /// Represents expression information.
