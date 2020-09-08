@@ -1,17 +1,24 @@
 pub mod syntax;
 
+use syntax::*;
+
 use libcosyc_concrete::syntax as concrete;
 use libcosyc_source::Span;
 use libcosyc_diagnostics::{ Diagnostic, IssueTracker, ErrorLevel };
 
 /// Provides an interface for desugaring concrete syntax into abstract syntax.
-trait Desugar<R> {
-    /// Desugar `self` into the type `R`.
-    fn desugar(self, issues : &mut IssueTracker) -> R;
+trait Desugar {
+    /// The type to desugar into.
+    type Out;
+
+    /// Desugar `self` into the type `Out`.
+    fn desugar(self, issues : &mut IssueTracker) -> Self::Out;
 }
 
-impl Desugar<syntax::Expr> for concrete::ExprKind {
-    fn desugar(self, issues : &mut IssueTracker) -> syntax::Expr {
+impl Desugar for concrete::Expr {
+    type Out = Option<Expr>;
+    fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
+        let span = self.span;
         unimplemented!()
     }
 }
