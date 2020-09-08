@@ -19,6 +19,14 @@ impl Desugar for concrete::Expr {
     type Out = Option<Expr>;
     fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
         let span = self.span;
-        unimplemented!()
+        if let Some(concrete_kind) = self.kind {
+            let kind = match concrete_kind {
+                concrete::ExprKind::Variable => ExprKind::Variable,
+                _ => unimplemented!()
+            };
+            Expr { span, kind }
+        } else {
+            unimplemented!()
+        }
     }
 }
