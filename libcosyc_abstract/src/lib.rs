@@ -22,6 +22,15 @@ impl Desugar for concrete::Expr {
         let kind = match self.kind {
             concrete::ExprKind::Variable => ExprKind::Variable,
             concrete::ExprKind::Integral => ExprKind::Integral,
+            concrete::ExprKind::Grouping { unclosed, inner } => {
+                if unclosed {
+                    Diagnostic::from(&span)
+                            .level(ErrorLevel::Warning)
+                            .reason(format!("missing closing parenthesis in expression"))
+                            .report(issues);
+                }
+                return inner.desugar(issues);
+            },
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
