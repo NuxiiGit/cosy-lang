@@ -5,7 +5,11 @@ use libcosyc_source::Span;
 pub enum ExprKind {
     Variable,
     Integral,
-    Malformed
+    Malformed,
+    Grouping {
+        unclosed : bool,
+        inner : Box<Expr>
+    }
 }
 
 /// Represents expression information.

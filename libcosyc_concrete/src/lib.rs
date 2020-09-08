@@ -41,6 +41,17 @@ impl<'a> Parser<'a> {
         let kind = match self.advance() {
             TokenKind::Identifier(IdentifierKind::Graphic) => ExprKind::Variable,
             TokenKind::Literal(LiteralKind::Integral) => ExprKind::Integral,
+            TokenKind::LeftParen => {
+                // parse groupings
+                let inner = Box::new(self.parse_expr_terminal());
+                let unclosed = matches!(self.token(), TokenKind::RightParen);
+                if !unclosed {
+                    // if the grouping can be closed correctly
+                    // then consume the closing paren
+                    self.advance();
+                }
+                ExprKind::Grouping { unclosed, inner }
+            },
             _ => ExprKind::Malformed
         };
         Expr { span, kind }
