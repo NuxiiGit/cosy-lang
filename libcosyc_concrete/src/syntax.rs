@@ -13,7 +13,7 @@ pub enum ExprKind {
     Value(ValueKind)
 }
 
-/// Represents expression information
+/// Represents expression information.
 #[derive(Debug)]
 pub struct Expr {
     pub span : Span,
