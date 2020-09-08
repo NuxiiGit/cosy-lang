@@ -46,12 +46,7 @@ impl TokenKind {
 
     /// Returns `true` if the token is an alphabetic identifier.
     pub fn is_graphic(&self) -> bool {
-        matches!(self, Self::Identifier(.., IdentifierKind::Graphic))
-    }
-
-    /// Returns whether this token is a valid terminal value.
-    pub fn is_terminal(&self) -> bool {
-        self.is_literal() || self.is_identifier()
+        matches!(self, Self::Identifier(IdentifierKind::Graphic))
     }
 
     /// Returns `true` if the token is an operator identifier.
