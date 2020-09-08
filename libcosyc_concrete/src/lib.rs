@@ -41,10 +41,7 @@ impl<'a> Parser<'a> {
         let kind = match self.advance() {
             TokenKind::Identifier(IdentifierKind::Graphic) => ExprKind::Variable,
             TokenKind::Literal(LiteralKind::Integral) => ExprKind::Integral,
-            x => {
-                // implement groupings
-                unimplemented!()
-            }
+            _ => ExprKind::Malformed
         };
         Expr { span, kind }
     }

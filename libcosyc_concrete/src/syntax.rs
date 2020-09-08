@@ -4,7 +4,8 @@ use libcosyc_source::Span;
 #[derive(Debug)]
 pub enum ExprKind {
     Variable,
-    Integral
+    Integral,
+    Malformed
 }
 
 /// Represents expression information.

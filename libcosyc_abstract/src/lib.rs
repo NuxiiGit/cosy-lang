@@ -21,7 +21,14 @@ impl Desugar for concrete::Expr {
         let span = self.span;
         let kind = match self.kind {
             concrete::ExprKind::Variable => ExprKind::Variable,
-            concrete::ExprKind::Integral => ExprKind::Integral
+            concrete::ExprKind::Integral => ExprKind::Integral,
+            concrete::ExprKind::Malformed => {
+                Diagnostic::from(&span)
+                        .level(ErrorLevel::Fatal)
+                        .reason(format!("malformed expression"))
+                        .report(issues);
+                return None;
+            }
         };
         Some(Expr { span, kind })
     }
