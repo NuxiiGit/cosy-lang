@@ -48,8 +48,13 @@ impl<'a> Parser<'a> {
             };
             Expr { span, kind  }
         } else {
-            unimplemented!()
+            self.parse_expr_groupings()
         }
+    }
+
+    /// Parses groupings of expressions.
+    pub fn parse_expr_groupings(&mut self) -> Expr {
+        unimplemented!()
     }
 }
 impl<'a> From<&'a str> for Parser<'a> {
