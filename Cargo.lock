@@ -4,6 +4,7 @@
 name = "cosyc"
 version = "0.1.0"
 dependencies = [
+ "libcosyc_abstract 0.1.0",
  "libcosyc_concrete 0.1.0",
  "libcosyc_diagnostics 0.1.0",
  "libcosyc_source 0.1.0",

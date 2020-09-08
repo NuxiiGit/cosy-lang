@@ -10,3 +10,4 @@ edition = "2018"
 libcosyc_source = { path = "../libcosyc_source" }
 libcosyc_diagnostics = { path = "../libcosyc_diagnostics" }
 libcosyc_concrete = { path = "../libcosyc_concrete" }
+libcosyc_abstract = { path = "../libcosyc_abstract" }
