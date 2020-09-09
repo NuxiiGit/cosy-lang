@@ -8,5 +8,4 @@ edition = "2018"
 
 [dependencies]
 libcosyc_source = { path = "../libcosyc_source" }
-libcosyc_diagnostics = { path = "../libcosyc_diagnostics" }
 libcosyc_abstract = { path = "../libcosyc_abstract" }
