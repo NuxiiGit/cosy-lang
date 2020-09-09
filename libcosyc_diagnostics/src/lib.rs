@@ -175,8 +175,10 @@ impl fmt::Display for Session {
                 let line_begin = binary_search_newlines(&newlines, error_begin).unwrap();
                 let line_end = binary_search_newlines(&newlines, error_end).unwrap();
                 let Span { begin : start, end } = newlines.get(line_begin).unwrap();
+                let Span { begin : start_end, end : _ } = newlines.get(line_end).unwrap();
                 let row = line_begin + 1;
                 let col = error_begin - start + 1;
+                let col_end = error_end - start_end + 1;
                 let indent_length = digit_count(line_end + 1);
                 let indent = " ".repeat(indent_length);
                 writeln!(out, "")?;
@@ -195,6 +197,8 @@ impl fmt::Display for Session {
                     writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(underline_length))?;
                 } else {
                     // display lines of error
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "begin")?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "v")?;
                     for line in line_begin..=line_end {
                         if line > line_begin + 1 {
                             if line < line_end - 2 {
@@ -207,6 +211,8 @@ impl fmt::Display for Session {
                         let Span { begin : start, end } = newlines.get(line).unwrap();
                         writeln!(out, " {:width$} | {}", line + 1, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                     }
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end - 1), "^")?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end - 1), "end")?;
                 }
                 if !error.notes.is_empty() {
                     // display notes
