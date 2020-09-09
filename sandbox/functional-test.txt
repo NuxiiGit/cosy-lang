@@ -1,17 +1,21 @@
-Some(Expr { span: Span { begin: 3, end: 4 }, kind: Variable })
+Some(Expr { span: Span { begin: 6, end: 7 }, kind: Variable })
 
 Warning: missing closing parenthesis in grouping
-  >>> @[row. 1, col. 1]
+  >>> @[row. 2, col. 1]
    | 
- 1 | (((a)     7))
-   | ^^^^^
+   | begin
+   | v
+ 2 | (
+ 3 |  ((a)     7))
+   |     ^
+   |     end
    | 
    ? Note: consider adding ')' to complete this grouping
 
 Warning: missing closing parenthesis in grouping
-  >>> @[row. 1, col. 2]
+  >>> @[row. 3, col. 2]
    | 
- 1 | (((a)     7))
+ 3 |  ((a)     7))
    |  ^^^^
    | 
    ? Note: consider adding ')' to complete this grouping
