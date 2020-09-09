@@ -35,6 +35,11 @@ impl<'a> Parser<'a> {
         p(self.token())
     }
 
+    /// Entry point for parsing expressions.
+    pub fn parse_expr(&mut self) -> Expr {
+        self.parse_expr_terminal()
+    }
+
     /// Parses literals, identifiers, and groupings of expressions.
     pub fn parse_expr_terminal(&mut self) -> Expr {
         let mut span = self.span().clone();
@@ -43,7 +48,7 @@ impl<'a> Parser<'a> {
             TokenKind::Literal(LiteralKind::Integral) => ExprKind::Integral,
             TokenKind::LeftParen => {
                 // parse groupings
-                let inner = Box::new(self.parse_expr_terminal());
+                let inner = Box::new(self.parse_expr());
                 let unclosed = !matches!(self.token(), TokenKind::RightParen);
                 if unclosed {
                     span.end = inner.span.end;

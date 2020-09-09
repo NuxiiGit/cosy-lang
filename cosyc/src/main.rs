@@ -9,8 +9,7 @@ fn main() {
  ((a)     7))
 "));
     let mut parser = Parser::from(&sess.src as &str);
-    let parse_tree = parser.parse_expr_terminal();
-    let ast = parse_tree.desugar(&mut sess.issues);
+    let ast = parser.parse_expr().desugar(&mut sess.issues);
     println!("{:?}", ast);
     println!("{}", sess);
 
