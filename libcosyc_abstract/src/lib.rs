@@ -27,6 +27,7 @@ impl Desugar for concrete::Expr {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason(format!("missing closing parenthesis in grouping"))
+                            .note(format!("consider adding ')' to complete this grouping"))
                             .report(issues);
                 }
                 return inner.desugar(issues);
