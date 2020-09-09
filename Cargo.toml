@@ -4,6 +4,6 @@ members = [
     "libcosyc_source",
     "libcosyc_diagnostics",
     "libcosyc_concrete",
-    "libcosyc_ident",
-    "libcosyc_abstract"
+    "libcosyc_abstract",
+    "libcosyc_codegen"
 ]
