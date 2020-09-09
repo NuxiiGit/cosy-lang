@@ -185,17 +185,17 @@ impl fmt::Display for Session {
                 write!(out, "{}@", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
                 writeln!(out, " {} | ", indent)?;
-                writeln!(out, " {:width$} | {}", row, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                 if line_begin == line_end {
                     // underline error
                     let mut underline_length = error_end - error_begin;
                     if underline_length < 1 {
                         underline_length = 1;
                     }
+                    writeln!(out, " {:width$} | {}", row, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                     writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(underline_length))?;
                 } else {
                     // display lines of error
-                    for line in (line_begin + 1)..=line_end {
+                    for line in line_begin..=line_end {
                         if line > line_begin + 1 {
                             if line < line_end - 2 {
                                 continue;
