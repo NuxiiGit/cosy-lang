@@ -44,10 +44,13 @@ impl<'a> Parser<'a> {
             TokenKind::LeftParen => {
                 // parse groupings
                 let inner = Box::new(self.parse_expr_terminal());
-                let unclosed = matches!(self.token(), TokenKind::RightParen);
-                if !unclosed {
+                let unclosed = !matches!(self.token(), TokenKind::RightParen);
+                if unclosed {
+                    span.end = inner.span.end;
+                } else {
                     // if the grouping can be closed correctly
                     // then consume the closing paren
+                    span.end = self.span().end;
                     self.advance();
                 }
                 ExprKind::Grouping { unclosed, inner }

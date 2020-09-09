@@ -4,7 +4,10 @@ use libcosyc_concrete::Parser;
 use libcosyc_abstract::Desugar;
 
 fn main() {
-    let mut sess = Session::from(format!("+++++>"));
+    let mut sess = Session::from(format!("
+        (((a
+        )     7)
+         )"));
     let mut parser = Parser::from(&sess.src as &str);
     let parse_tree = parser.parse_expr_terminal();
     let ast = parse_tree.desugar(&mut sess.issues);
