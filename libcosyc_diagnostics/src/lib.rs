@@ -197,8 +197,8 @@ impl fmt::Display for Session {
                     writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(underline_length))?;
                 } else {
                     // display lines of error
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "begin")?;
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "v")?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), " starts here")?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "/")?;
                     for line in line_begin..=line_end {
                         if line > line_begin + 1 {
                             if line < line_end - 2 {
@@ -211,8 +211,8 @@ impl fmt::Display for Session {
                         let Span { begin : start, end } = newlines.get(line).unwrap();
                         writeln!(out, " {:width$} | {}", line + 1, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
                     }
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end - 1), "^")?;
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end - 1), "end")?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end), "\\")?;
+                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end), " ends here")?;
                 }
                 if !error.notes.is_empty() {
                     // display notes
