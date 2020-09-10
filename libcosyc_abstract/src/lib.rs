@@ -3,10 +3,7 @@ pub mod syntax;
 use syntax::*;
 
 use libcosyc_concrete::syntax as concrete;
-use libcosyc_diagnostics::{
-    source::Span,
-    error::{ Diagnostic, IssueTracker, ErrorLevel }
-};
+use libcosyc_diagnostics::error::{ Diagnostic, IssueTracker, ErrorLevel };
 
 /// Provides an interface for desugaring concrete syntax into abstract syntax.
 pub trait Desugar {
@@ -29,7 +26,7 @@ impl Desugar for concrete::Expr {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason(format!("missing closing parenthesis in grouping"))
-                            .note(format!("consider adding ')' to complete this grouping"))
+                            .note(format!("consider adding `)` to complete this grouping"))
                             .report(issues);
                 }
                 return inner.desugar(issues);
