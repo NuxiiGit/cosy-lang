@@ -1,124 +1,10 @@
+pub mod source;
+pub mod error;
+
+use source::Span;
+use error::IssueTracker;
+
 use std::fmt;
-
-/// Represents a source location.
-#[derive(Default, Debug, Clone)]
-pub struct Span {
-    pub begin : usize,
-    pub end : usize,
-}
-impl fmt::Display for Span {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "[{}..{}]", self.begin, self.end)
-    }
-}
-
-/// Represents different kinds of error.
-#[derive(PartialOrd, PartialEq, Debug, Clone)]
-pub enum ErrorLevel {
-    Warning,
-    Bug,
-    Fatal
-}
-impl Default for ErrorLevel {
-    fn default() -> Self {
-        Self::Warning
-    }
-}
-
-#[derive(Debug, Clone)]
-struct Error {
-    pub span : Span,
-    pub level : ErrorLevel,
-    pub reason : String,
-    pub notes : Vec<String>
-}
-impl fmt::Display for Error {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{:?}! {}", self.level, self.reason)
-    }
-}
-
-/// Records any issues that occurred, including the highest error level achieved.
-#[derive(Default)]
-pub struct IssueTracker {
-    errors : Vec<Error>,
-    /// The highest `ErrorLevel` registered by the issue tracker.
-    pub error_level : ErrorLevel
-}
-impl IssueTracker {
-    fn report(&mut self, error : Error) {
-        if error.level > self.error_level {
-            self.error_level = error.level.clone();
-        }
-        self.errors.push(error);
-    }
-}
-
-/// Represents a diagnostic
-#[derive(Default, Debug)]
-pub struct Diagnostic {
-    pub span : Span,
-    pub error_level : ErrorLevel,
-    pub reason : String,
-    pub notes : Vec<String>
-}
-impl Diagnostic {
-    /// Sets the error level of the diagnostic.
-    pub fn level(mut self, level : ErrorLevel) -> Self {
-        self.error_level = level;
-        self
-    }
-
-    /// Adds a note to the diagnostic.
-    pub fn note(mut self, note : String) -> Self {
-        self.notes.push(note);
-        self
-    }
-
-    /// Update the diagnostic reason.
-    pub fn reason(mut self, reason : String) -> Self {
-        self.reason = reason;
-        self
-    }
-
-    /// Report the diagnostic to an issue tracker.
-    pub fn report(self, issues : &mut IssueTracker) {
-        issues.report(Error {
-            span : self.span,
-            level : self.error_level,
-            reason : self.reason,
-            notes : self.notes
-        })
-    }
-}
-impl<'a> From<&'a Span> for Diagnostic {
-    fn from(span : &'a Span) -> Self {
-        let mut diagnostic = Self::default();
-        diagnostic.span.begin = span.begin;
-        diagnostic.span.end = span.end;
-        diagnostic
-    }
-}
-
-/// Produces a **sorted** list of source positions where a new line occurs.
-fn prospect_newlines(src : &str) -> Vec<Span> {
-    let mut begin = 0;
-    let mut locations = Vec::new();
-    let mut chars = src.char_indices().peekable();
-    while let Some((end, next)) = chars.next() {
-        match next {
-            '\r' if matches!(chars.peek(), Some((_, '\n'))) => {
-                chars.next();
-            },
-            '\r' | '\n' => (),
-            _ => continue
-        }
-        locations.push(Span { begin, end });
-        begin = if let Some((i, _)) = chars.peek() { *i } else { src.len() };
-    }
-    locations.push(Span { begin, end : src.len() });
-    locations
-}
 
 /// Returns the number of digits of this natural number.
 fn digit_count(mut n : usize) -> usize {
@@ -131,19 +17,6 @@ fn digit_count(mut n : usize) -> usize {
             count += 1;
         }
     }
-}
-
-fn binary_search_newlines(lines : &[Span], pos : usize) -> Result<usize, usize> {
-    lines.binary_search_by(|x| {
-        use std::cmp::Ordering;
-        if x.begin > pos {
-            Ordering::Greater
-        } else if x.end < pos {
-            Ordering::Less
-        } else {
-            Ordering::Equal
-        }
-    })
 }
 
 /// Represents a compiler session.
@@ -178,12 +51,12 @@ impl fmt::Display for Session {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         // it works, i don't care if it's trash
         if self.contains_errors() {
-            let newlines = prospect_newlines(&self.src);
+            let newlines = source::prospect_newlines(&self.src);
             for error in &self.issues.errors {
                 let error_begin = error.span.begin;
                 let error_end = error.span.end;
-                let line_begin = binary_search_newlines(&newlines, error_begin).unwrap();
-                let line_end = binary_search_newlines(&newlines, error_end).unwrap();
+                let line_begin = source::binary_search_newlines(&newlines, error_begin).unwrap();
+                let line_end = source::binary_search_newlines(&newlines, error_end).unwrap();
                 let Span { begin : start, end } = newlines.get(line_begin).unwrap();
                 let Span { begin : start_end, end : _ } = newlines.get(line_end).unwrap();
                 let row = line_begin + 1;
