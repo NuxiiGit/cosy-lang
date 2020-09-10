@@ -6,7 +6,8 @@ pub enum StmtKind {
     Expr {
         terminated : bool,
         inner : Box<Expr>
-    }
+    },
+    NoOp
 }
 
 /// Represents statement information.
