@@ -3,15 +3,17 @@ use libcosyc_diagnostics::source::Span;
 /// Represents a kind of statement.
 #[derive(Debug)]
 pub enum StmtKind {
-    Expr(Expr)
+    Expr {
+        terminated : bool,
+        inner : Box<Expr>
+    }
 }
 
 /// Represents statement information.
 #[derive(Debug)]
 pub struct Stmt {
     pub span : Span,
-    pub kind : StmtKind,
-    pub unclosed : bool
+    pub kind : StmtKind
 }
 
 /// Represents a kind of expression.

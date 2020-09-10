@@ -32,6 +32,22 @@ impl<'a> Parser<'a> {
         p(self.token())
     }
 
+    /// Parses expression.
+    pub fn parse_stmt_expr(&mut self) -> Stmt {
+        let mut span = self.span().clone();
+        let inner = Box::new(self.parse_expr());
+        let terminated = matches!(self.token(), TokenKind::SemiColon);
+        if !terminated {
+            span.end = inner.span.end;
+        } else {
+            // consume semicolon
+            span.end = self.span().end;
+            self.advance();
+        }
+        let kind = StmtKind::Expr { terminated, inner };
+        Stmt { span, kind }
+    }
+
     /// Entry point for parsing expressions.
     pub fn parse_expr(&mut self) -> Expr {
         self.parse_expr_terminal()
