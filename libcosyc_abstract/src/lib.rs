@@ -2,7 +2,7 @@ pub mod syntax;
 
 use syntax::*;
 
-use libcosyc_concrete::parse::syntax as concrete;
+use libcosyc_concrete::syntax as concrete;
 use libcosyc_diagnostics::{
     source::Span,
     error::{ Diagnostic, IssueTracker, ErrorLevel }

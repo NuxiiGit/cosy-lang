@@ -1,8 +1,5 @@
-pub mod syntax;
-
-use syntax::*;
-
 use crate::lex::{ Lexer, lexeme::* };
+use crate::syntax::*;
 
 use libcosyc_diagnostics::source::Span;
 
