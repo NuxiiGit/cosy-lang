@@ -36,7 +36,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parses expression.
+    /// Parses statements.
     pub fn parse_stmt_expr(&mut self) -> Stmt {
         let mut span = self.span().clone();
         let inner = Box::new(self.parse_expr());
