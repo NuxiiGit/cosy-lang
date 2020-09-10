@@ -4,7 +4,7 @@ pub mod lexeme;
 use scanner::{ CharReader, CharKind };
 use lexeme::*;
 
-use libcosyc_source::Span;
+use libcosyc_diagnostics::Span;
 
 /// Converts a stream of characters into lexemes, ignoring whitespace.
 pub struct Lexer<'a> {
