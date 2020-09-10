@@ -36,7 +36,3 @@ dependencies = [
 name = "libcosyc_diagnostics"
 version = "0.1.0"
 
-[[package]]
-name = "libcosyc_source"
-version = "0.1.0"
-
