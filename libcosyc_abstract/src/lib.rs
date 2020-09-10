@@ -3,7 +3,10 @@ pub mod syntax;
 use syntax::*;
 
 use libcosyc_concrete::syntax as concrete;
-use libcosyc_diagnostics::{ Span, Diagnostic, IssueTracker, ErrorLevel };
+use libcosyc_diagnostics::{
+    source::Span,
+    error::{ Diagnostic, IssueTracker, ErrorLevel }
+};
 
 /// Provides an interface for desugaring concrete syntax into abstract syntax.
 pub trait Desugar {

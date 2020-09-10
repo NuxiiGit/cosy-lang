@@ -1,4 +1,4 @@
-use libcosyc_diagnostics::Span;
+use libcosyc_diagnostics::source::Span;
 use libcosyc_abstract::syntax;
 
 use std::fmt;

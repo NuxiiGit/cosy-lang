@@ -4,7 +4,7 @@ pub mod syntax;
 use lex::{ Lexer, lexeme::* };
 use syntax::*;
 
-use libcosyc_diagnostics::Span;
+use libcosyc_diagnostics::source::Span;
 
 use std::mem;
 

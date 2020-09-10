@@ -1,4 +1,4 @@
-use libcosyc_diagnostics::Span;
+use libcosyc_diagnostics::source::Span;
 
 /// Represents a kind of expression.
 #[derive(Debug)]
