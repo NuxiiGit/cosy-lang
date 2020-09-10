@@ -1,5 +1,5 @@
 use libcosyc_diagnostics::Session;
-use libcosyc_concrete::Parser;
+use libcosyc_concrete::parse::Parser;
 use libcosyc_abstract::Desugar;
 
 fn main() {
