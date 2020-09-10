@@ -3,10 +3,14 @@ use libcosyc_abstract::syntax;
 
 use std::fmt;
 
-/// Represents any kind of output stream.
-pub type Output<'a> = &'a mut dyn fmt::Write;
+type Output<'a> = &'a mut dyn fmt::Write;
 
-/// Provides an interface for generating C code.
-pub trait CGen {
-    fn codegen(self, out : Output) -> fmt::Result;
+/// Takes an output stream and generates C code.
+pub struct CGen<'a> {
+    out : Output<'a>
+}
+impl<'a> From<Output<'a>> for CGen<'a> {
+    fn from(out : Output<'a>) -> Self {
+        Self { out }
+    }
 }
