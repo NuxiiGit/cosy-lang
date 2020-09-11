@@ -30,7 +30,14 @@ impl Desugar for concrete::Stmt {
                 let inner = Box::new(inner.desugar(issues)?);
                 StmtKind::Expr { inner }
             },
-            _ => unimplemented!()
+            concrete::StmtKind::NoOp => {
+                Diagnostic::from(&span)
+                        .level(ErrorLevel::Warning)
+                        .reason(format!("unnecessary terminating symbol"))
+                        .note(format!("consider removing this symbol"))
+                        .report(issues);
+                return None;
+            }
         };
         Some(Stmt { span, kind })
     }
