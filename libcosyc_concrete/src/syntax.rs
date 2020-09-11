@@ -26,6 +26,7 @@ pub enum ExprKind {
         unclosed : bool,
         inner : Box<Expr>
     },
+    Empty,
     Malformed
 }
 

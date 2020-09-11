@@ -69,18 +69,25 @@ impl<'a> Parser<'a> {
         } else if self.advance_if(TokenKind::is_integral).is_some() {
             ExprKind::Integral
         } else if self.advance_if(|x| matches!(x, TokenKind::LeftParen)).is_some() {
-            // parse groupings
-            let inner = Box::new(self.parse_expr());
-            let unclosed = !matches!(self.token(), TokenKind::RightParen);
-            if unclosed {
-                span.end = inner.span.end;
-            } else {
-                // if the grouping can be closed correctly
-                // then consume the closing paren
+            if matches!(self.token(), TokenKind::RightParen) {
+                // empty expression
                 span.end = self.span().end;
                 self.advance();
+                ExprKind::Empty
+            } else {
+                // parse groupings
+                let inner = Box::new(self.parse_expr());
+                let unclosed = !matches!(self.token(), TokenKind::RightParen);
+                if unclosed {
+                    span.end = inner.span.end;
+                } else {
+                    // if the grouping can be closed correctly
+                    // then consume the closing paren
+                    span.end = self.span().end;
+                    self.advance();
+                }
+                ExprKind::Grouping { unclosed, inner }
             }
-            ExprKind::Grouping { unclosed, inner }
         } else {
             ExprKind::Malformed
         };
