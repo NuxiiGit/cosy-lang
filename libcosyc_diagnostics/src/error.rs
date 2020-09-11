@@ -65,10 +65,20 @@ impl Diagnostic {
         self
     }
 
+    /// Similar to `note`, except a borrowed value is used.
+    pub fn note_str(mut self, note : &str) -> Self {
+        self.note(note.to_string())
+    }
+
     /// Update the diagnostic reason.
     pub fn reason(mut self, reason : String) -> Self {
         self.reason = reason;
         self
+    }
+
+    /// Similar to `reason`, except a borrowed value is used.
+    pub fn reason_str(mut self, reason : &str) -> Self {
+        self.reason(reason.to_string())
     }
 
     /// Report the diagnostic to an issue tracker.

@@ -23,8 +23,8 @@ impl Desugar for concrete::Stmt {
                 if !terminated {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
-                            .reason(format!("missing terminating symbol in expression statement"))
-                            .note(format!("consider adding `;` to the end of this statement"))
+                            .reason_str("missing terminating symbol in expression statement")
+                            .note_str("consider adding `;` to the end of this statement")
                             .report(issues);
                 }
                 let inner = Box::new(inner.desugar(issues)?);
@@ -33,8 +33,8 @@ impl Desugar for concrete::Stmt {
             concrete::StmtKind::NoOp => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Warning)
-                        .reason(format!("unnecessary terminating symbol"))
-                        .note(format!("consider removing this symbol"))
+                        .reason_str("unnecessary terminating symbol")
+                        .note_str("consider removing this symbol")
                         .report(issues);
                 return None;
             }
@@ -54,8 +54,8 @@ impl Desugar for concrete::Expr {
                 if unclosed {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
-                            .reason(format!("missing closing parenthesis in grouping"))
-                            .note(format!("consider adding `)` to complete this grouping"))
+                            .reason_str("missing closing parenthesis in grouping")
+                            .note_str("consider adding `)` to complete this grouping")
                             .report(issues);
                 }
                 return inner.desugar(issues);
@@ -63,7 +63,7 @@ impl Desugar for concrete::Expr {
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
-                        .reason(format!("malformed expression"))
+                        .reason_str("malformed expression")
                         .report(issues);
                 return None;
             }
