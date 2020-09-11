@@ -37,18 +37,22 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses statements.
-    pub fn parse_stmt_expr(&mut self) -> Stmt {
+    pub fn parse_stmt(&mut self) -> Stmt {
         let mut span = self.span().clone();
-        let inner = Box::new(self.parse_expr());
-        let terminated = matches!(self.token(), TokenKind::SemiColon);
-        if !terminated {
-            span.end = inner.span.end;
+        let kind = if self.advance_if(|x| matches!(x, TokenKind::SemiColon)).is_some() {
+            StmtKind::NoOp
         } else {
-            // consume semicolon
-            span.end = self.span().end;
-            self.advance();
-        }
-        let kind = StmtKind::Expr { terminated, inner };
+            let inner = Box::new(self.parse_expr());
+            let terminated = matches!(self.token(), TokenKind::SemiColon);
+            if !terminated {
+                span.end = inner.span.end;
+            } else {
+                // consume semicolon
+                span.end = self.span().end;
+                self.advance();
+            }
+            StmtKind::Expr { terminated, inner }
+        };
         Stmt { span, kind }
     }
 
