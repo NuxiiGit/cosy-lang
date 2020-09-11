@@ -14,6 +14,28 @@ pub trait Desugar {
     fn desugar(self, issues : &mut IssueTracker) -> Self::Out;
 }
 
+impl Desugar for concrete::Stmt {
+    type Out = Option<Stmt>;
+    fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
+        let span = self.span;
+        let kind = match self.kind {
+            concrete::StmtKind::Expr { terminated, inner } => {
+                if !terminated {
+                    Diagnostic::from(&span)
+                            .level(ErrorLevel::Warning)
+                            .reason(format!("missing terminating symbol in expression statement"))
+                            .note(format!("consider adding `;` to the end of this statement"))
+                            .report(issues);
+                }
+                let inner = Box::new(inner.desugar(issues)?);
+                StmtKind::Expr { inner }
+            },
+            _ => unimplemented!()
+        };
+        Some(Stmt { span, kind })
+    }
+}
+
 impl Desugar for concrete::Expr {
     type Out = Option<Expr>;
     fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
