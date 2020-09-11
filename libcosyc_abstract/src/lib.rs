@@ -60,6 +60,7 @@ impl Desugar for concrete::Expr {
                 }
                 return inner.desugar(issues);
             },
+            concrete::ExprKind::Empty => ExprKind::Empty,
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)

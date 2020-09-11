@@ -20,7 +20,8 @@ pub struct Stmt {
 #[derive(Debug)]
 pub enum ExprKind {
     Variable,
-    Integral
+    Integral,
+    Empty
 }
 
 /// Represents expression information.

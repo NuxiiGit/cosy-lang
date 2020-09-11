@@ -3,9 +3,10 @@ use libcosyc_concrete::parse::Parser;
 use libcosyc_abstract::Desugar;
 
 fn main() {
-    let mut sess = Session::from(format!("(+)"));
+    let mut sess = Session::from(format!("(()+)"));
     let mut parser = Parser::from(&sess.src as &str);
-    let _ast = parser.parse_stmt().desugar(&mut sess.issues);
-    //println!("{:?}", ast);
+    let cst = parser.parse_stmt();
+    //println!("{:?}", cst);
+    let _ast = cst.desugar(&mut sess.issues);
     println!("{}", sess);
 }
