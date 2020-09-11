@@ -64,6 +64,7 @@ impl Desugar for concrete::Expr {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
                         .reason_str("malformed expression")
+                        .note_str("consider removing this symbol")
                         .report(issues);
                 return None;
             }
