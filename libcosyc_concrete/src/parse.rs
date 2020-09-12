@@ -38,7 +38,16 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing expressions.
     pub fn parse_expr(&mut self) -> Expr {
-        self.parse_expr_terminal()
+        self.parse_expr_stmt()
+    }
+
+    /// Entry point for parsing statement expressions.
+    pub fn parse_expr_stmt(&mut self) -> Expr {
+        if self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some() {
+            unimplemented!()
+        } else {
+            self.parse_expr_terminal()
+        }
     }
 
     /// Parses literals, identifiers, and groupings of expressions.
@@ -74,6 +83,7 @@ impl<'a> Parser<'a> {
         Expr { span, kind }
     }
 
+    /*
     /// Parses statements.
     pub fn parse_stmt(&mut self) -> Stmt {
         let mut span = self.span().clone();
@@ -86,6 +96,7 @@ impl<'a> Parser<'a> {
         };
         Stmt { span, kind }
     }
+    */
 }
 impl<'a> From<&'a str> for Parser<'a> {
     fn from(src : &'a str) -> Self {

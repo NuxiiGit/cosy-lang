@@ -5,6 +5,9 @@ use libcosyc_diagnostics::source::Span;
 pub enum ExprKind {
     Variable,
     Integral,
+    Block {
+        body : Vec<Stmt>
+    },
     Empty
 }
 

@@ -53,6 +53,22 @@ impl Desugar for concrete::Expr {
                 }
                 return inner.desugar(issues);
             },
+            concrete::ExprKind::Block { unclosed, body : stmts } => {
+                if unclosed {
+                    Diagnostic::from(&span)
+                            .level(ErrorLevel::Warning)
+                            .reason_str("missing closing brace on block")
+                            .note_str("consider adding `}` to complete this block")
+                            .report(issues);
+                }
+                let mut body = Vec::new();
+                for stmt in stmts {
+                    if let Some(stmt) = stmt.desugar(issues) {
+                        body.push(stmt)
+                    }
+                }
+                ExprKind::Block { body }
+            },
             concrete::ExprKind::Empty => ExprKind::Empty,
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
