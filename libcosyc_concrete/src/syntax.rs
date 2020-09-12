@@ -1,5 +1,29 @@
 use libcosyc_diagnostics::source::Span;
 
+/// Represents a kind of expression.
+#[derive(Debug)]
+pub enum ExprKind {
+    Variable,
+    Integral,
+    Grouping {
+        unclosed : bool,
+        inner : Box<Expr>
+    },
+    Block {
+        unclosed : bool,
+        body : Vec<Stmt>
+    },
+    Empty,
+    Malformed
+}
+
+/// Represents expression information.
+#[derive(Debug)]
+pub struct Expr {
+    pub span : Span,
+    pub kind : ExprKind
+}
+
 /// Represents a kind of statement.
 #[derive(Debug)]
 pub enum StmtKind {
@@ -17,25 +41,3 @@ pub struct Stmt {
     pub terminated : bool
 }
 
-/// Represents a kind of expression.
-#[derive(Debug)]
-pub enum ExprKind {
-    Variable,
-    Integral,
-    Grouping {
-        unclosed : bool,
-        inner : Box<Expr>
-    },
-    Block {
-        body : Vec<Stmt>
-    },
-    Empty,
-    Malformed
-}
-
-/// Represents expression information.
-#[derive(Debug)]
-pub struct Expr {
-    pub span : Span,
-    pub kind : ExprKind
-}
