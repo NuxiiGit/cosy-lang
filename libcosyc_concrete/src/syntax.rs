@@ -13,7 +13,8 @@ pub enum StmtKind {
 #[derive(Debug)]
 pub struct Stmt {
     pub span : Span,
-    pub kind : StmtKind
+    pub kind : StmtKind,
+    pub terminated : bool
 }
 
 /// Represents a kind of expression.
@@ -24,6 +25,9 @@ pub enum ExprKind {
     Grouping {
         unclosed : bool,
         inner : Box<Expr>
+    },
+    Block {
+        body : Vec<Stmt>
     },
     Empty,
     Malformed
