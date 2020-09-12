@@ -39,12 +39,12 @@ impl<'a> Parser<'a> {
     /// Parses statements.
     pub fn parse_stmt(&mut self) -> Stmt {
         let mut span = self.span().clone();
-        let kind = if self.advance_if(|x| matches!(x, TokenKind::SemiColon)).is_some() {
-            StmtKind::NoOp
-        } else {
+        let kind = if self.advance_if(|x| !matches!(x, TokenKind::SemiColon)).is_some() {
             let inner = Box::new(self.parse_expr());
             span.end = inner.span.end;
             StmtKind::Expr { inner }
+        } else {
+            StmtKind::NoOp
         };
         Stmt { span, kind }
     }

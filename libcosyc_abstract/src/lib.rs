@@ -19,14 +19,7 @@ impl Desugar for concrete::Stmt {
     fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
         let span = self.span;
         let kind = match self.kind {
-            concrete::StmtKind::Expr { terminated, inner } => {
-                if !terminated {
-                    Diagnostic::from(&span)
-                            .level(ErrorLevel::Warning)
-                            .reason_str("missing terminating symbol in expression statement")
-                            .note_str("consider adding `;` to the end of this statement")
-                            .report(issues);
-                }
+            concrete::StmtKind::Expr { inner } => {
                 let inner = Box::new(inner.desugar(issues)?);
                 StmtKind::Expr { inner }
             },
