@@ -44,10 +44,15 @@ impl<'a> Parser<'a> {
     /// Entry point for parsing statement expressions.
     pub fn parse_expr_stmt(&mut self) -> Expr {
         if self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some() {
-            unimplemented!()
+            self.parse_expr_block()
         } else {
             self.parse_expr_terminal()
         }
+    }
+
+    /// Parses block expressions.
+    pub fn parse_expr_block(&mut self) -> Expr {
+        unimplemented!()
     }
 
     /// Parses literals, identifiers, and groupings of expressions.
