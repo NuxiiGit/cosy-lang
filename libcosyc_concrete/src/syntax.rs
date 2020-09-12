@@ -4,7 +4,6 @@ use libcosyc_diagnostics::source::Span;
 #[derive(Debug)]
 pub enum StmtKind {
     Expr {
-        terminated : bool,
         inner : Box<Expr>
     },
     NoOp

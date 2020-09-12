@@ -43,15 +43,8 @@ impl<'a> Parser<'a> {
             StmtKind::NoOp
         } else {
             let inner = Box::new(self.parse_expr());
-            let terminated = matches!(self.token(), TokenKind::SemiColon);
-            if !terminated {
-                span.end = inner.span.end;
-            } else {
-                // consume semicolon
-                span.end = self.span().end;
-                self.advance();
-            }
-            StmtKind::Expr { terminated, inner }
+            span.end = inner.span.end;
+            StmtKind::Expr { inner }
         };
         Stmt { span, kind }
     }
