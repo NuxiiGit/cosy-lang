@@ -11,7 +11,8 @@ pub enum ExprKind {
         inner : Option<Box<Expr>>
     },
     Block {
-        unclosed : bool,
+        lbrace : bool,
+        rbrace : bool,
         body : Vec<Stmt>
     },
     Malformed

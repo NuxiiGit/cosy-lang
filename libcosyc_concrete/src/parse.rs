@@ -52,12 +52,25 @@ impl<'a> Parser<'a> {
 
     /// Parses block expressions.
     pub fn parse_expr_block(&mut self) -> Expr {
-        unimplemented!()
+        let mut span = self.span().clone();
+        let lbrace = self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some();
+        let body : Vec<Stmt> = Vec::new();
+        let rbrace = matches!(self.token(), TokenKind::RightParen);
+        if rbrace {
+            // if the block can be closed correctly
+            // then consume the closing brace
+            span.end = self.span().end;
+            self.advance();
+        } else if let Some(stmt) = body.last() {
+            span.end = stmt.span.end;
+        };
+        let kind = ExprKind::Block { lbrace, rbrace, body };
+        Expr { span, kind }
     }
 
     /// Parses literals and identifiers.
     pub fn parse_expr_terminal(&mut self) -> Expr {
-        let mut span = self.span().clone();
+        let span = self.span().clone();
         let kind = if self.advance_if(TokenKind::is_graphic).is_some() {
             ExprKind::Variable
         } else if self.advance_if(TokenKind::is_integral).is_some() {
