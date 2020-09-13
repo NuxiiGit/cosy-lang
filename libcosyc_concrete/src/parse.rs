@@ -55,7 +55,7 @@ impl<'a> Parser<'a> {
         unimplemented!()
     }
 
-    /// Parses literals, identifiers, and groupings of expressions.
+    /// Parses literals and identifiers.
     pub fn parse_expr_terminal(&mut self) -> Expr {
         let mut span = self.span().clone();
         let kind = if self.advance_if(TokenKind::is_graphic).is_some() {
@@ -70,28 +70,27 @@ impl<'a> Parser<'a> {
         Expr { span, kind }
     }
 
+    /// Parses groupings of expressions.
     pub fn parse_expr_grouping(&mut self) -> Expr {
         let mut span = self.span().clone();
         let lparen = self.advance_if(|x| matches!(x, TokenKind::LeftParen)).is_some();
-        let kind = if matches!(self.token(), TokenKind::RightParen) {
+        let inner = if matches!(self.token(), TokenKind::RightParen) {
             // empty expression
-            span.end = self.span().end;
-            self.advance();
-            ExprKind::Empty
+            None
         } else {
             // parse groupings
-            let inner = Box::new(self.parse_expr());
-            let unclosed = !matches!(self.token(), TokenKind::RightParen);
-            if unclosed {
-                span.end = inner.span.end;
-            } else {
-                // if the grouping can be closed correctly
-                // then consume the closing paren
-                span.end = self.span().end;
-                self.advance();
-            }
-            ExprKind::Grouping { unclosed, inner }
+            Some(Box::new(self.parse_expr()))
         };
+        let rparen = matches!(self.token(), TokenKind::RightParen);
+        if rparen {
+            // if the grouping can be closed correctly
+            // then consume the closing paren
+            span.end = self.span().end;
+            self.advance();
+        } else if let Some(expr) = &inner {
+            span.end = expr.span.end;
+        }
+        let kind = ExprKind::Grouping { lparen, rparen, inner };
         Expr { span, kind }
     }
 
