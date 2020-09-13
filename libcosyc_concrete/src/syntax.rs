@@ -1,8 +1,5 @@
 use libcosyc_diagnostics::source::Span;
 
-/// Represents a program.
-pub type Program = Vec<Stmt>;
-
 /// Represents a kind of statement.
 #[derive(Debug)]
 pub enum StmtKind {
@@ -32,7 +29,7 @@ pub enum ExprKind {
     Block {
         lbrace : bool,
         rbrace : bool,
-        body : Program
+        body : Vec<Stmt>
     },
     Malformed
 }

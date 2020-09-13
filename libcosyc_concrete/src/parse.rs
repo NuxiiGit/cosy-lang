@@ -36,30 +36,6 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parses a program.
-    pub fn parse_program(&mut self) -> Program {
-        let mut body = Vec::new();
-        loop {
-            let mut span = self.span().clone();
-            let kind = if matches!(self.token(), TokenKind::SemiColon | TokenKind::RightBrace) {
-                StmtKind::NoOp
-            } else {
-                let inner = Box::new(self.parse_expr());
-                span.end = inner.span.end;
-                StmtKind::Expr { inner }
-            };
-            if matches!(self.token(), TokenKind::SemiColon) {
-                span.end = self.span().end;
-                self.advance();
-            } else {
-                // exit
-                break;
-            }
-            body.push(Stmt { span, kind });
-        }
-        body
-    }
-
     /// Entry point for parsing expressions.
     pub fn parse_expr(&mut self) -> Expr {
         self.parse_expr_stmt()
@@ -78,10 +54,31 @@ impl<'a> Parser<'a> {
     pub fn parse_expr_block(&mut self) -> Expr {
         let mut span = self.span().clone();
         let lbrace = self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some();
-        let body = if !matches!(self.token(), TokenKind::RightBrace) {
-            self.parse_program()
+        let mut body : Vec<Stmt> = Vec::new();
+        let ret = if !matches!(self.token(), TokenKind::RightBrace) {
+            loop {
+                let mut span = self.span().clone();
+                let kind = if matches!(self.token(), TokenKind::SemiColon | TokenKind::RightBrace) {
+                    StmtKind::NoOp
+                } else {
+                    let inner = Box::new(self.parse_expr());
+                    span.end = inner.span.end;
+                    StmtKind::Expr { inner }
+                };
+                if matches!(self.token(), TokenKind::SemiColon) {
+                    span.end = self.span().end;
+                    self.advance();
+                } else if let StmtKind::Expr { inner } = kind {
+                    // exit with expression
+                    break Some(*inner);
+                } else {
+                    // exit with none
+                    break None;
+                }
+                body.push(Stmt { span, kind });
+            }
         } else {
-            Vec::new()
+            None
         };
         let rbrace = matches!(self.token(), TokenKind::RightBrace);
         if rbrace {
