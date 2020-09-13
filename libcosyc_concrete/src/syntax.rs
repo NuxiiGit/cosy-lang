@@ -29,7 +29,8 @@ pub enum ExprKind {
     Block {
         lbrace : bool,
         rbrace : bool,
-        body : Vec<Stmt>
+        body : Vec<Stmt>,
+        result : Box<Expr>
     },
     Malformed
 }
