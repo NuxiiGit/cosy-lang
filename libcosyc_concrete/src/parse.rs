@@ -62,28 +62,35 @@ impl<'a> Parser<'a> {
             ExprKind::Variable
         } else if self.advance_if(TokenKind::is_integral).is_some() {
             ExprKind::Integral
-        } else if self.advance_if(|x| matches!(x, TokenKind::LeftParen)).is_some() {
-            if matches!(self.token(), TokenKind::RightParen) {
-                // empty expression
-                span.end = self.span().end;
-                self.advance();
-                ExprKind::Empty
-            } else {
-                // parse groupings
-                let inner = Box::new(self.parse_expr());
-                let unclosed = !matches!(self.token(), TokenKind::RightParen);
-                if unclosed {
-                    span.end = inner.span.end;
-                } else {
-                    // if the grouping can be closed correctly
-                    // then consume the closing paren
-                    span.end = self.span().end;
-                    self.advance();
-                }
-                ExprKind::Grouping { unclosed, inner }
-            }
+        } else if matches!(self.token(), TokenKind::LeftParen) {
+            return self.parse_expr_grouping();
         } else {
             ExprKind::Malformed
+        };
+        Expr { span, kind }
+    }
+
+    pub fn parse_expr_grouping(&mut self) -> Expr {
+        let mut span = self.span().clone();
+        let lparen = self.advance_if(|x| matches!(x, TokenKind::LeftParen)).is_some();
+        let kind = if matches!(self.token(), TokenKind::RightParen) {
+            // empty expression
+            span.end = self.span().end;
+            self.advance();
+            ExprKind::Empty
+        } else {
+            // parse groupings
+            let inner = Box::new(self.parse_expr());
+            let unclosed = !matches!(self.token(), TokenKind::RightParen);
+            if unclosed {
+                span.end = inner.span.end;
+            } else {
+                // if the grouping can be closed correctly
+                // then consume the closing paren
+                span.end = self.span().end;
+                self.advance();
+            }
+            ExprKind::Grouping { unclosed, inner }
         };
         Expr { span, kind }
     }
