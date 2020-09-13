@@ -39,15 +39,24 @@ impl<'a> Parser<'a> {
     /// Parses a program.
     pub fn parse_program(&mut self) -> Program {
         let mut body = Vec::new();
-        let mut span = self.span().clone();
-        let kind = if matches!(self.token(), TokenKind::SemiColon | TokenKind::RightBrace) {
-            StmtKind::NoOp
-        } else {
-            let inner = Box::new(self.parse_expr());
-            span.end = inner.span.end;
-            StmtKind::Expr { inner }
-        };
-        body.push(Stmt { span, kind });
+        loop {
+            let mut span = self.span().clone();
+            let kind = if matches!(self.token(), TokenKind::SemiColon | TokenKind::RightBrace) {
+                StmtKind::NoOp
+            } else {
+                let inner = Box::new(self.parse_expr());
+                span.end = inner.span.end;
+                StmtKind::Expr { inner }
+            };
+            if matches!(self.token(), TokenKind::SemiColon) {
+                span.end = self.span().end;
+                self.advance();
+            } else {
+                // exit
+                break;
+            }
+            body.push(Stmt { span, kind });
+        }
         body
     }
 

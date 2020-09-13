@@ -90,7 +90,7 @@ impl Desugar for concrete::Expr {
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
-                        .reason_str("malformed expression")
+                        .reason_str("unexpected symbol in expression")
                         .note_str("consider removing this symbol")
                         .report(issues);
                 return None;
