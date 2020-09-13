@@ -7,7 +7,7 @@ pub enum ExprKind {
     Integral,
     Grouping {
         lparen : bool,
-        rparen : bool
+        rparen : bool,
         inner : Option<Box<Expr>>
     },
     Block {

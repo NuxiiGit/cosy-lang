@@ -43,15 +43,26 @@ impl Desugar for concrete::Expr {
         let kind = match self.kind {
             concrete::ExprKind::Variable => ExprKind::Variable,
             concrete::ExprKind::Integral => ExprKind::Integral,
-            concrete::ExprKind::Grouping { unclosed, inner } => {
-                if unclosed {
+            concrete::ExprKind::Grouping { lparen, rparen, inner } => {
+                if !lparen {
+                    Diagnostic::from(&span)
+                            .level(ErrorLevel::Warning)
+                            .reason_str("missing opening parenthesis in grouping")
+                            .note_str("consider adding `(` to form a grouping")
+                            .report(issues);
+                }
+                if !rparen {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing closing parenthesis in grouping")
                             .note_str("consider adding `)` to complete this grouping")
                             .report(issues);
                 }
-                return inner.desugar(issues);
+                if let Some(expr) = inner {
+                    return expr.desugar(issues);
+                } else {
+                    ExprKind::Empty
+                }
             },
             concrete::ExprKind::Block { unclosed, body : stmts } => {
                 if unclosed {
@@ -69,7 +80,6 @@ impl Desugar for concrete::Expr {
                 }
                 ExprKind::Block { body }
             },
-            concrete::ExprKind::Empty => ExprKind::Empty,
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
