@@ -16,8 +16,7 @@ pub enum StmtKind {
 #[derive(Debug)]
 pub struct Stmt {
     pub span : Span,
-    pub kind : StmtKind,
-    pub terminated : bool
+    pub kind : StmtKind
 }
 
 /// Represents a kind of expression.
