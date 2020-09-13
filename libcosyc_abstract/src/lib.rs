@@ -65,14 +65,14 @@ impl Desugar for concrete::Expr {
                 }
             },
             concrete::ExprKind::Block { lbrace, rbrace, body : stmts } => {
-                if lbrace {
+                if !lbrace {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing opening brace on block")
                             .note_str("consider adding `{` before this statement")
                             .report(issues);
                 }
-                if rbrace {
+                if !rbrace {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing closing brace on block")

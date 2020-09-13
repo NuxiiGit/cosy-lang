@@ -43,7 +43,8 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing statement expressions.
     pub fn parse_expr_stmt(&mut self) -> Expr {
-        if self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some() {
+        print!("{:?}", self.token());
+        if matches!(self.token(), TokenKind::LeftBrace) {
             self.parse_expr_block()
         } else {
             self.parse_expr_terminal()
@@ -55,7 +56,7 @@ impl<'a> Parser<'a> {
         let mut span = self.span().clone();
         let lbrace = self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some();
         let body : Vec<Stmt> = Vec::new();
-        let rbrace = matches!(self.token(), TokenKind::RightParen);
+        let rbrace = matches!(self.token(), TokenKind::RightBrace);
         if rbrace {
             // if the block can be closed correctly
             // then consume the closing brace

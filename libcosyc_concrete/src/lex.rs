@@ -65,6 +65,8 @@ impl Lexer<'_> {
                 // symbols
                 CharKind::LeftParen => TokenKind::LeftParen,
                 CharKind::RightParen => TokenKind::RightParen,
+                CharKind::LeftBrace => TokenKind::LeftBrace,
+                CharKind::RightBrace => TokenKind::RightBrace,
                 CharKind::SemiColon => TokenKind::SemiColon,
                 // numbers
                 x if x.is_valid_digit() => {
