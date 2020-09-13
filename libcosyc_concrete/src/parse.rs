@@ -43,54 +43,7 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing statement expressions.
     pub fn parse_expr_stmt(&mut self) -> Expr {
-        if matches!(self.token(), TokenKind::LeftBrace) {
-            self.parse_expr_block()
-        } else {
-            self.parse_expr_terminal()
-        }
-    }
-
-    /// Parses block expressions.
-    pub fn parse_expr_block(&mut self) -> Expr {
-        let mut span = self.span().clone();
-        let lbrace = self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some();
-        let mut body : Vec<Stmt> = Vec::new();
-        let ret = if !matches!(self.token(), TokenKind::RightBrace) {
-            loop {
-                let mut span = self.span().clone();
-                let kind = if matches!(self.token(), TokenKind::SemiColon | TokenKind::RightBrace) {
-                    StmtKind::NoOp
-                } else {
-                    let inner = Box::new(self.parse_expr());
-                    span.end = inner.span.end;
-                    StmtKind::Expr { inner }
-                };
-                if matches!(self.token(), TokenKind::SemiColon) {
-                    span.end = self.span().end;
-                    self.advance();
-                } else if let StmtKind::Expr { inner } = kind {
-                    // exit with expression
-                    break Some(*inner);
-                } else {
-                    // exit with none
-                    break None;
-                }
-                body.push(Stmt { span, kind });
-            }
-        } else {
-            None
-        };
-        let rbrace = matches!(self.token(), TokenKind::RightBrace);
-        if rbrace {
-            // if the block can be closed correctly
-            // then consume the closing brace
-            span.end = self.span().end;
-            self.advance();
-        } else if let Some(stmt) = body.last() {
-            span.end = stmt.span.end;
-        };
-        let kind = ExprKind::Block { lbrace, rbrace, body };
-        Expr { span, kind }
+        self.parse_expr_terminal()
     }
 
     /// Parses literals and identifiers.

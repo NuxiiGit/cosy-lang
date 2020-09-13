@@ -64,29 +64,6 @@ impl Desugar for concrete::Expr {
                     ExprKind::Empty
                 }
             },
-            concrete::ExprKind::Block { lbrace, rbrace, body : stmts } => {
-                if !lbrace {
-                    Diagnostic::from(&span)
-                            .level(ErrorLevel::Warning)
-                            .reason_str("missing opening brace on block")
-                            .note_str("consider adding `{` before this statement")
-                            .report(issues);
-                }
-                if !rbrace {
-                    Diagnostic::from(&span)
-                            .level(ErrorLevel::Warning)
-                            .reason_str("missing closing brace on block")
-                            .note_str("consider adding `}` to complete this block")
-                            .report(issues);
-                }
-                let mut body = Vec::new();
-                for stmt in stmts {
-                    if let Some(stmt) = stmt.desugar(issues) {
-                        body.push(stmt)
-                    }
-                }
-                ExprKind::Block { body }
-            },
             concrete::ExprKind::Malformed => {
                 Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
