@@ -48,7 +48,7 @@ impl Desugar for concrete::Expr {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing opening parenthesis in grouping")
-                            .note_str("consider adding `(` to form a grouping")
+                            .note_str("consider adding `(` before this expression")
                             .report(issues);
                 }
                 if !rparen {
@@ -64,8 +64,15 @@ impl Desugar for concrete::Expr {
                     ExprKind::Empty
                 }
             },
-            concrete::ExprKind::Block { unclosed, body : stmts } => {
-                if unclosed {
+            concrete::ExprKind::Block { lbrace, rbrace, body : stmts } => {
+                if lbrace {
+                    Diagnostic::from(&span)
+                            .level(ErrorLevel::Warning)
+                            .reason_str("missing opening brace on block")
+                            .note_str("consider adding `{` before this statement")
+                            .report(issues);
+                }
+                if rbrace {
                     Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing closing brace on block")

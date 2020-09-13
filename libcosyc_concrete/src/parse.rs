@@ -106,21 +106,6 @@ impl<'a> Parser<'a> {
         let kind = ExprKind::Grouping { lparen, rparen, inner };
         Expr { span, kind }
     }
-
-    /*
-    /// Parses statements.
-    pub fn parse_stmt(&mut self) -> Stmt {
-        let mut span = self.span().clone();
-        let kind = if self.advance_if(|x| !matches!(x, TokenKind::SemiColon)).is_some() {
-            let inner = Box::new(self.parse_expr());
-            span.end = inner.span.end;
-            StmtKind::Expr { inner }
-        } else {
-            StmtKind::NoOp
-        };
-        Stmt { span, kind }
-    }
-    */
 }
 impl<'a> From<&'a str> for Parser<'a> {
     fn from(src : &'a str) -> Self {
