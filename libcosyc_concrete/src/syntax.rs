@@ -6,14 +6,14 @@ pub enum ExprKind {
     Variable,
     Integral,
     Grouping {
-        unclosed : bool,
-        inner : Box<Expr>
+        lparen : bool,
+        rparen : bool
+        inner : Option<Box<Expr>>
     },
     Block {
         unclosed : bool,
         body : Vec<Stmt>
     },
-    Empty,
     Malformed
 }
 
