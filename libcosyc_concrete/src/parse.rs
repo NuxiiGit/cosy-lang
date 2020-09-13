@@ -37,7 +37,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses a program.
-    pub fn parse_program(&mut self) -> Vec<Stmt> {
+    pub fn parse_program(&mut self) -> Program {
         unimplemented!()
     }
 
