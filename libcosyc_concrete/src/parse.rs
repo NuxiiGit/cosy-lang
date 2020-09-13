@@ -36,6 +36,11 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Parses a program.
+    pub fn parse_program(&mut self) -> Vec<Stmt> {
+        unimplemented!()
+    }
+
     /// Entry point for parsing expressions.
     pub fn parse_expr(&mut self) -> Expr {
         self.parse_expr_stmt()
@@ -54,21 +59,11 @@ impl<'a> Parser<'a> {
     pub fn parse_expr_block(&mut self) -> Expr {
         let mut span = self.span().clone();
         let lbrace = self.advance_if(|x| matches!(x, TokenKind::LeftBrace)).is_some();
-        let mut body : Vec<Stmt> = Vec::new();
-        if !matches!(self.token(), TokenKind::RightBrace) {
-            // add statements
-            loop {
-                let inner = Box::new(self.parse_expr());
-                let mut span = inner.span.clone();
-                let terminated = !matches!(self.token(), TokenKind::SemiColon);
-                if terminated {
-                    span.end = self.span().end;
-                    self.advance();
-                }
-                let kind = StmtKind::Expr { inner };
-
-            }
-        }
+        let body = if !matches!(self.token(), TokenKind::RightBrace) {
+            self.parse_program()
+        } else {
+            Vec::new()
+        };
         let rbrace = matches!(self.token(), TokenKind::RightBrace);
         if rbrace {
             // if the block can be closed correctly
