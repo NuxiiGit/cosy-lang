@@ -5,18 +5,21 @@ use syntax::*;
 use libcosyc_concrete::syntax as concrete;
 use libcosyc_diagnostics::error::{ Diagnostic, IssueTracker, ErrorLevel };
 
+/// Type alias for issue tracking.
+pub type Issues<'a> = &'a mut IssueTracker;
+
 /// Provides an interface for desugaring concrete syntax into abstract syntax.
 pub trait Desugar {
     /// The type to desugar into.
     type Out;
 
     /// Desugar `self` into the type `Out`.
-    fn desugar(self, issues : &mut IssueTracker) -> Self::Out;
+    fn desugar(self, issues : Issues) -> Self::Out;
 }
 
 impl Desugar for concrete::Stmt {
     type Out = Option<Stmt>;
-    fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
+    fn desugar(self, issues : Issues) -> Self::Out {
         let span = self.span;
         let kind = match self.kind {
             concrete::StmtKind::Expr { inner } => {
@@ -38,7 +41,7 @@ impl Desugar for concrete::Stmt {
 
 impl Desugar for concrete::Expr {
     type Out = Option<Expr>;
-    fn desugar(self, issues : &mut IssueTracker) -> Self::Out {
+    fn desugar(self, issues : Issues) -> Self::Out {
         let span = self.span;
         let kind = match self.kind {
             concrete::ExprKind::Variable => ExprKind::Variable,
