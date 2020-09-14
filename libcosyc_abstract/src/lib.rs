@@ -17,28 +17,6 @@ pub trait Desugar {
     fn desugar(self, issues : Issues) -> Self::Out;
 }
 
-impl Desugar for concrete::Stmt {
-    type Out = Option<Stmt>;
-    fn desugar(self, issues : Issues) -> Self::Out {
-        let span = self.span;
-        let kind = match self.kind {
-            concrete::StmtKind::Expr { inner } => {
-                let inner = Box::new(inner.desugar(issues)?);
-                StmtKind::Expr { inner }
-            },
-            concrete::StmtKind::NoOp => {
-                Diagnostic::from(&span)
-                        .level(ErrorLevel::Warning)
-                        .reason_str("unnecessary terminating symbol")
-                        .note_str("consider removing this symbol")
-                        .report(issues);
-                return None;
-            }
-        };
-        Some(Stmt { span, kind })
-    }
-}
-
 impl Desugar for concrete::Expr {
     type Out = Option<Expr>;
     fn desugar(self, issues : Issues) -> Self::Out {
