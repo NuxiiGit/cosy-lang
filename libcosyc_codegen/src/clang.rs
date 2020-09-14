@@ -5,12 +5,10 @@ use std::fmt;
 
 type Output<'a> = &'a mut dyn fmt::Write;
 
-/// Takes an output stream and generates C code.
-pub struct CCodegen<'a> {
-    out : Output<'a>
+/// Provides an interface for generating C code from abstract syntax.
+pub trait Codegen {
+    /// Desugar `self` into the type `Out`.
+    fn codegen(self, out : Output);
 }
-impl<'a> From<Output<'a>> for CCodegen<'a> {
-    fn from(out : Output<'a>) -> Self {
-        Self { out }
-    }
-}
+
+
