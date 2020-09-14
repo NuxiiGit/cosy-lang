@@ -10,39 +10,41 @@ pub struct Desugar<'a> {
     issues : &'a mut IssueTracker
 }
 impl Desugar<'_> {
+    /// Submits a diagnostic to the current issue tracker.
+    pub fn report(&mut self, diagnostic : Diagnostic) {
+        diagnostic.report(self.issues);
+    }
+
     /// Desugars an expression.
-    fn desugar(self, expr : concrete::Expr) -> Option<Expr> {
+    pub fn desugar_expr(&mut self, expr : concrete::Expr) -> Option<Expr> {
         let span = expr.span;
         let kind = match expr.kind {
             concrete::ExprKind::Variable => ExprKind::Variable,
             concrete::ExprKind::Integral => ExprKind::Integral,
             concrete::ExprKind::Grouping { lparen, rparen, inner } => {
                 if !lparen {
-                    Diagnostic::from(&span)
+                    self.report(Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing opening parenthesis in grouping")
-                            .note_str("consider adding `(` before this expression")
-                            .report(self.issues);
+                            .note_str("consider adding `(` before this expression"));
                 }
                 if !rparen {
-                    Diagnostic::from(&span)
+                    self.report(Diagnostic::from(&span)
                             .level(ErrorLevel::Warning)
                             .reason_str("missing closing parenthesis in grouping")
-                            .note_str("consider adding `)` to complete this grouping")
-                            .report(self.issues);
+                            .note_str("consider adding `)` to complete this grouping"));
                 }
                 if let Some(expr) = inner {
-                    return self.desugar(*expr);
+                    return self.desugar_expr(*expr);
                 } else {
                     ExprKind::Empty
                 }
             },
             concrete::ExprKind::Malformed => {
-                Diagnostic::from(&span)
+                self.report(Diagnostic::from(&span)
                         .level(ErrorLevel::Fatal)
                         .reason_str("unexpected symbol in expression")
-                        .note_str("consider removing this symbol")
-                        .report(self.issues);
+                        .note_str("consider removing this symbol"));
                 return None;
             }
         };

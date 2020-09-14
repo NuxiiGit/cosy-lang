@@ -7,6 +7,6 @@ fn main() {
     let mut parser = Parser::from(&sess.src as &str);
     let cst = parser.parse_expr();
     //println!("{:?}", cst);
-    let _ast = cst.desugar(&mut sess.issues);
+    let _ast = Desugar::from(&mut sess.issues).desugar_expr(cst);
     println!("{}", sess);
 }
