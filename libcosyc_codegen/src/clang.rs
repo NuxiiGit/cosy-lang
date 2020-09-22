@@ -7,7 +7,12 @@ use std::fmt;
 pub struct Codegen<'a> {
     out : &'a mut dyn fmt::Write
 }
-impl Codegen<'_> {
+impl<'a> Codegen<'a> {
+    /// Creates a new C code generator.
+    pub fn new(out : &'a mut dyn fmt::Write) -> Self {
+        Self { out }
+    }
+
     /// Emits an expression of any kind.
     pub fn emit_expr(&mut self, expr : Expr) -> fmt::Result {
         let span = expr.span;
@@ -17,10 +22,5 @@ impl Codegen<'_> {
             ExprKind::Empty => unimplemented!()
         };
         Ok(())
-    }
-}
-impl<'a> From<&'a mut dyn fmt::Write> for Codegen<'a> {
-    fn from(out : &'a mut dyn fmt::Write) -> Self {
-        Self { out }
     }
 }
