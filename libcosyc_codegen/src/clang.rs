@@ -10,7 +10,13 @@ pub struct Codegen<'a> {
 impl Codegen<'_> {
     /// Emits an expression of any kind.
     pub fn emit_expr(&mut self, expr : Expr) -> fmt::Result {
-        unimplemented!()
+        let span = expr.span;
+        let kind = match expr.kind {
+            ExprKind::Variable => unimplemented!(),
+            ExprKind::Integral => unimplemented!(),
+            ExprKind::Empty => unimplemented!()
+        };
+        Ok(())
     }
 }
 impl<'a> From<&'a mut dyn fmt::Write> for Codegen<'a> {
