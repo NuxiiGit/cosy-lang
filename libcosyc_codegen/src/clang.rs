@@ -8,10 +8,9 @@ pub struct Codegen<'a> {
     out : &'a mut dyn fmt::Write
 }
 impl Codegen<'_> {
-    /// Generates a the header for a program.
-    pub fn gen_program(&mut self) -> fmt::Result {
-        write!(self.out, "void main() {{ return 0; }}")?;
-        Ok(())
+    /// Emits an expression of any kind.
+    pub fn emit_expr(&mut self, expr : Expr) -> fmt::Result {
+        unimplemented!()
     }
 }
 impl<'a> From<&'a mut dyn fmt::Write> for Codegen<'a> {
