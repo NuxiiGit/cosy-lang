@@ -4,7 +4,7 @@ use libcosyc_abstract::Desugar;
 use libcosyc_codegen::clang::Codegen;
 
 fn main() {
-    let mut sess = Session::from("12".to_string());
+    let mut sess = Session::from("1_+_2".to_string());
     let mut parser = Parser::from(&sess.src as &str);
     let cst = parser.parse_expr();
     //println!("{:?}", cst);

@@ -20,13 +20,19 @@ pub struct Codegen<'a> {
 impl<'a> Codegen<'a> {
     /// Emits an expression of any kind.
     pub fn emit_expr(&mut self, expr : Expr) -> fmt::Result {
-        let out = &mut self.out;
         let span = expr.span;
         match expr.kind {
-            ExprKind::Variable => write!(out, "variable"),
-            ExprKind::Integral => write!(out, "integral"),
+            ExprKind::Variable => self.emit_ident(span),
+            ExprKind::Integral => unimplemented!(),
             ExprKind::Empty => unimplemented!()
         }
+    }
+
+    /// Emits an identifier. Non-valid C identifier symbols are converted into hexidecimal.
+    pub fn emit_ident(&mut self, span : Span) -> fmt::Result {
+        let ident = &self.src[span.begin..span.end];
+        write!(self.out, "{}", ident)?;
+        Ok(())
     }
 }
 impl<'a> From<&'a mut Session> for Codegen<'a> {
