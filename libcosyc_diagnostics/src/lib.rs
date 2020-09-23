@@ -27,7 +27,9 @@ pub struct Session {
     /// The filepath of the script to consider.
     pub filepath : String,
     /// The source of the script to consider.
-    pub src : String
+    pub src : String,
+    /// The output stream.
+    pub out : String
 }
 impl Session {
     /// Creates a new empty session.

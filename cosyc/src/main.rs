@@ -8,7 +8,7 @@ fn main() {
     let mut parser = Parser::from(&sess.src as &str);
     let cst = parser.parse_expr();
     //println!("{:?}", cst);
-    if let Some(ast) = Desugar::from(&mut sess.issues).desugar_expr(cst) {
+    if let Some(ast) = Desugar::from(&mut sess).desugar_expr(cst) {
         let mut out = String::new();
         let mut codegen = Codegen::new(&mut out);
         let _ = codegen.emit_expr(ast);

@@ -3,7 +3,10 @@ pub mod syntax;
 use syntax::*;
 
 use libcosyc_concrete::syntax as concrete;
-use libcosyc_diagnostics::error::{ Diagnostic, IssueTracker, ErrorLevel };
+use libcosyc_diagnostics::{
+    Session,
+    error::{ Diagnostic, IssueTracker, ErrorLevel }
+};
 
 /// Represents the state of a desugar controller.
 pub struct Desugar<'a> {
@@ -51,8 +54,9 @@ impl Desugar<'_> {
         Some(Expr { span, kind })
     }
 }
-impl<'a> From<&'a mut IssueTracker> for Desugar<'a> {
-    fn from(issues : &'a mut IssueTracker) -> Self {
+impl<'a> From<&'a mut Session> for Desugar<'a> {
+    fn from(sess : &'a mut Session) -> Self {
+        let issues = &mut sess.issues;
         Self { issues }
     }
 }
