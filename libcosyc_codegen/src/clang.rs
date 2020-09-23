@@ -5,6 +5,8 @@ use libcosyc_diagnostics::{
     error::{ Diagnostic, IssueTracker, ErrorLevel }
 };
 
+use crate::ident::{ Identifier, NameTable };
+
 use std::fmt;
 use fmt::Write;
 
@@ -12,7 +14,8 @@ use fmt::Write;
 pub struct Codegen<'a> {
     src : &'a str,
     out : &'a mut String,
-    issues : &'a IssueTracker
+    issues : &'a IssueTracker,
+    name_table : NameTable<'a>
 }
 impl<'a> Codegen<'a> {
     /// Emits an expression of any kind.
@@ -31,6 +34,7 @@ impl<'a> From<&'a mut Session> for Codegen<'a> {
         let src = &sess.src;
         let out = &mut sess.out;
         let issues = &mut sess.issues;
-        Self { src, out, issues }
+        let name_table = NameTable::new();
+        Self { src, out, issues, name_table }
     }
 }
