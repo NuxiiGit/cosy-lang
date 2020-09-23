@@ -12,6 +12,7 @@ fn main() {
         let mut out = String::new();
         let mut codegen = Codegen::new(&mut out);
         let _ = codegen.emit_expr(ast);
+        println!("{}", out);
     }
     println!("{}", sess);
 }

@@ -15,12 +15,12 @@ impl<'a> Codegen<'a> {
 
     /// Emits an expression of any kind.
     pub fn emit_expr(&mut self, expr : Expr) -> fmt::Result {
+        let out = &mut self.out;
         let span = expr.span;
-        let kind = match expr.kind {
-            ExprKind::Variable => unimplemented!(),
-            ExprKind::Integral => unimplemented!(),
+        match expr.kind {
+            ExprKind::Variable => write!(out, "variable"),
+            ExprKind::Integral => write!(out, "integral"),
             ExprKind::Empty => unimplemented!()
-        };
-        Ok(())
+        }
     }
 }
