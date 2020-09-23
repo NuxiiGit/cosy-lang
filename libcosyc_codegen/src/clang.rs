@@ -31,7 +31,8 @@ impl<'a> Codegen<'a> {
     /// Emits an identifier. Non-valid C identifier symbols are converted into hexidecimal.
     pub fn emit_ident(&mut self, span : Span) -> fmt::Result {
         let ident = &self.src[span.begin..span.end];
-        write!(self.out, "{}", ident)?;
+        let id = self.name_table.fetch(ident);
+        write!(self.out, "{}", id)?;
         Ok(())
     }
 }
