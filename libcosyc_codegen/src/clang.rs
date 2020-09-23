@@ -1,5 +1,10 @@
-use libcosyc_diagnostics::source::Span;
 use libcosyc_abstract::syntax::*;
+use libcosyc_diagnostics::{
+    Session,
+    source::Span,
+    error::{ Diagnostic, IssueTracker, ErrorLevel }
+};
+
 
 use std::fmt;
 
@@ -8,11 +13,6 @@ pub struct Codegen<'a> {
     out : &'a mut dyn fmt::Write
 }
 impl<'a> Codegen<'a> {
-    /// Creates a new C code generator.
-    pub fn new(out : &'a mut dyn fmt::Write) -> Self {
-        Self { out }
-    }
-
     /// Emits an expression of any kind.
     pub fn emit_expr(&mut self, expr : Expr) -> fmt::Result {
         let out = &mut self.out;
@@ -22,5 +22,12 @@ impl<'a> Codegen<'a> {
             ExprKind::Integral => write!(out, "integral"),
             ExprKind::Empty => unimplemented!()
         }
+    }
+}
+impl<'a> From<&'a mut Session> for Codegen<'a> {
+    fn from(sess : &'a mut Session) -> Self {
+        let out = &mut sess.out;
+        let issues = &mut sess.issues;
+        Self { out }
     }
 }
