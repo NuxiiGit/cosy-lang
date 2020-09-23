@@ -5,12 +5,14 @@ use libcosyc_diagnostics::{
     error::{ Diagnostic, IssueTracker, ErrorLevel }
 };
 
-
 use std::fmt;
+use fmt::Write;
 
 /// Represents the state of the C code generator.
 pub struct Codegen<'a> {
-    out : &'a mut dyn fmt::Write
+    src : &'a str,
+    out : &'a mut String,
+    issues : &'a IssueTracker
 }
 impl<'a> Codegen<'a> {
     /// Emits an expression of any kind.
@@ -26,8 +28,9 @@ impl<'a> Codegen<'a> {
 }
 impl<'a> From<&'a mut Session> for Codegen<'a> {
     fn from(sess : &'a mut Session) -> Self {
+        let src = &sess.src;
         let out = &mut sess.out;
         let issues = &mut sess.issues;
-        Self { out }
+        Self { src, out, issues }
     }
 }
