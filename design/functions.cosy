@@ -40,8 +40,8 @@ def is_less_than_5 = fn(n : u8) : bool => match n {
     1;
     2;
     3;
-    4 => true;
-    _ => false;
+    4 = true;
+    _ = false;
 };
 
 -- sequent style functions
@@ -54,8 +54,8 @@ def proof = fn (n : i32)
 -- pure function
 pure def factorial = fn(n : u32) : u32 => match n {
     0;  -- fallthrough case
-    1 => 1;
-    _ => factorial(n - 1) + factorial(n - 2);
+    1 = 1;
+    _ = factorial(n - 1) + factorial(n - 2);
 };
 let fact_32      = factorial(32);      -- evaluated at compile time, since the value is constant
 let fact_fact_32 = factorial(fact_32); -- not evaluated at compile time, since `fact_32` is not a `def` (constant)

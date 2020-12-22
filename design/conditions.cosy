@@ -12,8 +12,8 @@ if condition {
 
 -- match case
 match condition {
-    true  => stuff();
-    false => otherwise();
+    true  = stuff();
+    false = otherwise();
 }
 
 -- while loop
