@@ -12,11 +12,21 @@ pub struct IssueTracker {
 
 impl IssueTracker {
     /// Reports an error to the issue tracker.
-    pub fn report(&mut self, error : CompilerError) {
+    pub fn report_error(&mut self, error : CompilerError) {
         if error.level > self.error_level {
             self.error_level = error.level.clone();
         }
         self.errors.push(error);
+    }
+
+    /// Returns a reference to the current error level of the issue tracker.
+    pub fn get_severity(&self) -> &ErrorLevel {
+        &self.error_level
+    }
+
+    /// Returns a reference to the list of compiler errors.
+    pub fn get_errors(&self) -> &[CompilerError] {
+        &self.errors
     }
 }
 
