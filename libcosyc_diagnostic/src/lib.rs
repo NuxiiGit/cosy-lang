@@ -39,9 +39,13 @@ impl From<String> for Session {
 impl fmt::Display for Session {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         // it works, i don't care if it's trash
-        if self.contains_errors() {
+        if self.errors_occurred() {
             let newlines = source::prospect_newlines(&self.src);
-            for error in &self.issues.errors {
+            for error in self.issues.get_errors() {
+                writeln!(out, "\n{:?}: {}", error.level, error.reason)?;
+                if error.span.is_empty() {
+                    continue;
+                }
                 let error_begin = error.span.begin;
                 let error_end = error.span.end;
                 let line_begin = source::binary_search_newlines(&newlines, error_begin).unwrap();
@@ -51,10 +55,8 @@ impl fmt::Display for Session {
                 let row = line_begin + 1;
                 let col = error_begin - start + 1;
                 let col_end = error_end - start_end + 1;
-                let indent_length = digit_count(line_end + 1);
+                let indent_length = ((line_end + 1) as f64).log10().ceil() as usize;
                 let indent = " ".repeat(indent_length);
-                writeln!(out, "")?;
-                writeln!(out, "{:?}: {}", error.level, error.reason)?;
                 write!(out, " {}>>> ", indent)?;
                 write!(out, "{}@", self.filepath)?;
                 writeln!(out, "[row. {}, col. {}]", row, col)?;
