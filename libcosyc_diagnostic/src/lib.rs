@@ -42,9 +42,20 @@ impl fmt::Display for Session {
         if self.errors_occurred() {
             let newlines = source::prospect_newlines(&self.src);
             for error in self.issues.get_errors() {
-                writeln!(out, "\n{:?}: {}", error.level, error.reason)?;
+                let level_str = format!("{:?}", error.level);
+                let note_str = "Note".to_string();
+                let level_str_length = level_str.len();
+                let note_str_length = note_str.len();
+                let (level_indent_length, note_indent_length) = if level_str_length > note_str_length {
+                    (0, level_str_length - note_str_length)
+                } else {
+                    (note_str_length - level_str_length, 0)
+                };
+                let level_indent = " ".repeat(level_indent_length);
+                let note_indent = " ".repeat(note_indent_length);
+                writeln!(out, "\n{}{}: {}", level_indent, level_str, error.reason)?;
                 for note in &error.notes {
-                    writeln!(out, " ? Note: {}", note)?;
+                    writeln!(out, "{}Note? {}", note_indent, note)?;
                 }
                 if let Some(span) = &error.span {
                     let error_begin = span.begin;
