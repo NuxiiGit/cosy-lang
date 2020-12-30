@@ -26,11 +26,6 @@ impl Span {
     pub fn is_degenerate(&self) -> bool {
         self.begin == self.end
     }
-
-    /// Returns whether the span is empty.
-    pub fn is_empty(&self) -> bool {
-        self.begin == 0 && self.is_degenerate()
-    }
 }
 
 impl fmt::Display for Span {

@@ -1,5 +1,4 @@
 use crate::source::Span;
-use std::fmt;
 
 /// Represents different kinds of error.
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug, Clone)]
@@ -18,7 +17,7 @@ impl Default for ErrorLevel {
 /// Represents an error instance encountered by the compiler.
 #[derive(Default, Debug)]
 pub struct CompilerError {
-    pub span : Span,
+    pub span : Option<Span>,
     pub level : ErrorLevel,
     pub reason : String,
     pub notes : Vec<String>
@@ -32,7 +31,7 @@ impl CompilerError {
 
     /// Sets the span of the error.
     pub fn span(mut self, span : &Span) -> Self {
-        self.span = span.clone();
+        self.span = Some(span.clone());
         self
     }
 
@@ -52,12 +51,6 @@ impl CompilerError {
     pub fn reason<T : ToString>(mut self, reason : T) -> Self {
         self.reason = reason.to_string();
         self
-    }
-}
-
-impl fmt::Display for CompilerError {
-    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{:?}! {}", self.level, self.reason)
     }
 }
 

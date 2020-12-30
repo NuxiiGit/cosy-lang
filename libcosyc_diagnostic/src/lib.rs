@@ -43,56 +43,51 @@ impl fmt::Display for Session {
             let newlines = source::prospect_newlines(&self.src);
             for error in self.issues.get_errors() {
                 writeln!(out, "\n{:?}: {}", error.level, error.reason)?;
-                if error.span.is_empty() {
-                    continue;
+                for note in &error.notes {
+                    writeln!(out, " ? Note: {}", note)?;
                 }
-                let error_begin = error.span.begin;
-                let error_end = error.span.end;
-                let line_begin = source::binary_search_newlines(&newlines, error_begin).unwrap();
-                let line_end = source::binary_search_newlines(&newlines, error_end).unwrap();
-                let Span { begin : start, end } = newlines.get(line_begin).unwrap();
-                let Span { begin : start_end, end : _ } = newlines.get(line_end).unwrap();
-                let row = line_begin + 1;
-                let col = error_begin - start + 1;
-                let col_end = error_end - start_end + 1;
-                let indent_length = ((line_end + 1) as f64).log10().ceil() as usize;
-                let indent = " ".repeat(indent_length);
-                write!(out, " {}>>> ", indent)?;
-                write!(out, "{}@", self.filepath)?;
-                writeln!(out, "[row. {}, col. {}]", row, col)?;
-                writeln!(out, " {} | ", indent)?;
-                if line_begin == line_end {
-                    // underline error
-                    let mut underline_length = error_end - error_begin;
-                    if underline_length < 1 {
-                        underline_length = 1;
-                    }
-                    writeln!(out, " {:width$} | {}", row, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(underline_length))?;
-                } else {
-                    // display lines of error
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), " starts here")?;
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col), "/")?;
-                    for line in line_begin..=line_end {
-                        if line > line_begin + 1 {
-                            if line < line_end - 2 {
-                                continue;
-                            } else if line < line_end - 1 {
-                                writeln!(out, " {}...", indent)?;
-                                continue;
-                            }
-                        }
-                        let Span { begin : start, end } = newlines.get(line).unwrap();
-                        writeln!(out, " {:width$} | {}", line + 1, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
-                    }
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end), "\\")?;
-                    writeln!(out, " {} |{}{}", indent, " ".repeat(col_end), " ends here")?;
-                }
-                if !error.notes.is_empty() {
-                    // display notes
+                if let Some(span) = &error.span {
+                    let error_begin = span.begin;
+                    let error_end = span.end;
+                    let line_begin = source::binary_search_newlines(&newlines, error_begin).unwrap();
+                    let line_end = source::binary_search_newlines(&newlines, error_end).unwrap();
+                    let Span { begin : start, end } = newlines.get(line_begin).unwrap();
+                    let Span { begin : start_end, end : _ } = newlines.get(line_end).unwrap();
+                    let row = line_begin + 1;
+                    let col = error_begin - start + 1;
+                    let col_end = error_end - start_end + 1;
+                    let indent_length = ((line_end + 1) as f64).log10().ceil() as usize;
+                    let indent = " ".repeat(indent_length + 1);
+                    write!(out, " {}>>> ", indent)?;
+                    write!(out, "{}@", self.filepath)?;
+                    writeln!(out, "[row. {}, col. {}]", row, col)?;
                     writeln!(out, " {} | ", indent)?;
-                    for note in &error.notes {
-                        writeln!(out, " {} ? Note: {}", indent, note)?;
+                    if line_begin == line_end {
+                        // underline error
+                        let mut underline_length = error_end - error_begin;
+                        if underline_length < 1 {
+                            underline_length = 1;
+                        }
+                        writeln!(out, " {:width$} | {}", row, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
+                        writeln!(out, " {} |{}{}", indent, " ".repeat(col), "^".repeat(underline_length))?;
+                    } else {
+                        // display lines of error
+                        writeln!(out, " {} |{}{}", indent, " ".repeat(col), " starts here")?;
+                        writeln!(out, " {} |{}{}", indent, " ".repeat(col), "/")?;
+                        for line in line_begin..=line_end {
+                            if line > line_begin + 1 {
+                                if line < line_end - 2 {
+                                    continue;
+                                } else if line < line_end - 1 {
+                                    writeln!(out, " {}...", indent)?;
+                                    continue;
+                                }
+                            }
+                            let Span { begin : start, end } = newlines.get(line).unwrap();
+                            writeln!(out, " {:width$} | {}", line + 1, &self.src[*start..*end].replace("\t", " "), width=indent_length)?;
+                        }
+                        writeln!(out, " {} |{}{}", indent, " ".repeat(col_end), "\\")?;
+                        writeln!(out, " {} |{}{}", indent, " ".repeat(col_end), " ends here")?;
                     }
                 }
             }
