@@ -1,8 +1,7 @@
 [workspace]
 members = [
     "cosyc",
-    "libcosyc_diagnostics",
+    "libcosyc_diagnostic",
     "libcosyc_concrete",
-    "libcosyc_abstract",
-    "libcosyc_codegen"
+    "libcosyc_compiler"
 ]
