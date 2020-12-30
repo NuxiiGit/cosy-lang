@@ -39,6 +39,7 @@ pub enum RuneKind {
     Other,
     EoF
 }
+
 impl RuneKind {
     /// Converts a character into its respective `CharKind`.
     pub fn identify(c : char) -> Self {
