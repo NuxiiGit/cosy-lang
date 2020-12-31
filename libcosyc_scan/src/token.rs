@@ -29,3 +29,15 @@ pub enum TokenKind {
     EoF,
     Unknown
 }
+
+impl TokenKind {
+    /// Returns whether this token is a literal.
+    pub fn is_literal(&self) -> bool {
+        matches!(self, Self::Literal(..))
+    }
+
+    /// Returns whether this token is an identifier.
+    pub fn is_identifier(&self) -> bool {
+        matches!(self, Self::Identifier(..))
+    }
+}
