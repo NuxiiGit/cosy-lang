@@ -2,6 +2,7 @@
 members = [
     "cosyc",
     "libcosyc_diagnostic",
-    "libcosyc_concrete",
+    "libcosyc_parse",
+    "libcosyc_tokenise",
     "libcosyc_compiler"
 ]
