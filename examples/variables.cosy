@@ -1,7 +1,0 @@
--- variable
-let     foo = 3;  -- immutable
-let mut boo = 3;  -- mutable
-
--- constant
-def x : f32 = 12.3;
-

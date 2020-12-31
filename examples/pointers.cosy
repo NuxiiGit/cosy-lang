@@ -1,5 +1,0 @@
--- by reference (pointers)
-let mut a : ^i32 = @2;
-
--- dereference
-a^ = 12;

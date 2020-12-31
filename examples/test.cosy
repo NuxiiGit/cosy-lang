@@ -1,0 +1,89 @@
+const std = import "std";
+const fmt = std::fmt;
+const io = std::io;
+const str = std::str;
+
+-- `.`  is used for runtime value access
+-- `::` is used for compile-time (`const`) value access
+
+-- |represents showable types
+const Show = interface {
+	const show : ^self -> string
+};
+
+-- |converts this value into a string
+const show = fn(x : ^Show) : string {
+	#typeof(x)::show(x)
+}
+
+-- |represents a pair of values
+const Vec2 = struct {
+	-- |the x position
+	x : i32,
+	-- |the y position
+	y : i32,
+	-- |the null vector
+	const null = self { x = 0, y = 0 },
+	-- |adds two vectors together and returns a new vector
+	const add = fn(l : ^self, r : ^self) : self {
+		self {
+			x = l^.x + r^.x,
+			y = l^.y + r^.y
+		}
+	},
+	-- |converts the vector into a string
+	const show = fn(me : ^self) : string {
+		"Vec2 { x = " ++ show(me^.x) ++ ", y = " ++ show(me^.y) ++ "}"
+	}
+};
+
+-- |represents a nullable type
+const Maybe = const fn(const a : type) : type {
+	tagged union {
+		just : a,
+		none : nothing
+	}
+};
+
+-- |represents the type of parsers
+const Parser = string -> Maybe(i32);
+
+-- |imply function, constant function will be folded if all arguments are compile-time known
+const (-->) = const fn(l : bool, r : bool) : bool {
+	!l or r
+};
+
+-- |add function
+const (+) = const fn(l : i32, r : i32) : i32 {
+	#add_i32(l, r)
+};
+
+const true_imply_false = true --> false; -- `-->(true, false) == false`
+
+const _ = {
+	-- maybe type
+	let just = 12.3
+	let maybe = Maybe(f32) { just };
+	case maybe {
+		Maybe(f32) { just } => just,
+		Maybe(f32) { none } => #unreachable()
+	}
+};
+
+const vec = {
+	-- compile-time variables
+	let a = Vec2 { x = 1, y = 1 };
+	let b = Vec2 { x = 3, y = 9 };
+	Vec2::add(@a, @b)
+};
+
+const main = fn() {
+	io::print(show(vec)); -- Vec2 { x = 4, y = 10 }
+	let src = io::read_to_string("names.text");
+	for name in str::lines(src) {
+		let fullname = str::break(name, " ");
+		let firstname = fullname.head;
+		let othernames = fullname.tail;
+		io::printf("Hello, %s (%s)", firstname, othernames)
+	}
+};
