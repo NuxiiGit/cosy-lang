@@ -15,6 +15,11 @@ impl Span {
         Self { begin, end }
     }
 
+    /// Renders a substring using this span.
+    pub fn render<'s>(&self, src : &'s str) -> &'s str {
+        &src[self.begin..self.end]
+    }
+
     /// Joins two spans together using their largest range.
     pub fn join(&self, other : &Self) -> Self {
         let min = cmp::min(self.begin, other.begin);

@@ -1,13 +1,16 @@
 use libcosyc_diagnostic as diagnostic;
+use libcosyc_scan as scan;
 use diagnostic::{ Session, error::CompilerError, source::Span };
+use scan::{ symbol::SymbolKind, reader::SymbolReader };
 
 pub fn test() {
-    let mut sess = diagnostic::Session::from("hello\n worl \nd !!!!".to_string());
-    let span = Span::new(2, 10);
-    sess.issues.report_error(CompilerError::new()
-            .span(&span)
-            .reason("something weird")
-            .note("consider removing this")
-            .note("really do consider"));
-    println!("{}", sess);
+    let src = "yo waddup";
+    let mut reader = SymbolReader::from(src);
+    loop {
+        let symbol = reader.advance();
+        println!("{:?} {}", symbol, reader.span().render(src));
+        if let SymbolKind::EoF = symbol {
+            break;
+        }
+    }
 }

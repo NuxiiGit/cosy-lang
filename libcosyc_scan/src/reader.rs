@@ -25,12 +25,17 @@ impl<'a> SymbolReader<'a> {
 
     /// Returns the current substring.
     pub fn substring(&self) -> &'a str {
-        &self.src[self.span.begin..self.span.end]
+        self.span.render(self.src)
     }
 
     /// Returns whether the current stream of characters is a comment lexeme.
     pub fn holds_comment_lexeme(&self) -> bool {
         self.only_dashes && self.span.end - self.span.begin > 1
+    }
+
+    /// Peeks at the next `SymbolKind`.
+    pub fn current(&self) -> &SymbolKind {
+        &self.current
     }
 
     /// Advances the reader and returns the next `SymbolKind`.
@@ -48,11 +53,6 @@ impl<'a> SymbolReader<'a> {
         mem::replace(&mut self.current, future)
     }
 
-    /// Peeks at the next `SymbolKind`.
-    pub fn current(&self) -> &SymbolKind {
-        &self.current
-    }
-
     /// Advances the reader whilst some predicate holds.
     /// Always halts if the `EoF` character is reached.
     pub fn advance_while(&mut self, p : fn(&SymbolKind) -> bool) {
@@ -63,5 +63,18 @@ impl<'a> SymbolReader<'a> {
                 _ => break
             }
         }
+    }
+}
+
+impl<'a> From<&'a str> for SymbolReader<'a> {
+    fn from(src : &'a str) -> Self {
+        let mut chars = src.char_indices();
+        let current = chars
+                .next()
+                .map(|(_, snd)| SymbolKind::identify(snd))
+                .unwrap_or(SymbolKind::EoF);
+        let span = Span::default();
+        let only_dashes = true;
+        Self { src, chars, current, span, only_dashes }
     }
 }
