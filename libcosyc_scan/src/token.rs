@@ -6,15 +6,17 @@ pub enum LiteralKind {
 
 /// Represents different keyword types.
 #[derive(PartialEq, Eq, Debug)]
-pub enum KeywordKind {
-    Let
+pub enum GraphicKind {
+    Let,
+    Hole,
+    IgnoreMe,
+    Other
 }
 
 /// Represents identifier types.
 #[derive(PartialEq, Eq, Debug)]
 pub enum IdentifierKind {
-    Contextual(KeywordKind),
-    Graphic,
+    Graphic(GraphicKind),
     Addition,
     Other
 }
