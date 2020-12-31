@@ -85,7 +85,7 @@ impl SymbolKind {
 
     /// Returns whether the char is a valid graphic.
     pub fn is_valid_graphic(&self) -> bool {
-        matches!(self, Self::Graphic)
+        matches!(self, Self::Graphic | Self::Underscore | Self::Digit)
     }
 
     /// Returns whether the char is a valid digit.

@@ -9,7 +9,6 @@ pub enum LiteralKind {
 pub enum GraphicKind {
     Let,
     Hole,
-    IgnoreMe,
     Other
 }
 

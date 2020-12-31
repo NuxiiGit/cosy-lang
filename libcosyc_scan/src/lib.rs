@@ -17,42 +17,7 @@ impl Lexer<'_> {
     pub fn span(&self) -> &Span {
         self.reader.span()
     }
-
-    fn read_digit_identifier(&mut self) {
-        self.reader.advance_while(|x| x.is_valid_digit() || matches!(x, SymbolKind::SingleQuote));
-    }
-
-    fn read_alphabetic_identifier(&mut self) {
-        self.reader.advance_while(SymbolKind::is_valid_graphic);
-        // alphabetic identifiers can end with any number of `'` (called "prime")
-        self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
-    }
-
-    fn read_operator_identifier(&mut self) {
-        self.reader.advance_while(SymbolKind::is_valid_operator);
-    }
-
-    fn identifier_separator_exists(&mut self) -> bool {
-        if matches!(self.reader.current(), SymbolKind::Underscore) {
-            self.reader.advance_while(|x| matches!(x, SymbolKind::Underscore));
-            true
-        } else {
-            false
-        }
-    }
-
-    fn read_identifier(&mut self) {
-        match self.reader.current() {
-            x if x.is_valid_digit() => self.read_digit_identifier(),
-            x if x.is_valid_graphic() => self.read_alphabetic_identifier(),
-            x if x.is_valid_operator() => self.read_operator_identifier(),
-            _ => return // complete
-        }
-        if self.identifier_separator_exists() {
-            self.read_identifier();
-        }
-    }
-
+    
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
     'search:
@@ -69,22 +34,16 @@ impl Lexer<'_> {
                 SymbolKind::RightParen => TokenKind::RightParen,
                 // numbers
                 x if x.is_valid_digit() => {
-                    self.read_digit_identifier();
-                    if self.identifier_separator_exists() {
-                        self.read_identifier();
-                        TokenKind::Identifier(
-                                IdentifierKind::Graphic(GraphicKind::Other))
-                    } else {
-                        TokenKind::Literal(LiteralKind::Integral)
-                    }
+                    self.reader.advance_while(SymbolKind::is_valid_digit);
+                    TokenKind::Literal(LiteralKind::Integral)
                 },
                 // alphabetic
                 x if x.is_valid_graphic() => {
-                    self.read_alphabetic_identifier();
-                    if self.identifier_separator_exists() {
-                        self.read_identifier();
-                    }
+                    self.reader.advance_while(SymbolKind::is_valid_graphic);
+                    // alphabetic identifiers can end with any number of `'` (called "prime")
+                    self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
                     let kind = match self.reader.substring() {
+                        "_" => GraphicKind::Hole,
                         "let" => GraphicKind::Let,
                         _ => GraphicKind::Other
                     };
@@ -92,27 +51,13 @@ impl Lexer<'_> {
                 },
                 // operator
                 x if x.is_valid_operator() => {
-                    self.read_operator_identifier();
-                    if self.identifier_separator_exists() {
-                        self.read_identifier();
-                    }
+                    self.reader.advance_while(SymbolKind::is_valid_operator);
                     let kind = match x {
                         SymbolKind::Plus => IdentifierKind::Addition,
                         _ => IdentifierKind::Other
                     };
                     TokenKind::Identifier(kind)
                 },
-                // underscore
-                SymbolKind::Underscore => {
-                    self.identifier_separator_exists();
-                    self.read_identifier();
-                    let kind = if let "_" = self.reader.substring() {
-                        GraphicKind::Hole
-                    } else {
-                        GraphicKind::IgnoreMe
-                    };
-                    TokenKind::Identifier(IdentifierKind::Graphic(kind))
-                }
                 // end of file
                 SymbolKind::EoF => TokenKind::EoF,
                 // unknown symbol
