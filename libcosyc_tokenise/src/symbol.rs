@@ -1,6 +1,6 @@
 /// Represents various kinds of character types.
 #[derive(PartialEq, Eq, Debug)]
-pub enum RuneKind {
+pub enum SymbolKind {
     Whitestuff,
     Digit,
     Graphic,
@@ -40,7 +40,7 @@ pub enum RuneKind {
     EoF
 }
 
-impl RuneKind {
+impl SymbolKind {
     /// Converts a character into its respective `CharKind`.
     pub fn identify(c : char) -> Self {
         match c {

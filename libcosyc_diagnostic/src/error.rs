@@ -3,9 +3,10 @@ use crate::source::Span;
 /// Represents different kinds of error.
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug, Clone)]
 pub enum ErrorLevel {
+    Lint,
     Warning,
-    Bug,
-    Fatal
+    Fatal,
+    Bug
 }
 
 impl Default for ErrorLevel {

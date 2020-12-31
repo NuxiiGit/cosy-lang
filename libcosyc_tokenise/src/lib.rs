@@ -1,3 +1,3 @@
-pub mod rune;
+pub mod symbol;
 pub mod token;
 pub mod scanner;
