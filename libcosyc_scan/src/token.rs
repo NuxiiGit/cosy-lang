@@ -4,18 +4,12 @@ pub enum LiteralKind {
     Integral
 }
 
-/// Represents different keyword types.
-#[derive(PartialEq, Eq, Debug)]
-pub enum GraphicKind {
-    Let,
-    Hole,
-    Other
-}
-
 /// Represents identifier types.
 #[derive(PartialEq, Eq, Debug)]
 pub enum IdentifierKind {
-    Graphic(GraphicKind),
+    Let,
+    Hole,
+    Graphic,
     Addition,
     Other
 }
@@ -40,5 +34,16 @@ impl TokenKind {
     /// Returns whether this token is an identifier.
     pub fn is_identifier(&self) -> bool {
         matches!(self, Self::Identifier(..))
+    }
+
+    /// Returns whether this token is an operator.
+    pub fn is_operator(&self) -> bool {
+        if let Self::Identifier(kind) = &self {
+            !matches!(kind,
+                    IdentifierKind::Addition
+                    | IdentifierKind::Other)
+        } else {
+            false
+        }
     }
 }

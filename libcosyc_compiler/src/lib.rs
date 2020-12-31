@@ -1,6 +1,5 @@
-use libcosyc_diagnostic as diagnostic;
+//use libcosyc_diagnostic as diagnostic;
 use libcosyc_scan as scan;
-use diagnostic::{ Session, error::CompilerError, source::Span };
 use scan::{ token::TokenKind, Lexer };
 
 pub fn test() {

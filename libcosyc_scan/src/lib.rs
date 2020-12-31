@@ -4,7 +4,7 @@ pub mod reader;
 
 use reader::SymbolReader;
 use symbol::SymbolKind;
-use token::{ TokenKind, LiteralKind, GraphicKind, IdentifierKind };
+use token::{ TokenKind, LiteralKind, IdentifierKind };
 use libcosyc_diagnostic::source::Span;
 
 /// Converts a string slice into lexemes, ignoring whitespace.
@@ -17,7 +17,7 @@ impl Lexer<'_> {
     pub fn span(&self) -> &Span {
         self.reader.span()
     }
-    
+
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
     'search:
@@ -43,11 +43,11 @@ impl Lexer<'_> {
                     // alphabetic identifiers can end with any number of `'` (called "prime")
                     self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
                     let kind = match self.reader.substring() {
-                        "_" => GraphicKind::Hole,
-                        "let" => GraphicKind::Let,
-                        _ => GraphicKind::Other
+                        "_" => IdentifierKind::Hole,
+                        "let" => IdentifierKind::Let,
+                        _ => IdentifierKind::Graphic
                     };
-                    TokenKind::Identifier(IdentifierKind::Graphic(kind))
+                    TokenKind::Identifier(kind)
                 },
                 // operator
                 x if x.is_valid_operator() => {
