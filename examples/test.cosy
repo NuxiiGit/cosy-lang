@@ -39,11 +39,21 @@ const Vec2 = struct {
 
 -- |represents a nullable type
 const Maybe = const fn(const a : type) : type {
-	tagged union {
+	union {
 		just : a,
 		none : nothing
 	}
 };
+
+-- |represents a cardinal direction
+const Direction = enum {
+	north,
+	east,
+	south,
+	west
+};
+
+const north = Direction::north;
 
 -- |represents the type of parsers
 const Parser = string -> Maybe(i32);
