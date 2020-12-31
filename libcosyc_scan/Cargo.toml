@@ -1,5 +1,5 @@
 [package]
-name = "libcosyc_tokenise"
+name = "libcosyc_scan"
 version = "0.1.0"
 authors = ["NuxiiGit <nuxii09@gmail.com>"]
 edition = "2018"
