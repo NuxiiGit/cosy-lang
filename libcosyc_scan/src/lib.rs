@@ -31,7 +31,7 @@ impl Lexer<'_> {
                 SymbolKind::Minus if
                         matches!(self.reader.peek(), SymbolKind::Minus) => {
                     self.reader.advance_while(|x| !x.is_valid_terminator());
-                    continue 'search;
+                    TokenKind::Comment
                 },
                 SymbolKind::LeftParen => TokenKind::LeftParen,
                 SymbolKind::RightParen => TokenKind::RightParen,
