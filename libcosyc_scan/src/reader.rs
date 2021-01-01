@@ -7,8 +7,7 @@ pub struct SymbolReader<'a> {
     src : &'a str,
     chars : CharIndices<'a>,
     current : SymbolKind,
-    span : Span,
-    only_dashes : bool
+    span : Span
 }
 
 impl<'a> SymbolReader<'a> {
@@ -20,17 +19,11 @@ impl<'a> SymbolReader<'a> {
     /// Clears the current span.
     pub fn reset_span(&mut self) {
         self.span.begin = self.span.end;
-        self.only_dashes = true;
     }
 
     /// Returns the current substring.
     pub fn substring(&self) -> &'a str {
         self.span.render(self.src)
-    }
-
-    /// Returns whether the current stream of characters is a comment lexeme.
-    pub fn holds_comment_lexeme(&self) -> bool {
-        self.only_dashes && self.span.end - self.span.begin > 1
     }
 
     /// Peeks at the next `SymbolKind`.
@@ -47,9 +40,6 @@ impl<'a> SymbolReader<'a> {
             self.span.end = self.src.len();
             SymbolKind::EoF
         };
-        if self.only_dashes && !matches!(self.current, SymbolKind::Minus) {
-            self.only_dashes = false;
-        }
         mem::replace(&mut self.current, future)
     }
 
@@ -74,7 +64,6 @@ impl<'a> From<&'a str> for SymbolReader<'a> {
                 .map(|(_, snd)| SymbolKind::identify(snd))
                 .unwrap_or(SymbolKind::EoF);
         let span = Span::default();
-        let only_dashes = true;
-        Self { src, chars, current, span, only_dashes }
+        Self { src, chars, current, span }
     }
 }

@@ -9,7 +9,8 @@ use libcosyc_diagnostic::source::Span;
 
 /// Converts a string slice into lexemes, ignoring whitespace.
 pub struct Lexer<'a> {
-    reader : SymbolReader<'a>
+    reader : SymbolReader<'a>,
+    ignore_next_symbol : bool
 }
 
 impl Lexer<'_> {
@@ -20,6 +21,10 @@ impl Lexer<'_> {
 
     /// Returns the next token of the source.
     pub fn generate_token(&mut self) -> TokenKind {
+        if self.ignore_next_symbol {
+            self.reader.advance();
+            self.ignore_next_symbol = false;
+        }
     'search:
         loop {
             self.reader.reset_span();
@@ -61,7 +66,8 @@ impl Lexer<'_> {
 
 impl<'a> From<SymbolReader<'a>> for Lexer<'a> {
     fn from(reader : SymbolReader<'a>) -> Self {
-        Self { reader }
+        let ignore_next_symbol = false;
+        Self { reader, ignore_next_symbol }
     }
 }
 
