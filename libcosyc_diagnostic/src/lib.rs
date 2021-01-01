@@ -67,7 +67,7 @@ impl fmt::Display for Session {
                     let row = line_begin + 1;
                     let col = error_begin - start + 1;
                     let col_end = error_end - start_end + 1;
-                    let mut indent_length = ((line_end + 1) as f64).log10().ceil() as usize;
+                    let mut indent_length = (((line_end + 1) as f64).log10() + 1.0).floor() as usize;
                     if indent_length == 0 {
                         indent_length = 1;
                     }
