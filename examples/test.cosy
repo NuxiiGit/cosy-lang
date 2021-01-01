@@ -1,4 +1,4 @@
-const std = #import("std");
+const std = import!("std");
 const fmt = std::fmt;
 const io = std::io;
 const str = std::str;
@@ -13,7 +13,7 @@ const Show = interface {
 
 -- |converts this value into a string
 const show = fn(x : ^Show) : string {
-	#typeof(x)::show(x)
+	typeof!(x)::show(x)
 };
 
 -- |represents a pair of values

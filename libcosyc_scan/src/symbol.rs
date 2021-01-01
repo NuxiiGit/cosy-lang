@@ -37,6 +37,7 @@ pub enum SymbolKind {
     ReverseSolidus,
     Percent,
     Other,
+    EoL,
     EoF
 }
 
@@ -79,17 +80,28 @@ impl SymbolKind {
             '/' => Self::Solidus,
             '\\' => Self::ReverseSolidus,
             '%' => Self::Percent,
+            '\n' | '\r' => Self::EoL,
             _ => Self::Other
         }
     }
 
-    /// Returns whether the char is a valid graphic.
+    /// Returns whether the symbol is a valid graphic.
     pub fn is_valid_graphic(&self) -> bool {
         matches!(self, Self::Graphic | Self::Underscore | Self::Digit)
     }
 
-    /// Returns whether the char is a valid digit.
+    /// Returns whether the symbol is a valid digit.
     pub fn is_valid_digit(&self) -> bool {
         matches!(self, Self::Digit)
+    }
+
+    /// Returns whether the symbol is a valid whitespace character.
+    pub fn is_valid_whitespace(&self) -> bool {
+        matches!(self, Self::Whitestuff | Self::EoL)
+    }
+
+    /// Returns whether the symbol is a valid terminator character.
+    pub fn is_valid_terminator(&self) -> bool {
+        matches!(self, Self::EoL | Self::EoF)
     }
 }

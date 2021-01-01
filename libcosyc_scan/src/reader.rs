@@ -34,7 +34,7 @@ impl<'a> SymbolReader<'a> {
     }
 
     /// Peeks at the next `SymbolKind`.
-    pub fn current(&self) -> &SymbolKind {
+    pub fn peek(&self) -> &SymbolKind {
         &self.current
     }
 
@@ -57,7 +57,7 @@ impl<'a> SymbolReader<'a> {
     /// Always halts if the `EoF` character is reached.
     pub fn advance_while(&mut self, p : fn(&SymbolKind) -> bool) {
         loop {
-            match self.current() {
+            match &self.current {
                 SymbolKind::EoF => break,
                 x if p(x) => { self.advance(); },
                 _ => break

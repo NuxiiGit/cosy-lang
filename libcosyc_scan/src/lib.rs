@@ -24,20 +24,22 @@ impl Lexer<'_> {
         loop {
             self.reader.reset_span();
             let kind = match self.reader.advance() {
-                // whitestuff
                 SymbolKind::Whitestuff => {
-                    self.reader.advance_while(|x| matches!(x, SymbolKind::Whitestuff));
+                    self.reader.advance_while(SymbolKind::is_valid_whitespace);
                     continue 'search;
                 },
-                // symbols
+                SymbolKind::Minus if
+                        matches!(self.reader.peek(), SymbolKind::Minus) => {
+                    self.reader.advance_while(|x| !x.is_valid_terminator());
+                    continue 'search;
+                },
                 SymbolKind::LeftParen => TokenKind::LeftParen,
                 SymbolKind::RightParen => TokenKind::RightParen,
-                // numbers
+                SymbolKind::Plus => TokenKind::Plus,
                 x if x.is_valid_digit() => {
                     self.reader.advance_while(SymbolKind::is_valid_digit);
                     TokenKind::Literal(LiteralKind::Integral)
                 },
-                // alphabetic
                 x if x.is_valid_graphic() => {
                     self.reader.advance_while(SymbolKind::is_valid_graphic);
                     // alphabetic identifiers can end with any number of `'` (called "prime")
@@ -49,18 +51,7 @@ impl Lexer<'_> {
                     };
                     TokenKind::Identifier(kind)
                 },
-                // operator
-                x if x.is_valid_operator() => {
-                    self.reader.advance_while(SymbolKind::is_valid_operator);
-                    let kind = match x {
-                        SymbolKind::Plus => IdentifierKind::Addition,
-                        _ => IdentifierKind::Other
-                    };
-                    TokenKind::Identifier(kind)
-                },
-                // end of file
                 SymbolKind::EoF => TokenKind::EoF,
-                // unknown symbol
                 _ => TokenKind::Unknown
             };
             break kind;
