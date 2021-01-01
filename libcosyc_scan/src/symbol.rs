@@ -92,29 +92,4 @@ impl SymbolKind {
     pub fn is_valid_digit(&self) -> bool {
         matches!(self, Self::Digit)
     }
-
-    /// Returns whether the char is a valid operator.
-    pub fn is_valid_operator(&self) -> bool {
-        matches!(self,
-                Self::Dot
-                | Self::Colon
-                | Self::Dollar
-                | Self::Hashtag
-                | Self::Address
-                | Self::Bar
-                | Self::Ampersand
-                | Self::Bang
-                | Self::Hook
-                | Self::Equals
-                | Self::LessThan
-                | Self::GreaterThan
-                | Self::Plus
-                | Self::Minus
-                | Self::Tilde
-                | Self::Asterisk
-                | Self::Solidus
-                | Self::ReverseSolidus
-                | Self::Percent
-                | Self::Other)
-    }
 }
