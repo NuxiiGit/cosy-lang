@@ -2,7 +2,7 @@ pub mod syntax;
 
 use libcosyc_diagnostic::{
     source::Span,
-    error::{ IssueTracker, CompilerError, ErrorLevel }
+    error::{ IssueTracker, CompilerError }
 };
 use libcosyc_scan::{ Lexer, token::TokenKind };
 use crate::syntax as ast;
@@ -78,8 +78,7 @@ impl<'a> Parser<'a> {
                 x if x.is_identifier() => ast::ExprKind::Variable,
                 TokenKind::Integral => ast::ExprKind::Integral,
                 x => {
-                    self.issues.report_error(CompilerError::new()
-                            .level(ErrorLevel::Bug)
+                    self.issues.report_error(CompilerError::bug()
                             .span(self.span())
                             .reason(format!("unknown terminal kind `{:?}`", x)));
                     return None;
@@ -88,7 +87,6 @@ impl<'a> Parser<'a> {
         } else {
             self.advance();
             self.issues.report_error(CompilerError::new()
-                    .level(ErrorLevel::Fatal)
                     .span(self.span())
                     .reason("unknown synbol in expression")
                     .note("consider removing this token"));
@@ -115,8 +113,7 @@ pub fn build_ast(src : &str, issues : &mut IssueTracker) -> Option<ast::Expr> {
     } else {
         let lexer : Lexer = parser.into();
         let span : Span = lexer.into();
-        issues.report_error(CompilerError::new()
-                .level(ErrorLevel::Bug)
+        issues.report_error(CompilerError::bug()
                 .span(&span)
                 .reason("unparsed tokens at the end of this file"));
         None
