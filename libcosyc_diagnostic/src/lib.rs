@@ -80,9 +80,9 @@ impl fmt::Display for Session {
                         indent_length = 1;
                     }
                     let indent = " ".repeat(indent_length);
-                    write!(out, " {}>>> ", indent)?;
-                    write!(out, "{}@", self.filepath)?;
-                    writeln!(out, "[row. {}, col. {}]", row, col)?;
+                    if !self.filepath.is_empty() {
+                        writeln!(out, " {}>>> {}:{}:{}", indent, self.filepath, row, col)?;
+                    }
                     writeln!(out, " {} | ", indent)?;
                     if line_begin == line_end {
                         // underline error
