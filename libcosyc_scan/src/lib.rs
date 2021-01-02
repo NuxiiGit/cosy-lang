@@ -79,3 +79,9 @@ impl<'a> From<&'a str> for Lexer<'a> {
     }
 }
 
+impl Into<Span> for Lexer<'_> {
+    fn into(mut self) -> Span {
+        self.reader.advance_while(|x| !matches!(x, SymbolKind::EoF));
+        self.span().clone()
+    }
+}

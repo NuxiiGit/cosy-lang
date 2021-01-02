@@ -14,7 +14,6 @@ fn generate_token(lexer : &mut Lexer) -> TokenKind {
         let token = lexer.generate_token();
         if !matches!(token, TokenKind::Comment
                 | TokenKind::Whitestuff) {
-            println!("{:?}", token);
             break token;
         }
     }
@@ -62,6 +61,11 @@ impl<'a> Parser<'a> {
         mem::replace(&mut self.peeked, next)
     }
 
+    /// Returns whether the parser contains additional unparsed tokens.
+    pub fn is_empty(&self) -> bool {
+        matches!(self.peeked, TokenKind::EoF)
+    }
+
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Expr> {
         self.parse_expr_terminal()
@@ -70,10 +74,17 @@ impl<'a> Parser<'a> {
     /// Parses literals and identifiers.
     pub fn parse_expr_terminal(&mut self) -> Option<ast::Expr> {
         let kind = if self.sat(TokenKind::is_terminal) {
-            self.advance();
-            self.issues.report_error(CompilerError::unimplemented()
-                    .span(self.span()));
-            return None;
+            match self.advance() {
+                x if x.is_identifier() => ast::ExprKind::Variable,
+                TokenKind::Integral => ast::ExprKind::Integral,
+                x => {
+                    self.issues.report_error(CompilerError::new()
+                            .level(ErrorLevel::Bug)
+                            .span(self.span())
+                            .reason(format!("unknown terminal kind `{:?}`", x)));
+                    return None;
+                }
+            }
         } else {
             self.advance();
             self.issues.report_error(CompilerError::new()
@@ -83,7 +94,14 @@ impl<'a> Parser<'a> {
                     .note("consider removing this token"));
             return None;
         };
-        None
+        let span = self.span().clone();
+        Some(ast::Expr { span, kind })
+    }
+}
+
+impl<'a> Into<Lexer<'a>> for Parser<'a> {
+    fn into(self) -> Lexer<'a> {
+        self.lexer
     }
 }
 
@@ -91,5 +109,16 @@ impl<'a> Parser<'a> {
 pub fn build_ast(src : &str, issues : &mut IssueTracker) -> Option<ast::Expr> {
     let lexer = Lexer::from(src);
     let mut parser = Parser::new(lexer, issues);
-    parser.parse_expr()
+    let program = parser.parse_expr()?;
+    if parser.is_empty() {
+        Some(program)
+    } else {
+        let lexer : Lexer = parser.into();
+        let span : Span = lexer.into();
+        issues.report_error(CompilerError::new()
+                .level(ErrorLevel::Bug)
+                .span(&span)
+                .reason("unparsed tokens at the end of this file"));
+        None
+    }
 }
