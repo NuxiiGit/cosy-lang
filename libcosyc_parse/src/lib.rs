@@ -20,12 +20,20 @@ fn generate_token(lexer : &mut Lexer) -> TokenKind {
 
 /// Produces a concrete syntax tree from concrete syntax.
 pub struct Parser<'a> {
+    issues : &'a mut IssueTracker,
     lexer : Lexer<'a>,
     peeked : TokenKind,
     span_previous : Span
 }
 
-impl Parser<'_> {
+impl<'a> Parser<'a> {
+    /// Creates a new parser from this lexer and issue tracker.
+    pub fn new(mut lexer : Lexer<'a>, issues : &'a mut IssueTracker) -> Self {
+        let peeked = generate_token(&mut lexer);
+        let span_previous = Span::default();
+        Self { issues, lexer, peeked, span_previous }
+    }
+
     /// Returns the span of the current lexeme.
     pub fn span(&self) -> &Span {
         self.lexer.span()
@@ -51,12 +59,16 @@ impl Parser<'_> {
         let next = generate_token(&mut self.lexer);
         mem::replace(&mut self.peeked, next)
     }
+
+    /// Entry point for parsing any expression.
+    pub fn parse_expr(&mut self) -> Option<ast::Expr> {
+        unimplemented!()
+    }
 }
 
-impl<'a> From<Lexer<'a>> for Parser<'a> {
-    fn from(mut lexer : Lexer<'a>) -> Self {
-        let peeked = generate_token(&mut lexer);
-        let span_previous = Span::default();
-        Self { lexer, peeked, span_previous }
-    }
+/// Generates the AST of this source code and reports any errors to this `IssueTracker`.
+pub fn build_ast(src : &str, issues : &mut IssueTracker) -> Option<ast::Expr> {
+    let lexer = Lexer::from(src);
+    let mut parser = Parser::new(lexer, issues);
+    parser.parse_expr()
 }
