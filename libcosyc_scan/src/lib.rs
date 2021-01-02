@@ -29,7 +29,7 @@ impl Lexer<'_> {
         loop {
             self.reader.reset_span();
             let kind = match self.reader.advance() {
-                SymbolKind::Whitestuff => {
+                x if x.is_valid_whitespace() => {
                     self.reader.advance_while(SymbolKind::is_valid_whitespace);
                     continue 'search;
                 },
@@ -58,7 +58,7 @@ impl Lexer<'_> {
                 },
                 SymbolKind::Backtick => {
                     self.reader.reset_span(); // this is used so that identifiers Foo and `Foo` are the same
-                    self.reader.advance_while(|x| !matches!(x, SymbolKind::Backtick));
+                    self.reader.advance_while(|x| !matches!(x, SymbolKind::Backtick | SymbolKind::EoL));
                     let closed = matches!(self.reader.peek(), SymbolKind::Backtick);
                     self.ignore_next_symbol = closed;
                     TokenKind::Identifier(IdentifierKind::Raw { closed })

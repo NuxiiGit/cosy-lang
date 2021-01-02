@@ -45,6 +45,7 @@ impl SymbolKind {
     /// Converts a character into its respective `CharKind`.
     pub fn identify(c : char) -> Self {
         match c {
+            '\n' | '\r' => Self::EoL,
             x if x.is_whitespace() => Self::Whitestuff,
             x if x.is_ascii_digit() => Self::Digit,
             x if x.is_alphanumeric() => Self::Graphic,
@@ -80,7 +81,6 @@ impl SymbolKind {
             '/' => Self::Solidus,
             '\\' => Self::ReverseSolidus,
             '%' => Self::Percent,
-            '\n' | '\r' => Self::EoL,
             _ => Self::Other
         }
     }
