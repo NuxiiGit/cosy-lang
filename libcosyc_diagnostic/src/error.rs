@@ -54,6 +54,23 @@ impl CompilerError {
         self
     }
 
+    /// Returns a standard linting error.
+    pub fn lint() -> Self {
+        CompilerError::new().level(ErrorLevel::Lint)
+    }
+
+    /// Returns a standard linting error.
+    pub fn warning() -> Self {
+        CompilerError::new().level(ErrorLevel::Warning)
+    }
+
+    /// Returns a standard bug error.
+    pub fn bug() -> Self {
+        CompilerError::new()
+                .level(ErrorLevel::Bug)
+                .note("this may be caused by a bug in the compiler internals")
+    }
+
     /// Returns a built-in error for unimplemented features.
     pub fn unimplemented() -> Self {
         CompilerError::new()
