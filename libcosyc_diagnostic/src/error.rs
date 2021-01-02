@@ -11,7 +11,7 @@ pub enum ErrorLevel {
 
 impl Default for ErrorLevel {
     fn default() -> Self {
-        Self::Warning
+        Self::Fatal
     }
 }
 

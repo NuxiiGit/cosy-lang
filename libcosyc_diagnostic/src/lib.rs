@@ -1,9 +1,9 @@
 pub mod source;
 pub mod error;
 
-use error::IssueTracker;
+use error::{ IssueTracker, CompilerError, ErrorLevel };
 use source::Span;
-use std::fmt;
+use std::{ fmt, fs, path };
 
 /// Represents a compiler session.
 #[derive(Default)]
@@ -17,9 +17,11 @@ pub struct Session {
 }
 
 impl Session {
-    /// Creates a new empty session.
-    pub fn new() -> Self {
-        Self::default()
+    /// Creates a new session from this string.
+    pub fn new(src : &str) -> Self {
+        let mut sess = Self::default();
+        sess.src = src.to_string();
+        sess
     }
 
     /// Returns whether errors occurred in the current session.
@@ -28,10 +30,21 @@ impl Session {
     }
 }
 
-impl From<String> for Session {
-    fn from(src : String) -> Self {
+impl<P : AsRef<path::Path>> From<P> for Session {
+    fn from(path : P) -> Self {
         let mut sess = Self::default();
-        sess.src = src;
+        if let Some(filepath) = path.as_ref().to_str() {
+            sess.filepath = filepath.to_string();
+        } else {
+            sess.issues.report_error(CompilerError::new()
+                    .reason("invalid filepath"));
+        }
+        if let Ok(src) = fs::read_to_string(path) {
+            sess.src = src;
+        } else {
+            sess.issues.report_error(CompilerError::new()
+                    .reason("file with this name does not exist"));
+        }
         sess
     }
 }
