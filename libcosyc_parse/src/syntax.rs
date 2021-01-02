@@ -3,8 +3,8 @@ use libcosyc_diagnostic::source::Span;
 /// Represents the different kinds of binary operation.
 #[derive(Debug)]
 pub enum BinaryOpKind {
-    Addition,
-    Subtraction,
+    Add,
+    Subtract,
     Custom
 }
 
@@ -21,8 +21,8 @@ pub enum ExprKind {
     Integral,
     BinaryOp {
         kind : BinaryOpKind,
-        left : Box<Expr>,
-        right : Box<Expr>
+        lexpr : Box<Expr>,
+        rexpr : Box<Expr>
     },
     UnaryOp {
         kind : UnaryOpKind,

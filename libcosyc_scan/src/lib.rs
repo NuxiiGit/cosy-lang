@@ -39,6 +39,7 @@ impl Lexer<'_> {
             SymbolKind::LeftParen => TokenKind::LeftParen,
             SymbolKind::RightParen => TokenKind::RightParen,
             SymbolKind::Plus => TokenKind::Plus,
+            SymbolKind::Minus => TokenKind::Minus,
             x if x.is_valid_digit() => {
                 self.reader.advance_while(SymbolKind::is_valid_digit);
                 TokenKind::Integral

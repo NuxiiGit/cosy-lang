@@ -86,7 +86,29 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Expr> {
-        self.parse_expr_terminal()
+        self.parse_expr_addition()
+    }
+
+    /// Parses `+` and `-` binary operators.
+    pub fn parse_expr_addition(&mut self) -> Option<ast::Expr> {
+        let mut expr = self.parse_expr_terminal()?;
+        while self.sat(|x| matches!(x, TokenKind::Plus | TokenKind::Minus)) {
+            let kind = match self.advance() {
+                TokenKind::Plus => ast::BinaryOpKind::Add,
+                TokenKind::Minus => ast::BinaryOpKind::Subtract,
+                _ => {
+                    self.report(CompilerError::bug()
+                            .reason("invalid addition operator"));
+                    return None;
+                }
+            };
+            let lexpr = Box::new(expr);
+            let rexpr = Box::new(self.parse_expr_terminal()?);
+            let span = Span::new(lexpr.span.begin, rexpr.span.end);
+            let kind = ast::ExprKind::BinaryOp { kind, lexpr, rexpr };
+            expr = ast::Expr { span, kind };
+        }
+        Some(expr)
     }
 
     /// Parses literals and identifiers.
@@ -95,9 +117,9 @@ impl<'a> Parser<'a> {
             let kind = match self.advance() {
                 x if x.is_identifier() => ast::ExprKind::Variable,
                 TokenKind::Integral => ast::ExprKind::Integral,
-                x => {
+                _ => {
                     self.report(CompilerError::bug()
-                            .reason(format!("unknown terminal kind `{:?}`", x)));
+                            .reason("invalid terminal kind"));
                     return None;
                 }
             };

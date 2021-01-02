@@ -5,6 +5,7 @@ pub enum TokenKind {
     LeftParen,
     RightParen,
     Plus,
+    Minus,
     Integral,
     Hole,
     Identifier,
