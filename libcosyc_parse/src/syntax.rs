@@ -5,7 +5,7 @@ use libcosyc_diagnostic::source::Span;
 pub enum BinaryOpKind {
     Add,
     Subtract,
-    Custom
+    Custom(Box<Expr>)
 }
 
 /// Represents the different kinds of binary operation.
@@ -30,6 +30,7 @@ pub enum ExprKind {
     },
     Call {
         intrinsic : bool,
+        callsite : Box<Expr>,
         params : Vec<Expr>
     }
 }

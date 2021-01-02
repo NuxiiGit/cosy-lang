@@ -86,7 +86,22 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Expr> {
-        self.parse_expr_addition()
+        self.parse_expr_infix()
+    }
+
+    /// Parses custom infix operators
+    pub fn parse_expr_infix(&mut self) -> Option<ast::Expr> {
+        let mut expr = self.parse_expr_addition()?;
+        while self.sat(TokenKind::is_identifier) {
+            let kind = ast::BinaryOpKind::Custom(
+                    Box::new(self.parse_expr_terminal()?));
+            let lexpr = Box::new(expr);
+            let rexpr = Box::new(self.parse_expr_addition()?);
+            let span = Span::new(lexpr.span.begin, rexpr.span.end);
+            let kind = ast::ExprKind::BinaryOp { kind, lexpr, rexpr };
+            expr = ast::Expr { span, kind };
+        }
+        Some(expr)
     }
 
     /// Parses `+` and `-` binary operators.

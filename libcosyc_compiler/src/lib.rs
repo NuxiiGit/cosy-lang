@@ -3,6 +3,7 @@ use libcosyc_parse as parse;
 
 pub fn test() {
     let mut sess = Session::load("examples/test.cosy");
-    let _ast = parse::build_ast(&sess.src as &str, &mut sess.issues);
+    let ast = parse::build_ast(&sess.src as &str, &mut sess.issues);
     println!("{}", sess);
+    println!("{:#?}", ast);
 }
