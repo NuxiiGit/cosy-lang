@@ -1,19 +1,3 @@
-/// Represents literal types.
-#[derive(PartialEq, Eq, Debug)]
-pub enum LiteralKind {
-    Integral
-}
-
-/// Represents identifier types.
-#[derive(PartialEq, Eq, Debug)]
-pub enum IdentifierKind {
-    Hole,
-    Graphic,
-    Raw {
-        closed : bool
-    }
-}
-
 /// Represents token types.
 #[derive(PartialEq, Eq, Debug)]
 pub enum TokenKind {
@@ -21,21 +5,28 @@ pub enum TokenKind {
     LeftParen,
     RightParen,
     Plus,
-    Literal(LiteralKind),
-    Identifier(IdentifierKind),
+    Integral,
+    Hole,
+    Identifier,
+    RawIdentifier {
+        closed : bool
+    },
     Comment,
     EoF,
     Unknown
 }
 
 impl TokenKind {
-    /// Returns whether this token is a literal.
-    pub fn is_literal(&self) -> bool {
-        matches!(self, Self::Literal(..))
-    }
-
     /// Returns whether this token is an identifier.
     pub fn is_identifier(&self) -> bool {
-        matches!(self, Self::Identifier(..))
+        matches!(self,
+                Self::Hole
+                | Self::Identifier
+                | Self::RawIdentifier { .. })
+    }
+
+    /// Returns whether this token indicates a terminal value.
+    pub fn is_terminal(&self) -> bool {
+        self.is_identifier() || matches!(self, Self::Integral)
     }
 }

@@ -4,7 +4,7 @@ pub mod reader;
 
 use reader::SymbolReader;
 use symbol::SymbolKind;
-use token::{ TokenKind, LiteralKind, IdentifierKind };
+use token::TokenKind;
 use libcosyc_diagnostic::source::Span;
 
 /// Converts a string slice into lexemes, ignoring whitespace.
@@ -43,25 +43,24 @@ impl Lexer<'_> {
                 SymbolKind::Plus => TokenKind::Plus,
                 x if x.is_valid_digit() => {
                     self.reader.advance_while(SymbolKind::is_valid_digit);
-                    TokenKind::Literal(LiteralKind::Integral)
+                    TokenKind::Integral
                 },
                 x if x.is_valid_graphic() => {
                     self.reader.advance_while(SymbolKind::is_valid_graphic);
                     // alphabetic identifiers can end with any number of `'` (called "prime")
                     self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
-                    let kind = match self.reader.substring() {
-                        "_" => IdentifierKind::Hole,
-                        "let" => IdentifierKind::Let,
-                        _ => IdentifierKind::Graphic
-                    };
-                    TokenKind::Identifier(kind)
+                    match self.reader.substring() {
+                        "_" => TokenKind::Hole,
+                        "let" => TokenKind::Let,
+                        _ => TokenKind::Identifier
+                    }
                 },
                 SymbolKind::Backtick => {
                     self.reader.reset_span(); // this is used so that identifiers Foo and `Foo` are the same
                     self.reader.advance_while(|x| !matches!(x, SymbolKind::Backtick | SymbolKind::EoL));
                     let closed = matches!(self.reader.peek(), SymbolKind::Backtick);
                     self.ignore_next_symbol = closed;
-                    TokenKind::Identifier(IdentifierKind::Raw { closed })
+                    TokenKind::RawIdentifier { closed }
                 }
                 SymbolKind::EoF => TokenKind::EoF,
                 _ => TokenKind::Unknown
