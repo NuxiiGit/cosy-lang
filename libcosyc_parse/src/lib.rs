@@ -10,9 +10,10 @@ use std::mem;
 
 fn generate_token(lexer : &mut Lexer) -> TokenKind {
     loop {
-        // ignore comment tokens
+        // ignore whitespace tokens
         let token = lexer.generate_token();
-        if !matches!(token, TokenKind::Comment) {
+        if !matches!(token, TokenKind::Comment
+                | TokenKind::Whitestuff) {
             break token;
         }
     }

@@ -12,6 +12,7 @@ pub enum TokenKind {
         closed : bool
     },
     Comment,
+    Whitestuff,
     EoF,
     Unknown
 }

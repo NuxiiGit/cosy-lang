@@ -25,47 +25,43 @@ impl Lexer<'_> {
             self.reader.advance();
             self.ignore_next_symbol = false;
         }
-    'search:
-        loop {
-            self.reader.reset_span();
-            let kind = match self.reader.advance() {
-                x if x.is_valid_whitespace() => {
-                    self.reader.advance_while(SymbolKind::is_valid_whitespace);
-                    continue 'search;
-                },
-                SymbolKind::Minus if
-                        matches!(self.reader.peek(), SymbolKind::Minus) => {
-                    self.reader.advance_while(|x| !x.is_valid_terminator());
-                    TokenKind::Comment
-                },
-                SymbolKind::LeftParen => TokenKind::LeftParen,
-                SymbolKind::RightParen => TokenKind::RightParen,
-                SymbolKind::Plus => TokenKind::Plus,
-                x if x.is_valid_digit() => {
-                    self.reader.advance_while(SymbolKind::is_valid_digit);
-                    TokenKind::Integral
-                },
-                x if x.is_valid_graphic() => {
-                    self.reader.advance_while(SymbolKind::is_valid_graphic);
-                    // alphabetic identifiers can end with any number of `'` (called "prime")
-                    self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
-                    match self.reader.substring() {
-                        "_" => TokenKind::Hole,
-                        "let" => TokenKind::Let,
-                        _ => TokenKind::Identifier
-                    }
-                },
-                SymbolKind::Backtick => {
-                    self.reader.reset_span(); // this is used so that identifiers Foo and `Foo` are the same
-                    self.reader.advance_while(|x| !matches!(x, SymbolKind::Backtick | SymbolKind::EoL));
-                    let closed = matches!(self.reader.peek(), SymbolKind::Backtick);
-                    self.ignore_next_symbol = closed;
-                    TokenKind::RawIdentifier { closed }
+        self.reader.reset_span();
+        match self.reader.advance() {
+            x if x.is_valid_whitespace() => {
+                self.reader.advance_while(SymbolKind::is_valid_whitespace);
+                TokenKind::Whitestuff
+            },
+            SymbolKind::Minus if
+                    matches!(self.reader.peek(), SymbolKind::Minus) => {
+                self.reader.advance_while(|x| !x.is_valid_terminator());
+                TokenKind::Comment
+            },
+            SymbolKind::LeftParen => TokenKind::LeftParen,
+            SymbolKind::RightParen => TokenKind::RightParen,
+            SymbolKind::Plus => TokenKind::Plus,
+            x if x.is_valid_digit() => {
+                self.reader.advance_while(SymbolKind::is_valid_digit);
+                TokenKind::Integral
+            },
+            x if x.is_valid_graphic() => {
+                self.reader.advance_while(SymbolKind::is_valid_graphic);
+                // alphabetic identifiers can end with any number of `'` (called "prime")
+                self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
+                match self.reader.substring() {
+                    "_" => TokenKind::Hole,
+                    "let" => TokenKind::Let,
+                    _ => TokenKind::Identifier
                 }
-                SymbolKind::EoF => TokenKind::EoF,
-                _ => TokenKind::Unknown
-            };
-            break kind;
+            },
+            SymbolKind::Backtick => {
+                self.reader.reset_span(); // this is used so that identifiers Foo and `Foo` are the same
+                self.reader.advance_while(|x| !matches!(x, SymbolKind::Backtick | SymbolKind::EoL));
+                let closed = matches!(self.reader.peek(), SymbolKind::Backtick);
+                self.ignore_next_symbol = closed;
+                TokenKind::RawIdentifier { closed }
+            }
+            SymbolKind::EoF => TokenKind::EoF,
+            _ => TokenKind::Unknown
         }
     }
 }
