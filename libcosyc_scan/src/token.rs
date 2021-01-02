@@ -9,7 +9,10 @@ pub enum LiteralKind {
 pub enum IdentifierKind {
     Let,
     Hole,
-    Graphic
+    Graphic,
+    Raw {
+        closed : bool
+    }
 }
 
 /// Represents token types.

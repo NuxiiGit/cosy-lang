@@ -56,6 +56,13 @@ impl Lexer<'_> {
                     };
                     TokenKind::Identifier(kind)
                 },
+                SymbolKind::Backtick => {
+                    self.reader.reset_span(); // this is used so that identifiers Foo and `Foo` are the same
+                    self.reader.advance_while(|x| !matches!(x, SymbolKind::Backtick));
+                    let closed = matches!(self.reader.peek(), SymbolKind::Backtick);
+                    self.ignore_next_symbol = closed;
+                    TokenKind::Identifier(IdentifierKind::Raw { closed })
+                }
                 SymbolKind::EoF => TokenKind::EoF,
                 _ => TokenKind::Unknown
             };
