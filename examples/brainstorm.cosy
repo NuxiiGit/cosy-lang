@@ -85,6 +85,10 @@ const main = fn() {
 		let fullname = str::break(name, ' ');
 		let firstname = fullname.head;
 		let othernames = fullname.tail;
-		io::printf("Hello, %s (%s)", firstname, othernames)
+		io::print("Hello, ");
+		io::print(firstname);
+		io::print(" (");
+		io::print(othernames);
+		io::print(")");
 	}
 };
