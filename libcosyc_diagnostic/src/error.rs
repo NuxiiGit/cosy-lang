@@ -42,15 +42,15 @@ impl CompilerError {
         self
     }
 
-    /// Adds a note to the error.
-    pub fn note<T : ToString>(mut self, note : T) -> Self {
-        self.notes.push(note.to_string());
-        self
-    }
-
     /// Update the error reason.
     pub fn reason<T : ToString>(mut self, reason : T) -> Self {
         self.reason = reason.to_string();
+        self
+    }
+
+    /// Adds a note to the error.
+    pub fn note<T : ToString>(mut self, note : T) -> Self {
+        self.notes.push(note.to_string());
         self
     }
 }

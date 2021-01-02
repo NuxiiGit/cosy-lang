@@ -1,9 +1,9 @@
 pub mod source;
 pub mod error;
 
-use error::{ IssueTracker, CompilerError, ErrorLevel };
+use error::{ IssueTracker, CompilerError };
 use source::Span;
-use std::{ fmt, fs, path };
+use std::{ fmt, fs };
 
 /// Represents a compiler session.
 #[derive(Default)]
@@ -24,28 +24,23 @@ impl Session {
         sess
     }
 
-    /// Returns whether errors occurred in the current session.
-    pub fn errors_occurred(&self) -> bool {
-        !self.issues.get_errors().is_empty()
-    }
-}
-
-impl<P : AsRef<path::Path>> From<P> for Session {
-    fn from(path : P) -> Self {
+    /// Creates a new session using this file path.
+    pub fn load(path : &str) -> Self {
         let mut sess = Self::default();
-        if let Some(filepath) = path.as_ref().to_str() {
-            sess.filepath = filepath.to_string();
-        } else {
-            sess.issues.report_error(CompilerError::new()
-                    .reason("invalid filepath"));
-        }
-        if let Ok(src) = fs::read_to_string(path) {
+        sess.filepath = path.to_string();
+        if let Ok(src) = fs::read_to_string(&path) {
             sess.src = src;
         } else {
             sess.issues.report_error(CompilerError::new()
-                    .reason("file with this name does not exist"));
+                    .reason(format!("unable to open a file with the name `{}`", path))
+                    .note("check the filename is correct"));
         }
         sess
+    }
+
+    /// Returns whether errors occurred in the current session.
+    pub fn errors_occurred(&self) -> bool {
+        !self.issues.get_errors().is_empty()
     }
 }
 
