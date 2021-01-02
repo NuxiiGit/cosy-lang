@@ -14,6 +14,7 @@ fn generate_token(lexer : &mut Lexer) -> TokenKind {
         let token = lexer.generate_token();
         if !matches!(token, TokenKind::Comment
                 | TokenKind::Whitestuff) {
+            println!("{:?}", token);
             break token;
         }
     }
@@ -37,12 +38,12 @@ impl<'a> Parser<'a> {
 
     /// Returns the span of the current lexeme.
     pub fn span(&self) -> &Span {
-        self.lexer.span()
+        &self.span_previous
     }
 
-    /// Returns the span of the previous lexeme.
-    pub fn span_previous(&self) -> &Span {
-        &self.span_previous
+    /// Returns the span of the peeked lexeme.
+    pub fn span_peek(&self) -> &Span {
+        self.lexer.span()
     }
 
     /// Returns whether the current token satisfies a predicate `p`.
@@ -63,7 +64,26 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Expr> {
-        unimplemented!()
+        self.parse_expr_terminal()
+    }
+
+    /// Parses literals and identifiers.
+    pub fn parse_expr_terminal(&mut self) -> Option<ast::Expr> {
+        let kind = if self.sat(TokenKind::is_terminal) {
+            self.advance();
+            self.issues.report_error(CompilerError::unimplemented()
+                    .span(self.span()));
+            return None;
+        } else {
+            self.advance();
+            self.issues.report_error(CompilerError::new()
+                    .level(ErrorLevel::Fatal)
+                    .span(self.span())
+                    .reason("unknown synbol in expression")
+                    .note("consider removing this token"));
+            return None;
+        };
+        None
     }
 }
 

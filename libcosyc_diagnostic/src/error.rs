@@ -53,6 +53,14 @@ impl CompilerError {
         self.notes.push(note.to_string());
         self
     }
+
+    /// Returns a built-in error for unimplemented features.
+    pub fn unimplemented() -> Self {
+        CompilerError::new()
+                .level(ErrorLevel::Bug)
+                .reason("unimplemented")
+                .note("this feature is not currently supported")
+    }
 }
 
 /// Records any issues that occurred, including the highest error level achieved.
