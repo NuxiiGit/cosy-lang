@@ -69,6 +69,16 @@ impl<'a> Parser<'a> {
         self.issues.report_error(error);
     }
 
+    /// Returns the token if it satisfies the predicate `p`, otherwise the error is reported.
+    pub fn expect(&mut self, p : fn(&TokenKind) -> bool, error : CompilerError) -> Option<TokenKind> {
+        if self.sat(p) {
+            Some(self.advance())
+        } else {
+            self.report(error);
+            None
+        }
+    }
+
     /// Returns whether the parser contains additional unparsed tokens.
     pub fn is_empty(&self) -> bool {
         matches!(self.peeked, TokenKind::EoF)
@@ -103,15 +113,12 @@ impl<'a> Parser<'a> {
         if self.sat(|x| matches!(x, TokenKind::LeftParen)) {
             self.advance();
             let expr = self.parse_expr()?;
-            if !matches!(self.advance(), TokenKind::RightParen) {
-                self.report(CompilerError::new()
-                        .span(&expr.span)
-                        .reason("expected closing `)` at the end of grouping")
-                        .note("consider adding `)` after this expression"));
-                None
-            } else {
-                Some(expr)
-            }
+            self.expect(|x| matches!(x, TokenKind::RightParen),
+                    CompilerError::new()
+                            .span(&expr.span)
+                            .reason("expected closing `)` at the end of grouping")
+                            .note("consider adding `)` after this expression"))?;
+            Some(expr)
         } else {
             self.advance();
             self.report(CompilerError::new()
