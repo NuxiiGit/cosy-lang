@@ -7,7 +7,6 @@ pub enum LiteralKind {
 /// Represents identifier types.
 #[derive(PartialEq, Eq, Debug)]
 pub enum IdentifierKind {
-    Let,
     Hole,
     Graphic,
     Raw {
@@ -18,6 +17,7 @@ pub enum IdentifierKind {
 /// Represents token types.
 #[derive(PartialEq, Eq, Debug)]
 pub enum TokenKind {
+    Let,
     LeftParen,
     RightParen,
     Plus,
