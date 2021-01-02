@@ -54,6 +54,11 @@ impl CompilerError {
         self
     }
 
+    /// Returns whether this error has a span.
+    pub fn has_span(&self) -> bool {
+        self.span.is_some()
+    }
+
     /// Returns a standard linting error.
     pub fn lint() -> Self {
         CompilerError::new().level(ErrorLevel::Lint)

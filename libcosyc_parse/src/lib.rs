@@ -61,6 +61,14 @@ impl<'a> Parser<'a> {
         mem::replace(&mut self.peeked, next)
     }
 
+    /// Reports an error to the issue tracker, using the current token span if no span exists.
+    pub fn report(&mut self, mut error : CompilerError) {
+        if !error.has_span() {
+            error = error.span(self.span());
+        }
+        self.issues.report_error(error);
+    }
+
     /// Returns whether the parser contains additional unparsed tokens.
     pub fn is_empty(&self) -> bool {
         matches!(self.peeked, TokenKind::EoF)
@@ -78,8 +86,7 @@ impl<'a> Parser<'a> {
                 x if x.is_identifier() => ast::ExprKind::Variable,
                 TokenKind::Integral => ast::ExprKind::Integral,
                 x => {
-                    self.issues.report_error(CompilerError::bug()
-                            .span(self.span())
+                    self.report(CompilerError::bug()
                             .reason(format!("unknown terminal kind `{:?}`", x)));
                     return None;
                 }
@@ -97,7 +104,7 @@ impl<'a> Parser<'a> {
             self.advance();
             let expr = self.parse_expr()?;
             if !matches!(self.advance(), TokenKind::RightParen) {
-                self.issues.report_error(CompilerError::new()
+                self.report(CompilerError::new()
                         .span(&expr.span)
                         .reason("expected closing `)` at the end of grouping")
                         .note("consider adding `)` after this expression"));
@@ -107,8 +114,7 @@ impl<'a> Parser<'a> {
             }
         } else {
             self.advance();
-            self.issues.report_error(CompilerError::new()
-                    .span(self.span())
+            self.report(CompilerError::new()
                     .reason("unknown synbol in expression")
                     .note("consider removing this token"));
             None
