@@ -73,8 +73,8 @@ impl<'a> Parser<'a> {
 
     /// Parses literals and identifiers.
     pub fn parse_expr_terminal(&mut self) -> Option<ast::Expr> {
-        let kind = if self.sat(TokenKind::is_terminal) {
-            match self.advance() {
+        if self.sat(TokenKind::is_terminal) {
+            let kind = match self.advance() {
                 x if x.is_identifier() => ast::ExprKind::Variable,
                 TokenKind::Integral => ast::ExprKind::Integral,
                 x => {
@@ -83,6 +83,27 @@ impl<'a> Parser<'a> {
                             .reason(format!("unknown terminal kind `{:?}`", x)));
                     return None;
                 }
+            };
+            let span = self.span().clone();
+            Some(ast::Expr { span, kind })
+        } else {
+            self.parse_expr_grouping()
+        }
+    }
+
+    /// Parses groupings of expressions.
+    pub fn parse_expr_grouping(&mut self) -> Option<ast::Expr> {
+        if self.sat(|x| matches!(x, TokenKind::LeftParen)) {
+            self.advance();
+            let expr = self.parse_expr()?;
+            if !matches!(self.advance(), TokenKind::RightParen) {
+                self.issues.report_error(CompilerError::new()
+                        .span(&expr.span)
+                        .reason("expected closing `)` at the end of grouping")
+                        .note("consider adding `)` after this expression"));
+                None
+            } else {
+                Some(expr)
             }
         } else {
             self.advance();
@@ -90,10 +111,8 @@ impl<'a> Parser<'a> {
                     .span(self.span())
                     .reason("unknown synbol in expression")
                     .note("consider removing this token"));
-            return None;
-        };
-        let span = self.span().clone();
-        Some(ast::Expr { span, kind })
+            None
+        }
     }
 }
 
