@@ -62,11 +62,12 @@ impl<'a> Parser<'a> {
     }
 
     /// Reports an error to the issue tracker, using the current token span if no span exists.
-    pub fn report(&mut self, mut error : CompilerError) {
+    pub fn report<T>(&mut self, mut error : CompilerError) -> Option<T> {
         if !error.has_span() {
             error = error.span(self.span());
         }
         self.issues.report_error(error);
+        None
     }
 
     /// Returns the token if it satisfies the predicate `p`, otherwise the error is reported.
@@ -74,8 +75,7 @@ impl<'a> Parser<'a> {
         if self.sat(p) {
             Some(self.advance())
         } else {
-            self.report(error);
-            None
+            self.report(error)
         }
     }
 
@@ -111,11 +111,8 @@ impl<'a> Parser<'a> {
             let kind = match self.advance() {
                 TokenKind::Plus => ast::BinaryOpKind::Add,
                 TokenKind::Minus => ast::BinaryOpKind::Subtract,
-                _ => {
-                    self.report(CompilerError::bug()
-                            .reason("invalid addition operator"));
-                    return None;
-                }
+                _ => self.report(CompilerError::bug()
+                        .reason("invalid addition operator"))?
             };
             let lexpr = Box::new(expr);
             let rexpr = Box::new(self.parse_expr_unary_prefix()?);
@@ -131,11 +128,8 @@ impl<'a> Parser<'a> {
         if self.sat(|x| matches!(x, TokenKind::Minus)) {
             let kind = match self.advance() {
                 TokenKind::Minus => ast::UnaryOpKind::Negate,
-                _ => {
-                    self.report(CompilerError::bug()
-                            .reason("invalid unary operator"));
-                    return None;
-                }
+                _ => self.report(CompilerError::bug()
+                        .reason("invalid unary operator"))?
             };
             let mut span = self.span().clone();
             let inner = Box::new(self.parse_expr_unary_prefix()?);
@@ -154,16 +148,12 @@ impl<'a> Parser<'a> {
                 TokenKind::RawIdentifier { closed : false } => {
                     self.report(CompilerError::new()
                             .reason("raw identifier is missing a closing accent")
-                            .note("consider adding a closing accent (`)"));
-                    return None;
+                            .note("consider adding a closing accent (`)"))?
                 },
                 x if x.is_identifier() => ast::ExprKind::Variable,
                 TokenKind::Integral => ast::ExprKind::Integral,
-                _ => {
-                    self.report(CompilerError::bug()
-                            .reason("invalid terminal kind"));
-                    return None;
-                }
+                _ => self.report(CompilerError::bug()
+                        .reason("invalid terminal kind"))?
             };
             let span = self.span().clone();
             Some(ast::Expr { span, kind })
@@ -187,8 +177,7 @@ impl<'a> Parser<'a> {
             self.advance();
             self.report(CompilerError::new()
                     .reason("unknown synbol in expression")
-                    .note("consider removing this token"));
-            None
+                    .note("consider removing this token"))
         }
     }
 }
