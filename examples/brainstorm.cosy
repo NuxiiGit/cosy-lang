@@ -1,49 +1,49 @@
-const std = import!("std");
-const fmt = std::fmt;
-const io = std::io;
-const str = std::str;
+def std = import!("std");
+def fmt = std::fmt;
+def io = std::io;
+def str = std::str;
 
 -- `.`  is used for runtime value access
--- `::` is used for compile-time (`const`) value access
+-- `::` is used for compile-time (`def`) value access
 
 --- represents showable types
-const Show = interface {
-	const show : ^self -> string
+def Show = interface {
+	def show : ^self -> string
 };
 
 --- converts this value into a string
-const show = fn(x : ^Show) : string {
+def show = fn(x : ^Show) : string {
 	typeof!(x)::show(x)
 };
 
 --- represents a pair of values
-const Vec2 = struct {
+def Vec2 = struct {
 	--- the x position
 	x : i32,
 	--- the y position
 	y : i32,
 	--- the null vector
-	const null = self { x = 0, y = 0 },
+	def null = self { x = 0, y = 0 },
 	--- adds two vectors together and returns a new vector
-	const add = fn(v : ^self, u : self) : self {
+	def add = fn(v : ^self, u : self) : self {
 		self {
 			x = v^.x + u.x,
 			y = v^.y + u.y
 		}
 	},
 	--- converts the vector into a string
-	const show = fn(v : ^self) : string {
+	def show = fn(v : ^self) : string {
 		"Vec2 { x = " ++ show(v^.x) ++ ", y = " ++ show(v^.y) ++ "}"
 	}
 };
 
 --- adds two vectors together
-const `+>` = fn(v : Vec2, u : Vec2) : Vec2 {
+def `+>` = fn(v : Vec2, u : Vec2) : Vec2 {
 	v.add(u)
 };
 
 --- represents a nullable type
-const Maybe = const fn(const a : type) : type {
+def Maybe = pure fn(def a : type) : type {
 	union {
 		just : a,
 		none : nothing
@@ -51,19 +51,19 @@ const Maybe = const fn(const a : type) : type {
 };
 
 --- represents a cardinal direction
-const Direction = enum {
+def Direction = enum {
 	north,
 	east,
 	south,
 	west
 };
 
-const north = Direction::north;
+def north = Direction::north;
 
 --- represents the type of parsers
-const Parser = fn(string) -> Maybe(i32);
+def Parser = fn(string) -> Maybe(i32);
 
-const _ = {
+def _ = {
 	-- maybe type
 	let just = 12.3
 	let maybe = Maybe(f32) { just };
@@ -73,14 +73,14 @@ const _ = {
 	}
 };
 
-const vec = {
+def vec = {
 	-- compile-time variables
 	let a = Vec2 { x = 1, y = 1 };
 	let b = Vec2 { x = 3, y = 9 };
 	a `+>` b
 };
 
-const main = fn() {
+def main = fn() {
 	io::print(show(vec)); -- Vec2 { x = 4, y = 10 }
 	let src = io::read_to_string("names.text");
 	for name in str::lines(src) {
