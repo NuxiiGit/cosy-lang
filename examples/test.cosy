@@ -1,3 +1,5 @@
+--- converts this value into a string
+const show fn string 
 -- testing 123
 (12 + 3
 	-- this is a thing
@@ -6,3 +8,5 @@
 
 	 yoo x)
 	 -- this might also be a thing?
+
+
