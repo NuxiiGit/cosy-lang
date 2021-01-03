@@ -17,7 +17,9 @@ impl<'a, T : Write> LispRenderer<'a, T> {
     pub fn render_expr(&mut self, expr : &ast::Expr) -> fmt::Result {
         let span = &expr.span;
         match &expr.kind {
-            ast::ExprKind::Variable => write!(self.out, "|{}|", span.render(self.src))?,
+            ast::ExprKind::Variable => {
+                write!(self.out, "|{}|", span.render(self.src))?
+            },
             ast::ExprKind::Integral => write!(self.out, "{}", span.render(self.src))?,
             ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => {
                 write!(self.out, "(")?;
@@ -36,10 +38,24 @@ impl<'a, T : Write> LispRenderer<'a, T> {
                 write!(self.out, ")")?;
             },
             ast::ExprKind::UnaryOp { kind, inner } => {
-                unimplemented!()
+                write!(self.out, "(")?;
+                match &kind {
+                    ast::UnaryOpKind::Negate => write!(self.out, "-")?,
+                }
+                write!(self.out, " ")?;
+                self.render_expr(inner)?;
+                write!(self.out, ")")?;
             },
             ast::ExprKind::Call { intrinsic, callsite, params } => {
-                unimplemented!()
+                write!(self.out, "funcall ")?;
+                self.render_expr(callsite)?;
+                if *intrinsic {
+                    write!(self.out, " !")?;
+                }
+                for param in params {
+                    write!(self.out, " ")?;
+                    self.render_expr(param)?;
+                }
             }
         }
         Ok(())
