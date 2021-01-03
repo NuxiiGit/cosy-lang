@@ -25,20 +25,22 @@ const Vec2 = struct {
 	--- the null vector
 	const null = self { x = 0, y = 0 },
 	--- adds two vectors together and returns a new vector
-	const add = fn(l : self, r : self) : self {
+	const add = fn(v : ^self, u : self) : self {
 		self {
-			x = l.x + r.x,
-			y = l.y + r.y
+			x = v^.x + u.x,
+			y = v^.y + u.y
 		}
 	},
 	--- converts the vector into a string
-	const show = fn(me : ^self) : string {
-		"Vec2 { x = " ++ show(me^.x) ++ ", y = " ++ show(me^.y) ++ "}"
+	const show = fn(v : ^self) : string {
+		"Vec2 { x = " ++ show(v^.x) ++ ", y = " ++ show(v^.y) ++ "}"
 	}
 };
 
 --- adds two vectors together
-const `+>` = Vec2::add;
+const `+>` = fn(v : Vec2, u : Vec2) : Vec2 {
+	v.add(u)
+};
 
 --- represents a nullable type
 const Maybe = const fn(const a : type) : type {
