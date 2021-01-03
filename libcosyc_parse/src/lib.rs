@@ -1,4 +1,5 @@
 pub mod syntax;
+pub mod render;
 
 use libcosyc_diagnostic::{
     source::Span,
