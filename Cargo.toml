@@ -4,5 +4,6 @@ members = [
     "libcosyc_diagnostic",
     "libcosyc_parse",
     "libcosyc_scan",
+    "libcosyc_ir",
     "libcosyc_compiler"
 ]
