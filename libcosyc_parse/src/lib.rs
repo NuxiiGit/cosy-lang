@@ -106,7 +106,7 @@ impl<'a> Parser<'a> {
 
     /// Parses `+` and `-` binary operators.
     pub fn parse_expr_addition(&mut self) -> Option<ast::Expr> {
-        let mut expr = self.parse_expr_terminal()?;
+        let mut expr = self.parse_expr_unary_prefix()?;
         while self.sat(|x| matches!(x, TokenKind::Plus | TokenKind::Minus)) {
             let kind = match self.advance() {
                 TokenKind::Plus => ast::BinaryOpKind::Add,
@@ -118,12 +118,33 @@ impl<'a> Parser<'a> {
                 }
             };
             let lexpr = Box::new(expr);
-            let rexpr = Box::new(self.parse_expr_terminal()?);
+            let rexpr = Box::new(self.parse_expr_unary_prefix()?);
             let span = Span::new(lexpr.span.begin, rexpr.span.end);
             let kind = ast::ExprKind::BinaryOp { kind, lexpr, rexpr };
             expr = ast::Expr { span, kind };
         }
         Some(expr)
+    }
+
+    /// Parses the unary operator `-`.
+    pub fn parse_expr_unary_prefix(&mut self) -> Option<ast::Expr> {
+        if self.sat(|x| matches!(x, TokenKind::Minus)) {
+            let kind = match self.advance() {
+                TokenKind::Minus => ast::UnaryOpKind::Negate,
+                _ => {
+                    self.report(CompilerError::bug()
+                            .reason("invalid unary operator"));
+                    return None;
+                }
+            };
+            let mut span = self.span().clone();
+            let inner = Box::new(self.parse_expr_unary_prefix()?);
+            span.end = inner.span.end;
+            let kind = ast::ExprKind::UnaryOp { kind, inner };
+            Some(ast::Expr { span, kind })
+        } else {
+            self.parse_expr_terminal()
+        }
     }
 
     /// Parses literals and identifiers.
