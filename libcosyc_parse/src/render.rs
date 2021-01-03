@@ -219,15 +219,14 @@ impl<'a, T : Write> LispRenderer<'a, T> {
                 write!(self.out, ")")?;
             },
             ast::ExprKind::Call { intrinsic, callsite, params } => {
-                write!(self.out, "funcall ")?;
+                write!(self.out, "(funcall ")?;
                 self.render_expr(callsite)?;
                 if *intrinsic {
-                    write!(self.out, " intrinsic")?;
+                    write!(self.out, " :intrinsic")?;
                 }
-                for param in params {
-                    write!(self.out, " ")?;
-                    self.render_expr(param)?;
-                }
+                let params : Vec<&ast::Expr> = params.iter().collect();
+                self.render_expr_params(false, &params)?;
+                write!(self.out, ")")?;
             }
         }
         Ok(())
