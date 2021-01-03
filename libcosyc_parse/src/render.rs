@@ -140,13 +140,45 @@ fn valid_identifier(ident : &str) -> bool {
 /// Handles the debug rendering of the abstract syntax tree.
 pub struct LispRenderer<'a, T : Write> {
     src : &'a str,
-    out : T
+    out : T,
+    indent : usize
 }
 
 impl<'a, T : Write> LispRenderer<'a, T> {
     /// Creates a new renderer from this source and output stream.
     pub fn new(src : &'a str, out : T) -> Self {
-        Self { src, out }
+        let indent = 0;
+        Self { src, out, indent }
+    }
+
+    fn indent(&mut self) {
+        self.indent += 1;
+    }
+
+    fn unindent(&mut self) {
+        self.indent -= 1;
+    }
+
+    fn newline(&mut self) -> fmt::Result {
+        write!(self.out, "\n{}", "  ".repeat(self.indent))
+    }
+
+    fn render_expr_params(&mut self, inline : bool, params : &[&ast::Expr]) -> fmt::Result {
+        if !inline {
+            self.indent();
+        }
+        for param in params {
+            if inline {
+                write!(self.out, " ")?;
+            } else {
+                self.newline()?;
+            }
+            self.render_expr(param)?;
+        }
+        if !inline {
+            self.unindent();
+        }
+        Ok(())
     }
 
     /// Renders an expression.
@@ -164,18 +196,17 @@ impl<'a, T : Write> LispRenderer<'a, T> {
             ast::ExprKind::Integral => write!(self.out, "{}", span.render(self.src))?,
             ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => {
                 write!(self.out, "(")?;
+                let mut inline = true;
                 match &kind {
                     ast::BinaryOpKind::Add => write!(self.out, "+")?,
                     ast::BinaryOpKind::Subtract => write!(self.out, "-")?,
                     ast::BinaryOpKind::Custom(inner) => {
                         write!(self.out, "funcall ")?;
                         self.render_expr(inner)?;
+                        inline = false;
                     }
                 }
-                write!(self.out, " ")?;
-                self.render_expr(lexpr)?;
-                write!(self.out, " ")?;
-                self.render_expr(rexpr)?;
+                self.render_expr_params(inline, &[lexpr, rexpr])?;
                 write!(self.out, ")")?;
             },
             ast::ExprKind::UnaryOp { kind, inner } => {
@@ -191,7 +222,7 @@ impl<'a, T : Write> LispRenderer<'a, T> {
                 write!(self.out, "funcall ")?;
                 self.render_expr(callsite)?;
                 if *intrinsic {
-                    write!(self.out, " !")?;
+                    write!(self.out, " intrinsic")?;
                 }
                 for param in params {
                     write!(self.out, " ")?;
