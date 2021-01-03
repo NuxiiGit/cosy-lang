@@ -1,6 +1,19 @@
 use crate::syntax as ast;
 use std::fmt::{ self as fmt, Write };
 
+fn valid_identifier(ident : &str) -> bool {
+    let mut chars = ident.chars();
+    match chars.next() {
+        Some(x) => {
+            if !x.is_alphabetic() && !matches!(x, '_') {
+                return false;
+            }
+        }
+        None => return false
+    }
+    chars.all(|x| x.is_alphanumeric())
+}
+
 /// Handles the debug rendering of the abstract syntax tree.
 pub struct LispRenderer<'a, T : Write> {
     src : &'a str,
@@ -18,7 +31,12 @@ impl<'a, T : Write> LispRenderer<'a, T> {
         let span = &expr.span;
         match &expr.kind {
             ast::ExprKind::Variable => {
-                write!(self.out, "|{}|", span.render(self.src))?
+                let ident = span.render(self.src);
+                if valid_identifier(ident) {
+                    write!(self.out, "{}", ident)?
+                } else {
+                    write!(self.out, "|{}|", ident)?
+                }
             },
             ast::ExprKind::Integral => write!(self.out, "{}", span.render(self.src))?,
             ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => {
