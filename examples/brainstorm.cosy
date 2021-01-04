@@ -16,6 +16,9 @@ def show = fn(x : ^Show) : string {
 	typeof!(x)::show(x)
 };
 
+--- big type
+def Set : type#2 = type;
+
 --- represents a pair of values
 def Vec2 = struct {
 	--- the x position
