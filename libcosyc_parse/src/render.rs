@@ -3,126 +3,25 @@ use std::fmt::{ self as fmt, Write };
 
 fn valid_identifier(ident : &str) -> bool {
     if matches!(ident,
-            "min"
-            | "max"
-            | "defun"
-            | "equal"
-            | "equalp"
-            | "eq"
-            | "eql"
-            | "eval"
-            | "setq"
-            | "setf"
-            | "set"
-            | "let"
-            | "flet"
-            | "labels"
-            | "defmethod"
-            | "defvar"
-            | "defparameter"
-            | "defsetf"
-            | "lambda"
-            | "funcall"
-            | "apply"
-            | "return"
-            | "identity"
-            | "go"
-            | "throw"
-            | "error"
-            | "signal"
-            | "cerror"
-            | "warn"
-            | "if"
-            | "cond"
-            | "loop"
-            | "do"
-            | "until"
-            | "with"
-            | "while"
-            | "for"
-            | "from"
-            | "to"
-            | "by"
-            | "case"
-            | "otherwise"
-            | "declare"
-            | "deftype"
-            | "defclass"
-            | "defstruct"
-            | "dispatching"
-            | "method"
-            | "typep"
-            | "defpackage"
-            | "export"
-            | "require"
-            | "import"
-            | "char"
-            | "aref"
-            | "schar"
-            | "svref"
-            | "coerce"
-            | "subseq"
-            | "search"
-            | "write"
-            | "print"
-            | "princ"
-            | "format"
-            | "concatenate"
-            | "length"
-            | "nil"
-            | "not"
-            | "or"
-            | "and"
-            | "t"
-            | "boolean"
-            | "cons"
-            | "push"
-            | "cdr"
-            | "reduce"
-            | "find"
-            | "car"
-            | "dolist"
-            | "pop"
-            | "member"
-            | "some"
-            | "every"
-            | "upfrom"
-            | "as"
-            | "last"
-            | "nconc"
-            | "append"
-            | "list"
-            | "pairlis"
-            | "nth"
-            | "assoc"
-            | "reverse"
-            | "sort"
-            | "mapcar"
-            | "gethash"
-            | "remhash"
-            | "v"
-            | "logand"
-            | "logior"
-            | "logxor"
-            | "lognot"
-            | "ash"
-            | "floor"
-            | "expt"
-            | "log"
-            | "mod"
-            | "random"
-            | "sqrt"
-            | "exp"
-            | "abs"
-            | "sin"
-            | "cos"
-            | "tan"
-            | "asin"
-            | "acos"
-            | "atan"
-            | "truncate"
-            | "round"
-            | "ceiling") {
+            "min" | "max" | "defun" | "equal" | "equalp" | "eq" | "eql"
+            | "eval" | "setq" | "setf" | "set" | "let" | "flet" | "labels"
+            | "defmethod" | "defvar" | "defparameter" | "defsetf" | "lambda"
+            | "funcall" | "apply" | "return" | "identity" | "go" | "throw"
+            | "error" | "signal" | "cerror" | "warn" | "if" | "cond" | "loop"
+            | "do" | "until" | "with" | "while" | "for" | "from" | "to" | "by"
+            | "case" | "otherwise" | "declare" | "deftype" | "defclass"
+            | "defstruct" | "dispatching" | "method" | "typep" | "defpackage"
+            | "export" | "require" | "import" | "char" | "aref" | "schar"
+            | "svref" | "coerce" | "subseq" | "search" | "write" | "print"
+            | "princ" | "format" | "concatenate" | "length" | "nil" | "not"
+            | "or" | "and" | "t" | "boolean" | "cons" | "push" | "cdr"
+            | "reduce" | "find" | "car" | "dolist" | "pop" | "member" | "some"
+            | "every" | "upfrom" | "as" | "last" | "nconc" | "append" | "list"
+            | "pairlis" | "nth" | "assoc" | "reverse" | "sort" | "mapcar"
+            | "gethash" | "remhash" | "v" | "logand" | "logior" | "logxor"
+            | "lognot" | "ash" | "floor" | "expt" | "log" | "mod" | "random"
+            | "sqrt" | "exp" | "abs" | "sin" | "cos" | "tan" | "asin" | "acos"
+            | "atan" | "truncate" | "round" | "ceiling") {
         return false;
     }
     let mut chars = ident.chars();
@@ -163,21 +62,23 @@ impl<'a, T : Write> LispRenderer<'a, T> {
         write!(self.out, "\n{}", "  ".repeat(self.indent))
     }
 
-    fn render_expr_params(&mut self, inline : bool, params : &[&ast::Expr]) -> fmt::Result {
-        if !inline {
-            self.indent();
-        }
+    fn render_expr_params(&mut self, params : &[&ast::Expr]) -> fmt::Result {
+        self.indent();
+        let mut skip_line = false;
         for param in params {
-            if inline {
+            let inline = matches!(param.kind,
+                    ast::ExprKind::Variable
+                    | ast::ExprKind::Primitive
+                    | ast::ExprKind::Integral);
+            if inline && !skip_line {
                 write!(self.out, " ")?;
             } else {
                 self.newline()?;
+                skip_line = !skip_line;
             }
             self.render_expr(param)?;
         }
-        if !inline {
-            self.unindent();
-        }
+        self.unindent();
         Ok(())
     }
 
@@ -196,22 +97,20 @@ impl<'a, T : Write> LispRenderer<'a, T> {
             ast::ExprKind::Integral => write!(self.out, "{}", span.render(self.src))?,
             ast::ExprKind::TypeAnno { vexpr, texpr } => {
                 write!(self.out, "(|:|")?;
-                self.render_expr_params(true, &[vexpr, texpr])?;
+                self.render_expr_params(&[vexpr, texpr])?;
                 write!(self.out, ")")?;
             },
             ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => {
                 write!(self.out, "(")?;
-                let mut inline = true;
                 match &kind {
                     ast::BinaryOpKind::Add => write!(self.out, "+")?,
                     ast::BinaryOpKind::Subtract => write!(self.out, "-")?,
                     ast::BinaryOpKind::Custom(inner) => {
                         write!(self.out, "funcall ")?;
                         self.render_expr(inner)?;
-                        inline = false;
                     }
                 }
-                self.render_expr_params(inline, &[lexpr, rexpr])?;
+                self.render_expr_params(&[lexpr, rexpr])?;
                 write!(self.out, ")")?;
             },
             ast::ExprKind::UnaryOp { kind, inner } => {
@@ -230,7 +129,7 @@ impl<'a, T : Write> LispRenderer<'a, T> {
                     write!(self.out, " :intrinsic")?;
                 }
                 let params : Vec<&ast::Expr> = params.iter().collect();
-                self.render_expr_params(false, &params)?;
+                self.render_expr_params(&params)?;
                 write!(self.out, ")")?;
             }
         }
