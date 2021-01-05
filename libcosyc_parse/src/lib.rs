@@ -167,6 +167,7 @@ impl<'a> Parser<'a> {
                 },
                 x if x.is_identifier() => ast::ExprKind::Variable,
                 TokenKind::Integral => ast::ExprKind::Integral,
+                TokenKind::Primitive => ast::ExprKind::Primitive,
                 _ => self.report(CompilerError::bug()
                         .reason("invalid terminal kind"))?
             };

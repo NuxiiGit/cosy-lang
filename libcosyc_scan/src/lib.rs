@@ -52,6 +52,7 @@ impl Lexer<'_> {
                 match self.reader.substring() {
                     "_" => TokenKind::Hole,
                     "let" => TokenKind::Let,
+                    "i8" => TokenKind::Primitive,
                     _ => TokenKind::Identifier
                 }
             },

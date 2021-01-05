@@ -185,7 +185,7 @@ impl<'a, T : Write> LispRenderer<'a, T> {
     pub fn render_expr(&mut self, expr : &ast::Expr) -> fmt::Result {
         let span = &expr.span;
         match &expr.kind {
-            ast::ExprKind::Variable => {
+            ast::ExprKind::Variable | ast::ExprKind::Primitive => {
                 let ident = span.render(self.src);
                 if valid_identifier(ident) {
                     write!(self.out, "{}", ident)?

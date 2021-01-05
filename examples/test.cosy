@@ -6,7 +6,7 @@ const show fn string
 	`if` (1 - 3)
 
 
-	 yoo -x) : i32
+	 yoo -x) : i8
 	 -- this might also be a thing?
 
 

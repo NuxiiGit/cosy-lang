@@ -1,18 +1,19 @@
 /// Represents token types.
 #[derive(PartialEq, Eq, Debug)]
 pub enum TokenKind {
-    Let,
     LeftParen,
     RightParen,
     Colon,
     Plus,
     Minus,
-    Integral,
     Hole,
     Identifier,
     RawIdentifier {
         closed : bool
     },
+    Integral,
+    Primitive,
+    Let,
     Comment,
     Whitestuff,
     EoF,
@@ -30,6 +31,8 @@ impl TokenKind {
 
     /// Returns whether this token indicates a terminal value.
     pub fn is_terminal(&self) -> bool {
-        self.is_identifier() || matches!(self, Self::Integral)
+        self.is_identifier() || matches!(self,
+                Self::Integral
+                | Self::Primitive)
     }
 }
