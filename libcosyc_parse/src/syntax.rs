@@ -19,6 +19,10 @@ pub enum UnaryOpKind {
 pub enum ExprKind {
     Variable,
     Integral,
+    TypeAnno {
+        vexpr : Box<Expr>,
+        texpr : Box<Expr>
+    },
     BinaryOp {
         kind : BinaryOpKind,
         lexpr : Box<Expr>,

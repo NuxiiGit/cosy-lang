@@ -194,6 +194,11 @@ impl<'a, T : Write> LispRenderer<'a, T> {
                 }
             },
             ast::ExprKind::Integral => write!(self.out, "{}", span.render(self.src))?,
+            ast::ExprKind::TypeAnno { vexpr, texpr } => {
+                write!(self.out, "(|:|")?;
+                self.render_expr_params(true, &[vexpr, texpr])?;
+                write!(self.out, ")")?;
+            },
             ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => {
                 write!(self.out, "(")?;
                 let mut inline = true;

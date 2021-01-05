@@ -87,10 +87,24 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Expr> {
-        self.parse_expr_infix()
+        self.parse_expr_type()
     }
 
-    /// Parses custom infix operators
+    /// Parses type annotations.
+    pub fn parse_expr_type(&mut self) -> Option<ast::Expr> {
+        let mut expr = self.parse_expr_infix()?;
+        while self.sat(|x| matches!(x, TokenKind::Colon)) {
+            self.advance();
+            let vexpr = Box::new(expr);
+            let texpr = Box::new(self.parse_expr_infix()?);
+            let span = Span::new(vexpr.span.begin, texpr.span.end);
+            let kind = ast::ExprKind::TypeAnno { vexpr, texpr };
+            expr = ast::Expr { span, kind };
+        }
+        Some(expr)
+    }
+
+    /// Parses custom infix operators.
     pub fn parse_expr_infix(&mut self) -> Option<ast::Expr> {
         let mut expr = self.parse_expr_addition()?;
         while self.sat(TokenKind::is_identifier) {
