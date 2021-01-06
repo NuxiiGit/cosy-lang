@@ -30,4 +30,20 @@ impl<'a> ASTDesugar<'a> {
     pub fn render(&self, span : &Span) -> &'a str {
         span.render(&self.src)
     }
+
+    /// Generates the instructions for expressions.
+    pub fn visit_expr(&mut self, expr : ast::Expr) -> Option<ir::Inst> {
+        let span = expr.span;
+        let kind = match expr.kind {
+            ast::ExprKind::Variable => unimplemented!(),
+            ast::ExprKind::Integral => unimplemented!(),
+            ast::ExprKind::Primitive => unimplemented!(),
+            ast::ExprKind::TypeAnno { vexpr, texpr } => unimplemented!(),
+            ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => unimplemented!(),
+            ast::ExprKind::UnaryOp { kind, inner } => unimplemented!(),
+            ast::ExprKind::Call { intrinsic, callsite, params } => unimplemented!()
+        };
+        let datatype = ir::Type::Unknown;
+        Some(ir::Inst{ span, datatype, kind })
+    }
 }
