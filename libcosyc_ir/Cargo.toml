@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 libcosyc_diagnostic = { path = "../libcosyc_diagnostic" }
+libcosyc_parse = { path = "../libcosyc_parse" }
