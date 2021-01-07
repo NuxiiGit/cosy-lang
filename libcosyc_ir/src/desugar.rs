@@ -36,8 +36,12 @@ impl<'a> ASTDesugar<'a> {
         let span = expr.span;
         let kind = match expr.kind {
             ast::ExprKind::Variable => unimplemented!(),
-            ast::ExprKind::Integral => unimplemented!(),
-            ast::ExprKind::Primitive => unimplemented!(),
+            ast::ExprKind::Integral => ir::InstKind::Integral,
+            ast::ExprKind::Primitive => {
+                match self.render(&span) {
+                    "i8" => ir::
+                }
+            },
             ast::ExprKind::TypeAnno { vexpr, texpr } => unimplemented!(),
             ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => unimplemented!(),
             ast::ExprKind::UnaryOp { kind, inner } => unimplemented!(),
