@@ -5,7 +5,7 @@ use libcosyc_diagnostic::source::Span;
 pub enum BinaryOpKind {
     Add,
     Subtract,
-    Custom(Box<Expr>)
+    Custom(Box<Term>)
 }
 
 /// Represents the different kinds of binary operation.
@@ -14,36 +14,36 @@ pub enum UnaryOpKind {
     Negate
 }
 
-/// Represents a kind of expression.
+/// Represents a kind of term.
 #[derive(Debug)]
-pub enum ExprKind {
+pub enum TermKind {
     Variable,
     Integral,
     Primitive,
     TypeAnno {
-        vexpr : Box<Expr>,
-        texpr : Box<Expr>
+        value : Box<Term>,
+        ty : Box<Term>
     },
     BinaryOp {
         kind : BinaryOpKind,
-        lexpr : Box<Expr>,
-        rexpr : Box<Expr>
+        left : Box<Term>,
+        right : Box<Term>
     },
     UnaryOp {
         kind : UnaryOpKind,
-        inner : Box<Expr>
+        value : Box<Term>
     },
     Call {
         intrinsic : bool,
-        callsite : Box<Expr>,
-        params : Vec<Expr>
+        callsite : Box<Term>,
+        params : Vec<Term>
     }
 }
 
-/// Represents expression information.
+/// Represents AST terms.
 #[derive(Debug)]
-pub struct Expr {
+pub struct Term {
     pub span : Span,
-    pub kind : ExprKind
+    pub kind : TermKind
 }
 

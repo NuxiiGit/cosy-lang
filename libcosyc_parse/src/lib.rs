@@ -1,5 +1,4 @@
 pub mod syntax;
-pub mod render;
 
 use libcosyc_diagnostic::{
     source::Span,
@@ -86,41 +85,41 @@ impl<'a> Parser<'a> {
     }
 
     /// Entry point for parsing any expression.
-    pub fn parse_expr(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr(&mut self) -> Option<ast::Term> {
         self.parse_expr_type()
     }
 
     /// Parses type annotations.
-    pub fn parse_expr_type(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr_type(&mut self) -> Option<ast::Term> {
         let mut expr = self.parse_expr_infix()?;
         while self.sat(|x| matches!(x, TokenKind::Colon)) {
             self.advance();
-            let vexpr = Box::new(expr);
-            let texpr = Box::new(self.parse_expr_infix()?);
-            let span = Span::new(vexpr.span.begin, texpr.span.end);
-            let kind = ast::ExprKind::TypeAnno { vexpr, texpr };
-            expr = ast::Expr { span, kind };
+            let value = Box::new(expr);
+            let ty = Box::new(self.parse_expr_infix()?);
+            let span = Span::new(value.span.begin, ty.span.end);
+            let kind = ast::TermKind::TypeAnno { value, ty };
+            expr = ast::Term { span, kind };
         }
         Some(expr)
     }
 
     /// Parses custom infix operators.
-    pub fn parse_expr_infix(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr_infix(&mut self) -> Option<ast::Term> {
         let mut expr = self.parse_expr_addition()?;
         while self.sat(TokenKind::is_identifier) {
             let kind = ast::BinaryOpKind::Custom(
                     Box::new(self.parse_expr_terminal()?));
-            let lexpr = Box::new(expr);
-            let rexpr = Box::new(self.parse_expr_addition()?);
-            let span = Span::new(lexpr.span.begin, rexpr.span.end);
-            let kind = ast::ExprKind::BinaryOp { kind, lexpr, rexpr };
-            expr = ast::Expr { span, kind };
+            let left = Box::new(expr);
+            let right = Box::new(self.parse_expr_addition()?);
+            let span = Span::new(left.span.begin, right.span.end);
+            let kind = ast::TermKind::BinaryOp { kind, left, right };
+            expr = ast::Term { span, kind };
         }
         Some(expr)
     }
 
     /// Parses `+` and `-` binary operators.
-    pub fn parse_expr_addition(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr_addition(&mut self) -> Option<ast::Term> {
         let mut expr = self.parse_expr_unary_prefix()?;
         while self.sat(|x| matches!(x, TokenKind::Plus | TokenKind::Minus)) {
             let kind = match self.advance() {
@@ -129,17 +128,17 @@ impl<'a> Parser<'a> {
                 _ => self.report(CompilerError::bug()
                         .reason("invalid addition operator"))?
             };
-            let lexpr = Box::new(expr);
-            let rexpr = Box::new(self.parse_expr_unary_prefix()?);
-            let span = Span::new(lexpr.span.begin, rexpr.span.end);
-            let kind = ast::ExprKind::BinaryOp { kind, lexpr, rexpr };
-            expr = ast::Expr { span, kind };
+            let left = Box::new(expr);
+            let right = Box::new(self.parse_expr_unary_prefix()?);
+            let span = Span::new(left.span.begin, right.span.end);
+            let kind = ast::TermKind::BinaryOp { kind, left, right };
+            expr = ast::Term { span, kind };
         }
         Some(expr)
     }
 
     /// Parses the unary operator `-`.
-    pub fn parse_expr_unary_prefix(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr_unary_prefix(&mut self) -> Option<ast::Term> {
         if self.sat(|x| matches!(x, TokenKind::Minus)) {
             let kind = match self.advance() {
                 TokenKind::Minus => ast::UnaryOpKind::Negate,
@@ -147,17 +146,17 @@ impl<'a> Parser<'a> {
                         .reason("invalid unary operator"))?
             };
             let mut span = self.span().clone();
-            let inner = Box::new(self.parse_expr_unary_prefix()?);
-            span.end = inner.span.end;
-            let kind = ast::ExprKind::UnaryOp { kind, inner };
-            Some(ast::Expr { span, kind })
+            let value = Box::new(self.parse_expr_unary_prefix()?);
+            span.end = value.span.end;
+            let kind = ast::TermKind::UnaryOp { kind, value };
+            Some(ast::Term { span, kind })
         } else {
             self.parse_expr_terminal()
         }
     }
 
     /// Parses literals and identifiers.
-    pub fn parse_expr_terminal(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr_terminal(&mut self) -> Option<ast::Term> {
         if self.sat(TokenKind::is_terminal) {
             let kind = match self.advance() {
                 TokenKind::RawIdentifier { closed : false } => {
@@ -165,21 +164,21 @@ impl<'a> Parser<'a> {
                             .reason("raw identifier is missing a closing accent")
                             .note("consider adding a closing accent (`)"))?
                 },
-                x if x.is_identifier() => ast::ExprKind::Variable,
-                TokenKind::Integral => ast::ExprKind::Integral,
-                TokenKind::Primitive => ast::ExprKind::Primitive,
+                x if x.is_identifier() => ast::TermKind::Variable,
+                TokenKind::Integral => ast::TermKind::Integral,
+                TokenKind::Primitive => ast::TermKind::Primitive,
                 _ => self.report(CompilerError::bug()
                         .reason("invalid terminal kind"))?
             };
             let span = self.span().clone();
-            Some(ast::Expr { span, kind })
+            Some(ast::Term { span, kind })
         } else {
             self.parse_expr_grouping()
         }
     }
 
     /// Parses groupings of expressions.
-    pub fn parse_expr_grouping(&mut self) -> Option<ast::Expr> {
+    pub fn parse_expr_grouping(&mut self) -> Option<ast::Term> {
         if self.sat(|x| matches!(x, TokenKind::LeftParen)) {
             self.advance();
             let expr = self.parse_expr()?;
@@ -205,7 +204,7 @@ impl<'a> Into<Lexer<'a>> for Parser<'a> {
 }
 
 /// Generates the AST of this source code and reports any errors to this `IssueTracker`.
-pub fn build_ast(src : &str, issues : &mut IssueTracker) -> Option<ast::Expr> {
+pub fn build_ast(src : &str, issues : &mut IssueTracker) -> Option<ast::Term> {
     let lexer = Lexer::from(src);
     let mut parser = Parser::new(lexer, issues);
     let program = parser.parse_expr()?;

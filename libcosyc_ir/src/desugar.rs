@@ -32,20 +32,20 @@ impl<'a> ASTDesugar<'a> {
     }
 
     /// Generates the instructions for expressions.
-    pub fn visit_expr(&mut self, expr : ast::Expr) -> Option<ir::Inst> {
-        let span = expr.span;
-        let kind = match expr.kind {
-            ast::ExprKind::Variable => unimplemented!(),
-            ast::ExprKind::Integral => ir::InstKind::Integral,
-            ast::ExprKind::Primitive => {
+    pub fn visit_expr(&mut self, term : ast::Term) -> Option<ir::Inst> {
+        let span = term.span;
+        let kind = match term.kind {
+            ast::TermKind::Variable => unimplemented!(),
+            ast::TermKind::Integral => ir::InstKind::Integral,
+            ast::TermKind::Primitive => {
                 match self.render(&span) {
-                    "i8" => ir::
+                    _ => unimplemented!()
                 }
             },
-            ast::ExprKind::TypeAnno { vexpr, texpr } => unimplemented!(),
-            ast::ExprKind::BinaryOp { kind, lexpr, rexpr } => unimplemented!(),
-            ast::ExprKind::UnaryOp { kind, inner } => unimplemented!(),
-            ast::ExprKind::Call { intrinsic, callsite, params } => unimplemented!()
+            ast::TermKind::TypeAnno { value, ty } => unimplemented!(),
+            ast::TermKind::BinaryOp { kind, left, right } => unimplemented!(),
+            ast::TermKind::UnaryOp { kind, value } => unimplemented!(),
+            ast::TermKind::Call { intrinsic, callsite, params } => unimplemented!()
         };
         let datatype = ir::Type::Unknown;
         Some(ir::Inst{ span, datatype, kind })
