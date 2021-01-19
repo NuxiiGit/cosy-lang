@@ -10,14 +10,14 @@ use crate::ir;
 
 /// Handles the conversion of the AST into IR.
 pub struct ASTDesugar<'a> {
-    issues : &'a mut IssueTracker,
-    src : &'a str
+    src : &'a str,
+    issues : &'a mut IssueTracker
 }
 
 impl<'a> ASTDesugar<'a> {
     /// Creates a new instance from this issue tracker and source file.
-    pub fn new(issues : &'a mut IssueTracker, src : &'a str) -> Self {
-        Self { issues, src }
+    pub fn new(src : &'a str, issues : &'a mut IssueTracker) -> Self {
+        Self { src, issues }
     }
 
     /// Reports an error to the issue tracker.
@@ -32,7 +32,7 @@ impl<'a> ASTDesugar<'a> {
     }
 
     /// Generates the instructions for expressions.
-    pub fn visit_expr(&mut self, term : ast::Term) -> Option<ir::Inst> {
+    pub fn visit(&mut self, term : ast::Term) -> Option<ir::Inst> {
         let span = term.span;
         let kind = match term.kind {
             ast::TermKind::Variable => unimplemented!(),
@@ -50,4 +50,10 @@ impl<'a> ASTDesugar<'a> {
         let datatype = ir::Type::Unknown;
         Some(ir::Inst{ span, datatype, kind })
     }
+}
+
+/// Desugars the AST into IR and reports any errors to this `IssueTracker`.
+pub fn desugar_ast(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
+    let mut desugar = ASTDesugar::new(src, issues);
+    desugar.visit(ast)
 }
