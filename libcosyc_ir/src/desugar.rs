@@ -51,9 +51,3 @@ impl<'a> ASTDesugar<'a> {
         Some(ir::Inst{ span, datatype, kind })
     }
 }
-
-/// Desugars the AST into IR and reports any errors to this `IssueTracker`.
-pub fn desugar_ast(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
-    let mut desugar = ASTDesugar::new(src, issues);
-    desugar.visit(ast)
-}
