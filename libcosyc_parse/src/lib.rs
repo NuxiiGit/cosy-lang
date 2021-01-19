@@ -96,7 +96,7 @@ impl<'a> Parser<'a> {
             self.advance();
             let value = Box::new(expr);
             let ty = Box::new(self.parse_expr_infix()?);
-            let span = Span::new(value.span.begin, ty.span.end);
+            let span = value.span.join(&ty.span);
             let kind = ast::TermKind::TypeAnno { value, ty };
             expr = ast::Term { span, kind };
         }
@@ -111,7 +111,7 @@ impl<'a> Parser<'a> {
                     Box::new(self.parse_expr_terminal()?));
             let left = Box::new(expr);
             let right = Box::new(self.parse_expr_addition()?);
-            let span = Span::new(left.span.begin, right.span.end);
+            let span = left.span.join(&right.span);
             let kind = ast::TermKind::BinaryOp { kind, left, right };
             expr = ast::Term { span, kind };
         }
@@ -130,7 +130,7 @@ impl<'a> Parser<'a> {
             };
             let left = Box::new(expr);
             let right = Box::new(self.parse_expr_unary_prefix()?);
-            let span = Span::new(left.span.begin, right.span.end);
+            let span = left.span.join(&right.span);
             let kind = ast::TermKind::BinaryOp { kind, left, right };
             expr = ast::Term { span, kind };
         }

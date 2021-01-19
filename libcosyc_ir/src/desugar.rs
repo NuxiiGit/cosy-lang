@@ -42,10 +42,10 @@ impl<'a> ASTDesugar<'a> {
                     _ => unimplemented!()
                 }
             },
-            ast::TermKind::TypeAnno { value, ty } => unimplemented!(),
-            ast::TermKind::BinaryOp { kind, left, right } => unimplemented!(),
-            ast::TermKind::UnaryOp { kind, value } => unimplemented!(),
-            ast::TermKind::Call { intrinsic, callsite, params } => unimplemented!()
+            ast::TermKind::TypeAnno { value : _, ty : _ } => unimplemented!(),
+            ast::TermKind::BinaryOp { kind : _, left : _, right : _ } => unimplemented!(),
+            ast::TermKind::UnaryOp { kind : _, value : _ } => unimplemented!(),
+            ast::TermKind::Call { intrinsic : _, callsite : _, params : _ } => unimplemented!()
         };
         let datatype = ir::Type::Unknown;
         Some(ir::Inst{ span, datatype, kind })
