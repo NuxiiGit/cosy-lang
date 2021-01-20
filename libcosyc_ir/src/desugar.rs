@@ -55,8 +55,27 @@ impl<'a> ASTDesugar<'a> {
                 value.datatype = Some(Box::new(ty)); // insert type ascription
                 return Some(value);
             },
-            ast::TermKind::BinaryOp { kind : _, left : _, right : _ } => unimplemented!(),
-            ast::TermKind::UnaryOp { kind : _, value : _ } => unimplemented!(),
+            ast::TermKind::BinaryOp { kind, left, right } => {
+                let kind = match kind {
+                    ast::BinaryOpKind::Add => ir::BinaryOpKind::Add,
+                    ast::BinaryOpKind::Subtract => ir::BinaryOpKind::Subtract,
+                    ast::BinaryOpKind::Custom(op) => self.report(CompilerError::bug()
+                            .span(&span)
+                            .reason("infix function application is not currently supported")
+                            .note(format!("consider refactoring this to `{}({}, {})`",
+                                    self.render(&op.span), self.render(&left.span), self.render(&right.span))))?
+                };
+                let left = Box::new(self.visit(*left)?);
+                let right = Box::new(self.visit(*right)?);
+                ir::InstKind::BinaryOp { kind, left, right }
+            },
+            ast::TermKind::UnaryOp { kind, value } => {
+                let kind = match kind {
+                    ast::UnaryOpKind::Negate => ir::UnaryOpKind::Negate,
+                };
+                let value = Box::new(self.visit(*value)?);
+                ir::InstKind::UnaryOp { kind, value }
+            },
         };
         Some(ir::Inst::new_untyped(span, kind))
     }

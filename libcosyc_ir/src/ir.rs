@@ -33,12 +33,12 @@ pub enum InstKind {
     Primitive(PrimitiveKind),
     BinaryOp {
         kind : BinaryOpKind,
-        linst : Box<Inst>,
-        rinst : Box<Inst>
+        left : Box<Inst>,
+        right : Box<Inst>
     },
     UnaryOp {
         kind : UnaryOpKind,
-        inner : Box<Inst>
+        value : Box<Inst>
     }
 }
 
