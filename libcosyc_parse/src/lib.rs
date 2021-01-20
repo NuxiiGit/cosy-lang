@@ -157,20 +157,26 @@ impl<'a> Parser<'a> {
 
     /// Parses literals and identifiers.
     pub fn parse_expr_terminal(&mut self) -> Option<ast::Term> {
-        if self.sat(TokenKind::is_terminal) {
+        if self.sat(TokenKind::is_identifier) {
             let kind = match self.advance() {
                 TokenKind::RawIdentifier { closed : false } => {
                     self.report(CompilerError::new()
                             .reason("raw identifier is missing a closing accent")
                             .note("consider adding a closing accent (`)"))?
                 },
-                x if x.is_identifier() => ast::TermKind::Variable,
-                TokenKind::Integral => ast::TermKind::Const(ast::ConstKind::Integral),
-                TokenKind::I8 => ast::TermKind::Primitive(ast::PrimitiveKind::I8),
-                TokenKind::Type => ast::TermKind::Primitive(ast::PrimitiveKind::Type),
+                _ => ast::TermKind::Variable
+            };
+            let span = self.span().clone();
+            Some(ast::Term { span, kind })
+        } else if self.sat(TokenKind::is_terminal) {
+            let kind = match self.advance() {
+                TokenKind::Integral => ast::ConstKind::Integral,
+                TokenKind::I8 => ast::ConstKind::I8,
+                TokenKind::Type => ast::ConstKind::Type,
                 _ => self.report(CompilerError::bug()
                         .reason("invalid terminal kind"))?
             };
+            let kind = ast::TermKind::Const(kind);
             let span = self.span().clone();
             Some(ast::Term { span, kind })
         } else {

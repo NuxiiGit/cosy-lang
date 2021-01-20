@@ -6,7 +6,7 @@ use libcosyc_diagnostic::{
     source::Span
 };
 use libcosyc_parse::syntax as ast;
-use crate::ir;
+use crate::{ ir, value, types };
 
 /// Handles the conversion of the AST into IR.
 pub struct ASTDesugar<'a> {
@@ -38,22 +38,16 @@ impl<'a> ASTDesugar<'a> {
             ast::TermKind::Variable => unimplemented!(),
             ast::TermKind::Const(kind) => {
                 let kind = match kind {
-                    ast::ConstKind::Integral => ir::ConstKind::Integral
+                    ast::ConstKind::Integral => value::ValueKind::Integral,
+                    ast::ConstKind::I8 => value::ValueKind::TypeI8,
+                    ast::ConstKind::Type => value::ValueKind::TypeType
                 };
-                ir::InstKind::Const(kind)
-            },
-            ast::TermKind::Primitive(kind) => {
-                let kind = match kind {
-                    ast::PrimitiveKind::I8 => ir::PrimitiveKind::I8,
-                    ast::PrimitiveKind::Type => ir::PrimitiveKind::Type
-                };
-                ir::InstKind::Primitive(kind)
+                ir::InstKind::Value(kind)
             },
             ast::TermKind::TypeAnno { value, ty } => {
-                let mut value = self.visit(*value)?;
-                let ty = self.visit(*ty)?;
-                value.datatype = Some(Box::new(ty)); // insert type ascription
-                return Some(value);
+                let value = Box::new(self.visit(*value)?);
+                let ty = Box::new(self.visit(*ty)?);
+                ir::InstKind::TypeAnno { value, ty }
             },
             ast::TermKind::BinaryOp { kind, left, right } => {
                 let kind = match kind {
@@ -77,6 +71,6 @@ impl<'a> ASTDesugar<'a> {
                 ir::InstKind::UnaryOp { kind, value }
             },
         };
-        Some(ir::Inst::new_untyped(span, kind))
+        Some(ir::Inst::new(span, kind))
     }
 }

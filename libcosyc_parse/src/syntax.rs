@@ -17,12 +17,7 @@ pub enum UnaryOpKind {
 /// Represents the different kinds of constants.
 #[derive(Debug)]
 pub enum ConstKind {
-    Integral
-}
-
-/// Represents the different kinds of primitive types.
-#[derive(Debug)]
-pub enum PrimitiveKind {
+    Integral,
     I8,
     Type
 }
@@ -32,7 +27,6 @@ pub enum PrimitiveKind {
 pub enum TermKind {
     Variable,
     Const(ConstKind),
-    Primitive(PrimitiveKind),
     TypeAnno {
         value : Box<Term>,
         ty : Box<Term>
@@ -54,4 +48,3 @@ pub struct Term {
     pub span : Span,
     pub kind : TermKind
 }
-
