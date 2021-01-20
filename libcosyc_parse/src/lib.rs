@@ -165,8 +165,9 @@ impl<'a> Parser<'a> {
                             .note("consider adding a closing accent (`)"))?
                 },
                 x if x.is_identifier() => ast::TermKind::Variable,
-                TokenKind::Integral => ast::TermKind::Integral,
-                TokenKind::Primitive => ast::TermKind::Primitive,
+                TokenKind::Integral => ast::TermKind::Const(ast::ConstKind::Integral),
+                TokenKind::I8 => ast::TermKind::Primitive(ast::PrimitiveKind::I8),
+                TokenKind::Type => ast::TermKind::Primitive(ast::PrimitiveKind::Type),
                 _ => self.report(CompilerError::bug()
                         .reason("invalid terminal kind"))?
             };

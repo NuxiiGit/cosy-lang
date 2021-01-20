@@ -14,12 +14,25 @@ pub enum UnaryOpKind {
     Negate
 }
 
+/// Represents the different kinds of constants.
+#[derive(Debug)]
+pub enum ConstKind {
+    Integral
+}
+
+/// Represents the different kinds of primitive types.
+#[derive(Debug)]
+pub enum PrimitiveKind {
+    I8,
+    Type
+}
+
 /// Represents a kind of term.
 #[derive(Debug)]
 pub enum TermKind {
     Variable,
-    Integral,
-    Primitive,
+    Const(ConstKind),
+    Primitive(PrimitiveKind),
     TypeAnno {
         value : Box<Term>,
         ty : Box<Term>

@@ -12,7 +12,8 @@ pub enum TokenKind {
         closed : bool
     },
     Integral,
-    Primitive,
+    I8,
+    Type,
     Let,
     Comment,
     Whitestuff,
@@ -33,6 +34,7 @@ impl TokenKind {
     pub fn is_terminal(&self) -> bool {
         self.is_identifier() || matches!(self,
                 Self::Integral
-                | Self::Primitive)
+                | Self::I8
+                | Self::Type)
     }
 }

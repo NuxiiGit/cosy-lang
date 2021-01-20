@@ -36,19 +36,18 @@ impl<'a> ASTDesugar<'a> {
         let span = term.span;
         let kind = match term.kind {
             ast::TermKind::Variable => unimplemented!(),
-            ast::TermKind::Integral => {
-                let constant = ir::ConstKind::Integral;
-                ir::InstKind::Const(constant)
-            },
-            ast::TermKind::Primitive => {
-                let primitive = match self.render(&span) {
-                    "i8" => ir::PrimitiveKind::I8,
-                    "type" => ir::PrimitiveKind::Type,
-                    _ => self.report(CompilerError::bug()
-                            .span(&span)
-                            .reason("unrecognised primitive type"))?
+            ast::TermKind::Const(kind) => {
+                let kind = match kind {
+                    ast::ConstKind::Integral => ir::ConstKind::Integral
                 };
-                ir::InstKind::Primitive(primitive)
+                ir::InstKind::Const(kind)
+            },
+            ast::TermKind::Primitive(kind) => {
+                let kind = match kind {
+                    ast::PrimitiveKind::I8 => ir::PrimitiveKind::I8,
+                    ast::PrimitiveKind::Type => ir::PrimitiveKind::Type
+                };
+                ir::InstKind::Primitive(kind)
             },
             ast::TermKind::TypeAnno { value : _, ty : _ } => unimplemented!(),
             ast::TermKind::BinaryOp { kind : _, left : _, right : _ } => unimplemented!(),
