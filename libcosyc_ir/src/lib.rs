@@ -12,3 +12,13 @@ pub fn desugar_ast(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> O
     let mut desugar = ASTDesugar::new(src, issues);
     desugar.visit(ast)
 }
+
+/// Computes the constant terms of this program and returns the new program.
+pub fn fold_const_terms(_inst : ir::Inst, _src : &str, _issues : &mut IssueTracker) -> Option<ir::Inst> {
+    unimplemented!()
+}
+
+/// Typechecks the program and reports and type errors to this `IssueTracker`.
+pub fn typecheck(_inst : &ir::Inst, _src : &str, _issues : &mut IssueTracker) -> Option<()> {
+    unimplemented!()
+}
