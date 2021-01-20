@@ -1,4 +1,6 @@
 pub mod ir;
+pub mod eval;
+pub mod typecheck;
 pub mod desugar;
 
 use libcosyc_diagnostic::error::IssueTracker;
