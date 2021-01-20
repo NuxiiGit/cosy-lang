@@ -32,11 +32,6 @@ pub enum TermKind {
     UnaryOp {
         kind : UnaryOpKind,
         value : Box<Term>
-    },
-    Call {
-        intrinsic : bool,
-        callsite : Box<Term>,
-        params : Vec<Term>
     }
 }
 
