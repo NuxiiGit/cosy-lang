@@ -49,7 +49,12 @@ impl<'a> ASTDesugar<'a> {
                 };
                 ir::InstKind::Primitive(kind)
             },
-            ast::TermKind::TypeAnno { value : _, ty : _ } => unimplemented!(),
+            ast::TermKind::TypeAnno { value, ty } => {
+                let mut value = self.visit(*value)?;
+                let ty = self.visit(*ty)?;
+                value.datatype = Some(Box::new(ty)); // insert type ascription
+                return Some(value);
+            },
             ast::TermKind::BinaryOp { kind : _, left : _, right : _ } => unimplemented!(),
             ast::TermKind::UnaryOp { kind : _, value : _ } => unimplemented!(),
         };
