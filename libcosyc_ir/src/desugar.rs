@@ -6,7 +6,7 @@ use libcosyc_diagnostic::{
     source::Span
 };
 use libcosyc_parse::syntax as ast;
-use crate::{ ir, value, types };
+use crate::ir;
 
 /// Handles the conversion of the AST into IR.
 pub struct ASTDesugar<'a> {
@@ -38,9 +38,9 @@ impl<'a> ASTDesugar<'a> {
             ast::TermKind::Variable => unimplemented!(),
             ast::TermKind::Const(kind) => {
                 let kind = match kind {
-                    ast::ConstKind::Integral => value::ValueKind::Integral,
-                    ast::ConstKind::I8 => value::ValueKind::TypeI8,
-                    ast::ConstKind::Type => value::ValueKind::TypeType
+                    ast::ConstKind::Integral => ir::ValueKind::Integral,
+                    ast::ConstKind::I8 => ir::ValueKind::TypeI8,
+                    ast::ConstKind::Type => ir::ValueKind::TypeType
                 };
                 ir::InstKind::Value(kind)
             },

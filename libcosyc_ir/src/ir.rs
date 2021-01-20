@@ -1,8 +1,4 @@
 use libcosyc_diagnostic::source::Span;
-use crate::{
-    value::ValueKind,
-    types::TypeKind
-};
 
 /// Represents the different kinds of binary operation.
 #[derive(Debug)]
@@ -15,6 +11,22 @@ pub enum BinaryOpKind {
 #[derive(Debug)]
 pub enum UnaryOpKind {
     Negate
+}
+
+/// Represents the different kinds of value.
+#[derive(Debug)]
+pub enum ValueKind {
+    Integral,
+    TypeI8,
+    TypeType
+}
+
+/// Represents the different kinds of types.
+#[derive(Debug, PartialEq, Eq)]
+pub enum TypeKind {
+    I8,
+    Type,
+    Unknown
 }
 
 /// Represents a kind of expression.
