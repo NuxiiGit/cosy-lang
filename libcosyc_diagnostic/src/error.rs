@@ -3,10 +3,8 @@ use crate::source::Span;
 /// Represents different kinds of error.
 #[derive(PartialOrd, Ord, PartialEq, Eq, Debug, Clone)]
 pub enum ErrorLevel {
-    Lint,
     Warning,
-    Fatal,
-    Bug
+    Fatal
 }
 
 impl Default for ErrorLevel {
@@ -60,11 +58,6 @@ impl CompilerError {
     }
 
     /// Returns a standard linting error.
-    pub fn lint() -> Self {
-        CompilerError::new().level(ErrorLevel::Lint)
-    }
-
-    /// Returns a standard linting error.
     pub fn warning() -> Self {
         CompilerError::new().level(ErrorLevel::Warning)
     }
@@ -72,19 +65,19 @@ impl CompilerError {
     /// Returns a standard bug error.
     pub fn bug() -> Self {
         CompilerError::new()
-                .level(ErrorLevel::Bug)
+                .level(ErrorLevel::Fatal)
                 .note("this may be caused by a bug in the compiler internals")
     }
 
     /// Returns a built-in error for unimplemented features.
     pub fn unimplemented<T : ToString>(reason : T) -> Self {
-        CompilerError::bug()
+        CompilerError::new()
                 .reason(format!("{} is not currently supported", reason.to_string()))
     }
 
     /// Returns a built-in error for unstable features.
     pub fn unstable<T : ToString>(reason : T) -> Self {
-        CompilerError::bug()
+        CompilerError::warning()
                 .reason(format!("{} is currently unstable", reason.to_string()))
     }
 }
