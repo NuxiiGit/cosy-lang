@@ -1,0 +1,8 @@
+
+Fatal: expected `i8` (got `<unknown>`)
+ Note? consider adding a type annotation
+  >>> examples/test.cosy:1:12
+   | 
+ 1 | (1 : i8) + 8 : i8
+   |            ^
+
