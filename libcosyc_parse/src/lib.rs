@@ -95,7 +95,7 @@ impl<'a> Parser<'a> {
         while self.sat(|x| matches!(x, TokenKind::Colon)) {
             self.advance();
             let value = Box::new(expr);
-            let ty = Box::new(self.parse_expr_infix()?);
+            let ty = Box::new(self.parse_expr_type()?);
             let span = value.span.join(&ty.span);
             let kind = ast::TermKind::TypeAnno { value, ty };
             expr = ast::Term { span, kind };
