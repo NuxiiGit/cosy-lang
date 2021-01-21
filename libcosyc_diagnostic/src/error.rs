@@ -77,11 +77,15 @@ impl CompilerError {
     }
 
     /// Returns a built-in error for unimplemented features.
-    pub fn unimplemented() -> Self {
-        CompilerError::new()
-                .level(ErrorLevel::Bug)
-                .reason("unimplemented")
-                .note("this feature is not currently supported")
+    pub fn unimplemented<T : ToString>(reason : T) -> Self {
+        CompilerError::bug()
+                .reason(format!("{} is not currently supported", reason.to_string()))
+    }
+
+    /// Returns a built-in error for unstable features.
+    pub fn unstable<T : ToString>(reason : T) -> Self {
+        CompilerError::bug()
+                .reason(format!("{} is currently unstable", reason.to_string()))
     }
 }
 

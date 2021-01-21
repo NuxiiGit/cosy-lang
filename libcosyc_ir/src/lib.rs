@@ -36,7 +36,9 @@ impl<'a> IRManager<'a> {
     pub fn desugar(&mut self, term : ast::Term) -> Option<ir::Inst> {
         let span = term.span;
         let kind = match term.kind {
-            ast::TermKind::Variable => unimplemented!(),
+            ast::TermKind::Variable =>
+                    self.report(CompilerError::unimplemented("IR for variables")
+                            .span(&span))?,
             ast::TermKind::Const(kind) => {
                 let kind = match kind {
                     ast::ConstKind::Integral => ir::ValueKind::Integral,
@@ -54,11 +56,9 @@ impl<'a> IRManager<'a> {
                 let kind = match kind {
                     ast::BinaryOpKind::Add => ir::BinaryOpKind::Add,
                     ast::BinaryOpKind::Subtract => ir::BinaryOpKind::Subtract,
-                    ast::BinaryOpKind::Custom(op) => self.report(CompilerError::bug()
-                            .span(&span)
-                            .reason("infix function application is not currently supported")
-                            .note(format!("consider refactoring this to `{}({}, {})`",
-                                    self.render(&op.span), self.render(&left.span), self.render(&right.span))))?
+                    ast::BinaryOpKind::Custom(_) =>
+                            self.report(CompilerError::unimplemented("infix function application")
+                                    .span(&span))?
                 };
                 let left = Box::new(self.desugar(*left)?);
                 let right = Box::new(self.desugar(*right)?);
@@ -100,12 +100,12 @@ impl<'a> IRManager<'a> {
                 };
                 *value
             },
-            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } => self.report(CompilerError::bug()
-                    .span(&span)
-                    .reason("compiletime evaluation of binary ops is not currently supported"))?,
-            ir::InstKind::UnaryOp { kind : _, value : _ } => self.report(CompilerError::bug()
-                    .span(&span)
-                    .reason("compiletime evaluation of unary ops is not currently supported"))?
+            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
+                    self.report(CompilerError::unimplemented("compile-time evaluation of binary ops")
+                            .span(&span))?,
+            ir::InstKind::UnaryOp { kind : _, value : _ } =>
+                    self.report(CompilerError::unimplemented("compile-time evaluation of unary ops")
+                            .span(&span))?
         };
         Some(inst)
     }
