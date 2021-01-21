@@ -159,17 +159,33 @@ impl<'a> IRManager<'a> {
         match &inst.kind {
             ir::InstKind::Value(kind) => {
                 let datatype = &inst.datatype;
-                match kind {
-                    ir::ValueKind::Integral => {
-                        if !matches!(datatype, ir::TypeKind::I8) {
-                            self.report(CompilerError::new()
-                                    .span(&span)
-                                    .reason(format!("expected one of `i8` (got {:?})", datatype)))?
-                        }
-                    },
+                let expect = match kind {
+                    ir::ValueKind::Integral => &[ir::TypeKind::I8],
                     _ => self.report(CompilerError::bug()
                             .span(&span)
                             .reason("type expressions should be erased by this point"))?
+                };
+                let mut well_typed = false;
+                for ty_kind in expect {
+                    if datatype == ty_kind {
+                        well_typed = true;
+                        break;
+                    }
+                }
+                if !well_typed {
+                    let mut types = String::new();
+                    for ty_kind in expect {
+                        types.push_str(" `");
+                        types.push_str(&ty_kind.to_string());
+                        types.push_str("`");
+                    }
+                    let mut err = CompilerError::new()
+                            .span(&span)
+                            .reason(format!("expected one of{} (got `{}`)", types, datatype));
+                    if matches!(datatype, ir::TypeKind::Unknown) {
+                        err = err.note("consider adding a type annotation");
+                    }
+                    self.report(err)?
                 }
             },
             ir::InstKind::TypeAnno { .. } =>

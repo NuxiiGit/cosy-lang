@@ -1,4 +1,5 @@
 use libcosyc_diagnostic::source::Span;
+use std::fmt;
 
 /// Represents the different kinds of binary operation.
 #[derive(Debug)]
@@ -27,6 +28,16 @@ pub enum TypeKind {
     I8,
     Type,
     Unknown
+}
+
+impl fmt::Display for TypeKind {
+    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::I8 => write!(out, "i8"),
+            Self::Type => write!(out, "type"),
+            Self::Unknown => write!(out, "<unknown>")
+        }
+    }
 }
 
 /// Represents a kind of expression.
