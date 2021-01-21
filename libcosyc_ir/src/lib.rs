@@ -70,9 +70,44 @@ impl<'a> IRManager<'a> {
                 };
                 let value = Box::new(self.desugar(*value)?);
                 ir::InstKind::UnaryOp { kind, value }
-            },
+            }
         };
         Some(ir::Inst::new(span, kind))
+    }
+
+    /// Evaluates constant terms and produces a new IR.
+    pub fn evaluate(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
+        let span = inst.span;
+        let inst = match inst.kind {
+            x@ir::InstKind::Value(_) => ir::Inst::new(span, x),
+            ir::InstKind::TypeAnno { mut value, ty } => {
+                let ty = self.evaluate(*ty)?;
+                value.datatype = match ty.kind {
+                    ir::InstKind::Value(kind) => {
+                        match kind {
+                            ir::ValueKind::TypeI8 => ir::TypeKind::I8,
+                            ir::ValueKind::TypeType => ir::TypeKind::Type,
+                            _ => self.report(CompilerError::new()
+                                    .span(&span)
+                                    .reason("invalid type")
+                                    .note("types cannot be runtime values"))?
+                        }
+                    },
+                    _ => self.report(CompilerError::new()
+                            .span(&span)
+                            .reason("invalid type annotation")
+                            .note("this term must compute to a value"))?
+                };
+                *value
+            },
+            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } => self.report(CompilerError::bug()
+                    .span(&span)
+                    .reason("compiletime evaluation of binary ops is not currently supported"))?,
+            ir::InstKind::UnaryOp { kind : _, value : _ } => self.report(CompilerError::bug()
+                    .span(&span)
+                    .reason("compiletime evaluation of unary ops is not currently supported"))?
+        };
+        Some(inst)
     }
 }
 
