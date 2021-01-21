@@ -75,17 +75,60 @@ impl<'a> IRManager<'a> {
         Some(ir::Inst::new(span, kind))
     }
 
+    /// Asserts whether this instruction has one of the following types.
+    pub fn expect_type(&mut self, inst : &ir::Inst, expect : &[ir::TypeKind]) -> Option<()> {
+        let span = &inst.span;
+        let datatype = &inst.datatype;
+        for ty_kind in expect {
+            if datatype == ty_kind {
+                return Some(());
+            }
+        }
+        let mut types = String::new();
+        for ty_kind in expect {
+            types.push_str(" `");
+            types.push_str(&ty_kind.to_string());
+            types.push_str("`");
+        }
+        let one_of = if expect.len() == 1 { "" } else { " one of" };
+        let mut err = CompilerError::new()
+                .span(&span)
+                .reason(format!("expected{}{} (got `{}`)", one_of, types, datatype));
+        if matches!(datatype, ir::TypeKind::Unknown) {
+            err = err.note("consider adding a type annotation");
+        }
+        self.report(err)
+    }
+
+    /// Asserts whether these two terms have equivalent types.
+    pub fn expect_equal_types(&mut self, a : &ir::Inst, b : &ir::Inst) -> Option<()> {
+        let mut ty_a = &a.datatype;
+        let mut ty_b = &b.datatype;
+        if ty_a == ty_b {
+            return Some(());
+        }
+        if matches!(ty_a, ir::TypeKind::Unknown) {
+            let tmp = ty_a;
+            ty_a = ty_b;
+            ty_b = tmp;
+        }
+        let mut err = CompilerError::new()
+                .span(&b.span)
+                .reason(format!("expected `{}` (got `{}`)", ty_a, ty_b));
+        if matches!(ty_a, ir::TypeKind::Unknown) ||
+                matches!(ty_b, ir::TypeKind::Unknown) {
+            err = err.note("consider adding a type annotation");
+        }
+        self.report(err)
+    }
+
     /// Assigns the type of an IR instruction.
     /// # Errors
     /// Returns `None` if there was a problem assigning the type.
     pub fn annotate(&mut self, mut value : ir::Inst, ty : ir::Inst) -> Option<ir::Inst> {
-        if !matches!(value.datatype, ir::TypeKind::Unknown) {
-            self.report(CompilerError::new()
-                    .span(&value.span)
-                    .reason("this term already has a known type"))?;
-        }
         let ty = self.evaluate(ty)?;
-        value.datatype = match ty.kind {
+        self.expect_type(&ty, &[ir::TypeKind::Type]);
+        let datatype = match ty.kind {
             ir::InstKind::Value(kind) => {
                 match kind {
                     ir::ValueKind::TypeI8 => ir::TypeKind::I8,
@@ -101,6 +144,10 @@ impl<'a> IRManager<'a> {
                     .reason("invalid type annotation")
                     .note("this term must compute to a value"))?
         };
+        if !matches!(value.datatype, ir::TypeKind::Unknown) {
+            self.expect_type(&value, &[datatype.clone()])?;
+        }
+        value.datatype = datatype;
         Some(value)
     }
 
@@ -110,7 +157,14 @@ impl<'a> IRManager<'a> {
     pub fn evaluate(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
         let span = inst.span;
         let inst = match inst.kind {
-            x@ir::InstKind::Value(_) => ir::Inst::new(span, x),
+            ir::InstKind::Value(kind) => {
+                let datatype = match &kind {
+                    ir::ValueKind::TypeI8
+                            | ir::ValueKind::TypeType => ir::TypeKind::Type,
+                    _ => ir::TypeKind::Unknown
+                };
+                ir::Inst::new_typed(span, ir::InstKind::Value(kind), datatype)
+            },
             ir::InstKind::TypeAnno { value, ty } => {
                 let value = self.evaluate(*value)?;
                 let ty = *ty;
@@ -151,31 +205,6 @@ impl<'a> IRManager<'a> {
         Some(inst)
     }
 
-    /// Asserts whether this instruction has one of the following types.
-    pub fn expect_type(&mut self, inst : &ir::Inst, expect : &[ir::TypeKind]) -> Option<()> {
-        let span = &inst.span;
-        let datatype = &inst.datatype;
-        for ty_kind in expect {
-            if datatype == ty_kind {
-                return Some(());
-            }
-        }
-        let mut types = String::new();
-        for ty_kind in expect {
-            types.push_str(" `");
-            types.push_str(&ty_kind.to_string());
-            types.push_str("`");
-        }
-        let one_of = if expect.len() == 1 { "" } else { " one of" };
-        let mut err = CompilerError::new()
-                .span(&span)
-                .reason(format!("expected{}{} (got `{}`)", one_of, types, datatype));
-        if matches!(datatype, ir::TypeKind::Unknown) {
-            err = err.note("consider adding a type annotation");
-        }
-        self.report(err)
-    }
-
     /// Performs type checking on this instruction and returns whether it is well-typed.
     /// # Errors
     /// Returns `None` if the instruction is not well-typed.
@@ -205,6 +234,7 @@ impl<'a> IRManager<'a> {
                 self.typecheck(left)?;
                 self.typecheck(right)?;
                 self.expect_type(inst, &expect)?;
+                self.expect_equal_types(left, right)?;
             },
             ir::InstKind::UnaryOp { kind : _, value : _ } =>
                     self.report(CompilerError::unimplemented("type checking unary ops")

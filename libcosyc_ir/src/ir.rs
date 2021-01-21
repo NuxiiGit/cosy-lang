@@ -23,7 +23,7 @@ pub enum ValueKind {
 }
 
 /// Represents the different kinds of types.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeKind {
     I8,
     Type,
@@ -68,9 +68,13 @@ pub struct Inst {
 }
 
 impl Inst {
+    /// Creates a new typed instruction.
+    pub fn new_typed(span : Span, kind : InstKind, datatype : TypeKind) -> Self {
+        Self { span, datatype, kind }
+    }
+
     /// Creates a new untyped instruction.
     pub fn new(span : Span, kind : InstKind) -> Self {
-        let datatype = TypeKind::Unknown;
-        Self { span, datatype, kind }
+        Self::new_typed(span, kind, TypeKind::Unknown)
     }
 }
