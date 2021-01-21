@@ -75,30 +75,46 @@ impl<'a> IRManager<'a> {
         Some(ir::Inst::new(span, kind))
     }
 
-    /// Evaluates constant terms and produces a new IR.
+    /// Assigns the type of an IR instruction.
+    /// # Errors
+    /// Returns `None` if there was a problem assigning the type.
+    pub fn annotate(&mut self, mut value : ir::Inst, ty : ir::Inst) -> Option<ir::Inst> {
+        if !matches!(value.datatype, ir::TypeKind::Unknown) {
+            self.report(CompilerError::new()
+                    .span(&value.span)
+                    .reason("this term already has a known type"))?;
+        }
+        let ty = self.evaluate(ty)?;
+        value.datatype = match ty.kind {
+            ir::InstKind::Value(kind) => {
+                match kind {
+                    ir::ValueKind::TypeI8 => ir::TypeKind::I8,
+                    ir::ValueKind::TypeType => ir::TypeKind::Type,
+                    _ => self.report(CompilerError::new()
+                            .span(&ty.span)
+                            .reason("invalid type")
+                            .note("types cannot be runtime values"))?
+                }
+            },
+            _ => self.report(CompilerError::new()
+                    .span(&ty.span)
+                    .reason("invalid type annotation")
+                    .note("this term must compute to a value"))?
+        };
+        Some(value)
+    }
+
+    /// Evaluates this instruction and produces a new instruction.
+    /// # Errors
+    /// Returns `None` if the instruction cannot be evaluated at compile-time.
     pub fn evaluate(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
         let span = inst.span;
         let inst = match inst.kind {
             x@ir::InstKind::Value(_) => ir::Inst::new(span, x),
-            ir::InstKind::TypeAnno { mut value, ty } => {
-                let ty = self.evaluate(*ty)?;
-                value.datatype = match ty.kind {
-                    ir::InstKind::Value(kind) => {
-                        match kind {
-                            ir::ValueKind::TypeI8 => ir::TypeKind::I8,
-                            ir::ValueKind::TypeType => ir::TypeKind::Type,
-                            _ => self.report(CompilerError::new()
-                                    .span(&span)
-                                    .reason("invalid type")
-                                    .note("types cannot be runtime values"))?
-                        }
-                    },
-                    _ => self.report(CompilerError::new()
-                            .span(&span)
-                            .reason("invalid type annotation")
-                            .note("this term must compute to a value"))?
-                };
-                *value
+            ir::InstKind::TypeAnno { value, ty } => {
+                let value = self.evaluate(*value)?;
+                let ty = *ty;
+                self.annotate(value, ty)?
             },
             ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
                     self.report(CompilerError::unimplemented("compile-time evaluation of binary ops")
@@ -109,12 +125,18 @@ impl<'a> IRManager<'a> {
         };
         Some(inst)
     }
+
+    /// Evaluates constant contexts and produces a new instruction.
+    pub fn evaluate_const(&mut self, _inst : ir::Inst) -> Option<ir::Inst> {
+        unimplemented!()
+    }
 }
 
 /// Applies semantic analysis to this AST and returns valid IR.
 pub fn generate_ir(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
     let mut man = IRManager::new(src, issues);
     let ir = man.desugar(ast)?;
+    let ir = man.evaluate(ir)?;
     // TODO evaluate constant terms
     // TODO type infer
     // TODO type check
