@@ -127,8 +127,28 @@ impl<'a> IRManager<'a> {
     }
 
     /// Evaluates constant contexts and produces a new instruction.
-    pub fn evaluate_const(&mut self, _inst : ir::Inst) -> Option<ir::Inst> {
-        unimplemented!()
+    pub fn evaluate_const(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
+        let span = inst.span;
+        let inst = match inst.kind {
+            x@ir::InstKind::Value(_) => ir::Inst::new(span, x),
+            ir::InstKind::TypeAnno { value, ty } => {
+                let value = self.evaluate_const(*value)?;
+                let ty = *ty;
+                self.annotate(value, ty)?
+            },
+            ir::InstKind::BinaryOp { kind, left, right } => {
+                let left = Box::new(self.evaluate_const(*left)?);
+                let right = Box::new(self.evaluate_const(*right)?);
+                let kind = ir::InstKind::BinaryOp { kind, left, right };
+                ir::Inst::new(span, kind)
+            },
+            ir::InstKind::UnaryOp { kind, value } => {
+                let value = Box::new(self.evaluate_const(*value)?);
+                let kind = ir::InstKind::UnaryOp { kind, value };
+                ir::Inst::new(span, kind)
+            }
+        };
+        Some(inst)
     }
 }
 
@@ -136,7 +156,7 @@ impl<'a> IRManager<'a> {
 pub fn generate_ir(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
     let mut man = IRManager::new(src, issues);
     let ir = man.desugar(ast)?;
-    let ir = man.evaluate(ir)?;
+    let ir = man.evaluate_const(ir)?;
     // TODO evaluate constant terms
     // TODO type infer
     // TODO type check
