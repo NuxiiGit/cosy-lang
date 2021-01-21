@@ -160,13 +160,13 @@ impl<'a> IRManager<'a> {
             ir::InstKind::Value(kind) => {
                 let datatype = &inst.datatype;
                 let expect = match kind {
-                    ir::ValueKind::Integral => &[ir::TypeKind::I8],
+                    ir::ValueKind::Integral => vec![ir::TypeKind::I8],
                     _ => self.report(CompilerError::bug()
                             .span(&span)
                             .reason("type expressions should be erased by this point"))?
                 };
                 let mut well_typed = false;
-                for ty_kind in expect {
+                for ty_kind in &expect {
                     if datatype == ty_kind {
                         well_typed = true;
                         break;
