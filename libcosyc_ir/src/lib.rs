@@ -150,6 +150,41 @@ impl<'a> IRManager<'a> {
         };
         Some(inst)
     }
+
+    /// Performs type checking on this instruction and returns whether it is well-typed.
+    /// # Errors
+    /// Returns `None` if the instruction is not well-typed.
+    pub fn typecheck(&mut self, inst : &ir::Inst) -> Option<()> {
+        let span = &inst.span;
+        match &inst.kind {
+            ir::InstKind::Value(kind) => {
+                let datatype = &inst.datatype;
+                match kind {
+                    ir::ValueKind::Integral => {
+                        if !matches!(datatype, ir::TypeKind::I8) {
+                            self.report(CompilerError::new()
+                                    .span(&span)
+                                    .reason(format!("expected one of `i8` (got {:?})", datatype)))?
+                        }
+                    },
+                    _ => self.report(CompilerError::bug()
+                            .span(&span)
+                            .reason("type expressions should be erased by this point"))?
+                }
+            },
+            ir::InstKind::TypeAnno { .. } =>
+                    self.report(CompilerError::bug()
+                            .span(&span)
+                            .reason("type ascriptions should be erased by this point"))?,
+            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
+                    self.report(CompilerError::unimplemented("type checking binary ops")
+                            .span(&span))?,
+            ir::InstKind::UnaryOp { kind : _, value : _ } =>
+                    self.report(CompilerError::unimplemented("type checking unary ops")
+                            .span(&span))?
+        }
+        Some(())
+    }
 }
 
 /// Applies semantic analysis to this AST and returns valid IR.
@@ -157,8 +192,7 @@ pub fn generate_ir(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> O
     let mut man = IRManager::new(src, issues);
     let ir = man.desugar(ast)?;
     let ir = man.evaluate_const(ir)?;
-    // TODO evaluate constant terms
     // TODO type infer
-    // TODO type check
+    man.typecheck(&ir)?;
     Some(ir)
 }
