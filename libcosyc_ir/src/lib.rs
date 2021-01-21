@@ -166,9 +166,10 @@ impl<'a> IRManager<'a> {
             types.push_str(&ty_kind.to_string());
             types.push_str("`");
         }
+        let one_of = if expect.len() == 1 { "" } else { " one of" };
         let mut err = CompilerError::new()
                 .span(&span)
-                .reason(format!("expected one of{} (got `{}`)", types, datatype));
+                .reason(format!("expected{}{} (got `{}`)", one_of, types, datatype));
         if matches!(datatype, ir::TypeKind::Unknown) {
             err = err.note("consider adding a type annotation");
         }
@@ -194,9 +195,17 @@ impl<'a> IRManager<'a> {
                     self.report(CompilerError::bug()
                             .span(&span)
                             .reason("type ascriptions should be erased by this point"))?,
-            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
-                    self.report(CompilerError::unimplemented("type checking binary ops")
-                            .span(&span))?,
+            ir::InstKind::BinaryOp { kind, left, right } => {
+                let expect = match kind {
+                    ir::BinaryOpKind::Add
+                            | ir::BinaryOpKind::Subtract => {
+                        vec![ir::TypeKind::I8]
+                    }
+                };
+                self.typecheck(left)?;
+                self.typecheck(right)?;
+                self.expect_type(inst, &expect)?;
+            },
             ir::InstKind::UnaryOp { kind : _, value : _ } =>
                     self.report(CompilerError::unimplemented("type checking unary ops")
                             .span(&span))?
