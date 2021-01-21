@@ -76,17 +76,12 @@ impl<'a> IRManager<'a> {
     }
 }
 
-/// Desugars the AST into IR and reports any errors to this `IssueTracker`.
-pub fn desugar_ast(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
-    IRManager::new(src, issues).desugar(ast)
-}
-
-/// Computes the constant terms of this program and returns the new program.
-pub fn fold_const_terms(_inst : ir::Inst, _src : &str, _issues : &mut IssueTracker) -> Option<ir::Inst> {
-    unimplemented!()
-}
-
-/// Typechecks the program and reports and type errors to this `IssueTracker`.
-pub fn typecheck(_inst : &ir::Inst, _src : &str, _issues : &mut IssueTracker) -> Option<()> {
-    unimplemented!()
+/// Applies semantic analysis to this AST and returns valid IR.
+pub fn generate_ir(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
+    let mut man = IRManager::new(src, issues);
+    let ir = man.desugar(ast)?;
+    // TODO evaluate constant terms
+    // TODO type infer
+    // TODO type check
+    Some(ir)
 }
