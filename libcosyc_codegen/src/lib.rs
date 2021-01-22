@@ -1,11 +1,9 @@
-pub mod ident;
-
 use libcosyc_diagnostic::{
     error::{ CompilerError, IssueTracker, Failable },
     source::Renderable
 };
 use libcosyc_ir::ir;
-use std::fmt::Write;
+use std::{ fmt::Write, collections::HashMap };
 
 const INDENTATION : &'static str = "  ";
 
@@ -14,6 +12,8 @@ pub struct Codegen<'a, W : Write> {
     src : &'a str,
     issues : &'a mut IssueTracker,
     out : W,
+    locals : HashMap<&'a str, usize>,
+    next_local : usize,
     indent : usize,
     newline : bool
 }
@@ -33,9 +33,11 @@ impl<W : Write> Renderable for Codegen<'_, W> {
 impl<'a, W : Write> Codegen<'a, W> {
     /// Creates a new instance from this issue tracker and source file.
     pub fn new(src : &'a str, issues : &'a mut IssueTracker, out : W) -> Self {
+        let next_local = 0;
+        let locals = HashMap::new();
         let indent = 0;
         let newline = true;
-        Self { src, issues, out, indent, newline }
+        Self { src, issues, out, locals, next_local, indent, newline }
     }
 
     /// Increases the indentation of the output.
@@ -71,53 +73,75 @@ impl<'a, W : Write> Codegen<'a, W> {
         Some(())
     }
 
+    /// Writes a local variale to the output.
+    fn write_local(&mut self, local : usize) -> Option<()> {
+        self.write("t")?;
+        self.write(local)
+    }
+
     /// Consumes this code generator and writes the C code for this IR instruction.
     pub fn gen_c(mut self, inst : ir::Inst) -> Option<()> {
         self.writeln("#include <stdio.h>")?;
         self.writeln("int main() {")?;
         self.indent();
+        let local = self.visit_c_inst(inst)?;
         self.write("int result = ")?;
-        self.indent();
-        self.visit_c_inst(inst)?;
+        self.write_local(local)?;
         self.writeln(";")?;
-        self.unindent();
         self.writeln(r#"printf("%d\n", result);"#)?;
+        self.writeln("return 0;")?;
         self.unindent();
-        self.write("}")?;
-        Some(())
+        self.write("}")
     }
 
-    fn visit_c_inst(&mut self, inst : ir::Inst) -> Option<()> {
+    fn visit_c_local(&mut self) -> Option<usize> {
+        let local = self.next_local;
+        self.next_local += 1;
+        self.write("int ")?;
+        self.write_local(local)?;
+        self.writeln(";")?;
+        Some(local)
+    }
+
+    fn visit_c_inst(&mut self, inst : ir::Inst) -> Option<usize> {
         let span = inst.span;
+        let local = self.visit_c_local()?;
         match inst.kind {
-            ir::InstKind::Value(_kind) =>
-                    self.report(CompilerError::unimplemented("code generation of runtime values")
-                            .span(&span))?,
+            ir::InstKind::Value(kind) => {
+                let val = self.render(&span).to_string();
+                self.write_local(local)?;
+                self.write(" = ")?;
+                self.write(val)?;
+                self.writeln(";")?;
+            }
             ir::InstKind::TypeAnno { .. } =>
                     self.report(CompilerError::unreachable("code generation of type ascriptions")
                             .span(&span))?,
             ir::InstKind::BinaryOp { kind, left, right } => {
-                self.write("(")?;
-                self.visit_c_inst(*left)?;
-                self.write(") ")?;
+                let a = self.visit_c_inst(*left)?;
+                let b = self.visit_c_inst(*right)?;
+                self.write_local(local)?;
+                self.write(" = ")?;
+                self.write_local(a)?;
                 match kind {
-                    ir::BinaryOpKind::Add => self.write("+")?,
-                    ir::BinaryOpKind::Subtract => self.write("-")?
+                    ir::BinaryOpKind::Add => self.write(" + ")?,
+                    ir::BinaryOpKind::Subtract => self.write(" - ")?
                 }
-                self.write(" (")?;
-                self.visit_c_inst(*right)?;
-                self.write(")")?;
+                self.write_local(b)?;
+                self.writeln(";")?;
             },
             ir::InstKind::UnaryOp { kind, value } => {
+                let x = self.visit_c_inst(*value)?;
+                self.write_local(local)?;
+                self.write(" = ")?;
                 match kind {
                     ir::UnaryOpKind::Negate => self.write("-")?
                 }
-                self.write("(")?;
-                self.visit_c_inst(*value)?;
-                self.write(")")?;
+                self.write_local(x)?;
+                self.writeln(";")?;
             }
         }
-        Some(())
+        Some(local)
     }
 }
 
