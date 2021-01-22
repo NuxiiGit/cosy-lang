@@ -109,7 +109,7 @@ impl IssueTracker {
     }
 }
 
-/// Supplies a trait that allows structs report errors to an issue tracker.
+/// Supplies a trait that helps structs report errors to an issue tracker.
 pub trait Failable {
     /// Exposes the issue tracker of the implementing struct.
     fn issues(&mut self) -> &mut IssueTracker;

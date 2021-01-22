@@ -75,3 +75,13 @@ pub fn binary_search_newlines(lines : &[Span], pos : usize) -> Result<usize, usi
         }
     })
 }
+
+/// Supplies a trait that helps structs render spans from a piece of source code.
+pub trait Renderable {
+    /// Exposes the source code of the implementing struct.
+    fn src(&self) -> &str;
+    /// Renders this span using the content from the source file.
+    fn render(&self, span : &Span) -> &str {
+        span.render(&self.src())
+    }
+}
