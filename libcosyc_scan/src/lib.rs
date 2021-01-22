@@ -47,6 +47,24 @@ impl<'a> Lexer<'a> {
             SymbolKind::Pound => TokenKind::Pound,
             SymbolKind::Plus => TokenKind::Plus,
             SymbolKind::Minus => TokenKind::Minus,
+            SymbolKind::LessThan => {
+                match self.reader.peek() {
+                    SymbolKind::Bar => {
+                        self.reader.advance();
+                        TokenKind::LeftPipe
+                    },
+                    _ => TokenKind::Unknown
+                }
+            },
+            SymbolKind::Bar => {
+                match self.reader.peek() {
+                    SymbolKind::GreaterThan => {
+                        self.reader.advance();
+                        TokenKind::RightPipe
+                    },
+                    _ => TokenKind::Unknown
+                }
+            },
             x if x.is_valid_digit() => {
                 self.reader.advance_while(SymbolKind::is_valid_digit);
                 TokenKind::Integral

@@ -7,6 +7,8 @@ pub enum TokenKind {
     Colon,
     Plus,
     Minus,
+    LeftPipe,
+    RightPipe,
     Hole,
     Identifier,
     RawIdentifier {
