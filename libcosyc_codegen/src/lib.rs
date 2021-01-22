@@ -68,11 +68,13 @@ impl<'a, W : Write> Codegen<'a, W> {
         self.write("int main() {")?;
         self.indent();
         self.writeln(1)?;
-        self.write(r#"printf("%d\n", "#)?;
+        self.write("int result = ")?;
         self.indent();
         self.visit_c_inst(inst)?;
+        self.write(";")?;
         self.unindent();
-        self.write(r#");"#)?;
+        self.writeln(1)?;
+        self.write(r#"printf("%d\n", result);"#)?;
         self.unindent();
         self.writeln(1)?;
         self.write("}")?;
