@@ -55,21 +55,33 @@ impl<'a, W : Write> Codegen<'a, W> {
     }
 
     /// Writes a newline to the output.
-    pub fn writeln(&mut self) -> Option<()> {
-        let mut line = String::from("\n");
-        line.push_str(&INDENTATION.repeat(self.indent));
-        self.write(line)
+    pub fn writeln(&mut self, count : usize) -> Option<()> {
+        let mut lines = "\n".repeat(count);
+        lines.push_str(&INDENTATION.repeat(self.indent));
+        self.write(lines)
     }
 
-    /// Generates C code for this IR instruction.
-    pub fn gen_c(&mut self, _inst : ir::Inst) -> Option<()> {
-        self.write("123")?;
+    /// Consumes this code generator and writes the C code for this IR instruction.
+    pub fn gen_c(mut self, inst : ir::Inst) -> Option<()> {
+        self.write("#include <stdio.h>")?;
+        self.writeln(2)?;
+        self.write("int main() {")?;
         self.indent();
+        self.writeln(1)?;
+        self.write(r#"printf("%d\n", "#)?;
         self.indent();
-        self.writeln()?;
-        self.write("hello")?;
+        self.visit_c_inst(inst)?;
         self.unindent();
-        self.writeln()?;
+        self.write(r#");"#)?;
+        self.unindent();
+        self.writeln(1)?;
+        self.write("}")?;
+        Some(())
+    }
+
+    fn visit_c_inst(&mut self, _inst : ir::Inst) -> Option<()> {
+        self.write("hello")?;
+        self.writeln(1)?;
         self.write("world")?;
         Some(())
     }
