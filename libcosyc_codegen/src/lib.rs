@@ -97,9 +97,14 @@ impl<'a, W : Write> Codegen<'a, W> {
             ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
                     self.report(CompilerError::unimplemented("code generation of binary ops")
                             .span(&span))?,
-            ir::InstKind::UnaryOp { kind : _, value : _ } =>
-                    self.report(CompilerError::unimplemented("code generation of unary ops")
-                            .span(&span))?
+            ir::InstKind::UnaryOp { kind, value } => {
+                match kind {
+                    ir::UnaryOpKind::Negate => self.write("-")?
+                }
+                self.write("(")?;
+                self.visit_c_inst(*value)?;
+                self.write(")")?;
+            }
         }
         Some(())
     }
