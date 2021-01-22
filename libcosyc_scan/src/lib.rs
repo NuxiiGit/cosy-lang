@@ -36,17 +36,20 @@ impl<'a> Lexer<'a> {
                 self.reader.advance_while(SymbolKind::is_valid_whitespace);
                 TokenKind::Whitestuff
             },
-            SymbolKind::Minus if
-                    matches!(self.reader.peek(), SymbolKind::Minus) => {
-                self.reader.advance_while(|x| !x.is_valid_terminator());
-                TokenKind::Comment
-            },
             SymbolKind::LeftParen => TokenKind::LeftParen,
             SymbolKind::RightParen => TokenKind::RightParen,
             SymbolKind::Colon => TokenKind::Colon,
             SymbolKind::Pound => TokenKind::Pound,
             SymbolKind::Plus => TokenKind::Plus,
-            SymbolKind::Minus => TokenKind::Minus,
+            SymbolKind::Minus => {
+                match self.reader.peek() {
+                    SymbolKind::Minus => {
+                        self.reader.advance_while(|x| !x.is_valid_terminator());
+                        TokenKind::Comment
+                    },
+                    _ => TokenKind::Minus
+                }
+            },
             SymbolKind::LessThan => {
                 match self.reader.peek() {
                     SymbolKind::Bar => {
