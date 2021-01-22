@@ -85,7 +85,11 @@ impl<'a> IRManager<'a> {
             }
         }
         let mut types = String::new();
-        for ty_kind in expect {
+        let count = expect.len();
+        for (i, ty_kind) in expect.iter().enumerate() {
+            if i != 0 {
+                types.push_str(if i + 1 == count { " or" } else { "," })
+            }
             types.push_str(" `");
             types.push_str(&ty_kind.to_string());
             types.push_str("`");
