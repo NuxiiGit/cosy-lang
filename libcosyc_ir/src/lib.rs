@@ -218,16 +218,14 @@ impl<'a> IRManager<'a> {
             ir::InstKind::Value(kind) => {
                 let expect = match kind {
                     ir::ValueKind::Integral => vec![ir::TypeKind::I8],
-                    _ => self.report(CompilerError::bug()
-                            .span(&span)
-                            .reason("type expressions should be erased by this point"))?
+                    _ => self.report(CompilerError::unreachable("type expressions")
+                            .span(&span))?
                 };
                 self.expect_type(inst, &expect)?;
             },
             ir::InstKind::TypeAnno { .. } =>
-                    self.report(CompilerError::bug()
-                            .span(&span)
-                            .reason("type ascriptions should be erased by this point"))?,
+                    self.report(CompilerError::unreachable("type ascriptions")
+                            .span(&span))?,
             ir::InstKind::BinaryOp { kind, left, right } => {
                 let expect = match kind {
                     ir::BinaryOpKind::Add

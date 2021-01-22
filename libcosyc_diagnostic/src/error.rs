@@ -84,7 +84,7 @@ impl CompilerError {
     /// Returns a built-in error for unreachable features.
     pub fn unreachable<T : ToString>(subject : T) -> Self {
         CompilerError::bug()
-                .reason(format!("{} should be unreachable", subject.to_string()))
+                .reason(format!("{} should be unreachable by this point", subject.to_string()))
     }
 }
 
