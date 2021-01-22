@@ -43,7 +43,7 @@ impl<'a> IRManager<'a> {
                 let kind = match kind {
                     ast::ConstKind::Integral => ir::ValueKind::Integral,
                     ast::ConstKind::I8 => ir::ValueKind::TypeI8,
-                    ast::ConstKind::Type => ir::ValueKind::TypeType
+                    ast::ConstKind::Type => ir::ValueKind::TypeUniverse(0)
                 };
                 ir::InstKind::Value(kind)
             },
@@ -130,7 +130,6 @@ impl<'a> IRManager<'a> {
     /// Returns `None` if there was a problem assigning the type.
     pub fn annotate(&mut self, mut value : ir::Inst, ty : ir::Inst) -> Option<ir::Inst> {
         let ty = self.evaluate(ty)?;
-        self.expect_type(&ty, &[ir::TypeKind::Type]);
         let datatype = match ty.kind {
             ir::InstKind::Value(kind) => {
                 if let Some(datatype) = ir::value_to_type(&kind) {

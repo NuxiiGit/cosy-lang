@@ -19,7 +19,7 @@ pub enum UnaryOpKind {
 pub enum ValueKind {
     Integral,
     TypeI8,
-    TypeType
+    TypeUniverse(usize)
 }
 
 impl ValueKind {
@@ -27,7 +27,7 @@ impl ValueKind {
     pub fn is_runtime_known(&self) -> bool {
         !matches!(self,
                 Self::TypeI8
-                | Self::TypeType)
+                | Self::TypeUniverse(..))
     }
 }
 
@@ -35,7 +35,7 @@ impl ValueKind {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeKind {
     I8,
-    Type,
+    TypeUniverse(usize),
     Unknown
 }
 
@@ -43,7 +43,13 @@ impl fmt::Display for TypeKind {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::I8 => write!(out, "i8"),
-            Self::Type => write!(out, "type"),
+            Self::TypeUniverse(n) => {
+                write!(out, "type")?;
+                if *n > 0 {
+                    write!(out, "#{}", *n + 1)?;
+                }
+                Ok(())
+            },
             Self::Unknown => write!(out, "<unknown>")
         }
     }
@@ -91,8 +97,8 @@ impl Inst {
 /// Infers the types of trivial values.
 pub fn infer_value_type(value : &ValueKind) -> TypeKind {
     match value {
-        ValueKind::TypeI8 => TypeKind::Type,
-        ValueKind::TypeType => TypeKind::Type,
+        ValueKind::TypeI8 => TypeKind::TypeUniverse(0),
+        ValueKind::TypeUniverse(n) => TypeKind::TypeUniverse(*n + 1),
         _ => TypeKind::Unknown
     }
 }
@@ -101,7 +107,7 @@ pub fn infer_value_type(value : &ValueKind) -> TypeKind {
 pub fn value_to_type(value : &ValueKind) -> Option<TypeKind> {
     let ty = match value {
         ValueKind::TypeI8 => TypeKind::I8,
-        ValueKind::TypeType => TypeKind::Type,
+        ValueKind::TypeUniverse(n) => TypeKind::TypeUniverse(*n),
         _ => return None
     };
     Some(ty)
