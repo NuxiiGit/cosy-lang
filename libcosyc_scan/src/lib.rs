@@ -13,10 +13,15 @@ pub struct Lexer<'a> {
     ignore_next_symbol : bool
 }
 
-impl Lexer<'_> {
+impl<'a> Lexer<'a> {
     /// Returns the span of the current lexeme.
     pub fn span(&self) -> &Span {
         self.reader.span()
+    }
+
+    /// Returns the substring of the current lexeme.
+    pub fn substring(&self) -> &'a str {
+        self.reader.substring()
     }
 
     /// Returns the next token of the source.
@@ -39,6 +44,7 @@ impl Lexer<'_> {
             SymbolKind::LeftParen => TokenKind::LeftParen,
             SymbolKind::RightParen => TokenKind::RightParen,
             SymbolKind::Colon => TokenKind::Colon,
+            SymbolKind::Pound => TokenKind::Pound,
             SymbolKind::Plus => TokenKind::Plus,
             SymbolKind::Minus => TokenKind::Minus,
             x if x.is_valid_digit() => {
@@ -49,7 +55,7 @@ impl Lexer<'_> {
                 self.reader.advance_while(SymbolKind::is_valid_graphic);
                 // alphabetic identifiers can end with any number of `'` (called "prime")
                 self.reader.advance_while(|x| matches!(x, SymbolKind::SingleQuote));
-                match self.reader.substring() {
+                match self.substring() {
                     "_" => TokenKind::Hole,
                     "let" => TokenKind::Let,
                     "i8" => TokenKind::I8,

@@ -19,7 +19,7 @@ pub enum UnaryOpKind {
 pub enum ConstKind {
     Integral,
     I8,
-    Type
+    TypeUniverse(usize)
 }
 
 /// Represents a kind of term.

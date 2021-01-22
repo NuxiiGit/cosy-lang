@@ -3,6 +3,7 @@
 pub enum TokenKind {
     LeftParen,
     RightParen,
+    Pound,
     Colon,
     Plus,
     Minus,

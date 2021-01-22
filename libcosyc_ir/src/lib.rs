@@ -43,7 +43,7 @@ impl<'a> IRManager<'a> {
                 let kind = match kind {
                     ast::ConstKind::Integral => ir::ValueKind::Integral,
                     ast::ConstKind::I8 => ir::ValueKind::TypeI8,
-                    ast::ConstKind::Type => ir::ValueKind::TypeUniverse(0)
+                    ast::ConstKind::TypeUniverse(n) => ir::ValueKind::TypeUniverse(n)
                 };
                 ir::InstKind::Value(kind)
             },

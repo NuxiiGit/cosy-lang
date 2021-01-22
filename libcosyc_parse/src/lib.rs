@@ -45,6 +45,11 @@ impl<'a> Parser<'a> {
         self.lexer.span()
     }
 
+    /// Returns the substring of the current lexeme.
+    pub fn substring(&self) -> &'a str {
+        self.lexer.substring()
+    }
+
     /// Returns whether the current token satisfies a predicate `p`.
     /// The function will always return `false` for the EoF token.
     pub fn sat(&self, p : fn(&TokenKind) -> bool) -> bool {
@@ -169,15 +174,39 @@ impl<'a> Parser<'a> {
             let span = self.span().clone();
             Some(ast::Term { span, kind })
         } else if self.sat(TokenKind::is_terminal) {
-            let kind = match self.advance() {
+            let token = self.advance();
+            let mut span = self.span().clone();
+            let kind = match token {
                 TokenKind::Integral => ast::ConstKind::Integral,
                 TokenKind::I8 => ast::ConstKind::I8,
-                TokenKind::Type => ast::ConstKind::Type,
+                TokenKind::Type => {
+                    let n = if self.sat(|x| matches!(x, TokenKind::Pound)) {
+                        self.advance();
+                        let substr = self.substring();
+                        self.expect(|x| matches!(x, TokenKind::Integral),
+                                CompilerError::new()
+                                        .reason("expected whole number type universe"))?;
+                        span = span.join(self.span());
+                        match substr.parse::<usize>() {
+                            Ok(n) if n == 0 => self.report(CompilerError::new()
+                                    .span(self.span())
+                                    .reason("`type#0` is not a valid type universe")
+                                    .note("type universes start at index 1: `type#1`"))?,
+                            Ok(n) => n - 1,
+                            Err(e) => self.report(CompilerError::bug()
+                                    .span(self.span())
+                                    .reason("unable to parse integer literal")
+                                    .note(e))?
+                        }
+                    } else {
+                        0
+                    };
+                    ast::ConstKind::TypeUniverse(n)
+                },
                 _ => self.report(CompilerError::bug()
                         .reason("invalid terminal kind"))?
             };
             let kind = ast::TermKind::Const(kind);
-            let span = self.span().clone();
             Some(ast::Term { span, kind })
         } else {
             self.parse_expr_grouping()
