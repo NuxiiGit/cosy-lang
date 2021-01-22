@@ -94,9 +94,18 @@ impl<'a, W : Write> Codegen<'a, W> {
             ir::InstKind::TypeAnno { .. } =>
                     self.report(CompilerError::unreachable("code generation of type ascriptions")
                             .span(&span))?,
-            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
-                    self.report(CompilerError::unimplemented("code generation of binary ops")
-                            .span(&span))?,
+            ir::InstKind::BinaryOp { kind, left, right } => {
+                self.write("(")?;
+                self.visit_c_inst(*left)?;
+                self.write(")")?;
+                match kind {
+                    ir::BinaryOpKind::Add => self.write("+")?,
+                    ir::BinaryOpKind::Subtract => self.write("-")?
+                }
+                self.write("(")?;
+                self.visit_c_inst(*right)?;
+                self.write(")")?;
+            },
             ir::InstKind::UnaryOp { kind, value } => {
                 match kind {
                     ir::UnaryOpKind::Negate => self.write("-")?
