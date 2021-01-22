@@ -108,3 +108,9 @@ impl IssueTracker {
         &self.errors
     }
 }
+
+/*/// Supplies a trait that allows structs report errors to an issue tracker.
+pub impl Failable {
+    /// Exposes the issue tracker of the implementing struct.
+    fn issues(&self) -> &mut IssueTracker;
+}*/

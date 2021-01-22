@@ -260,6 +260,7 @@ impl<'a> IRManager<'a> {
 pub fn generate_ir(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
     let mut man = IRManager::new(src, issues);
     let ir = man.desugar(ast)?;
+    // TODO identify dead code
     let ir = man.evaluate_const(ir)?;
     // TODO type infer
     man.typecheck(&ir)?;

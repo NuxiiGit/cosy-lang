@@ -1,0 +1,9 @@
+[package]
+name = "libcosyc_codegen"
+version = "0.1.0"
+authors = ["NuxiiGit <nuxii09@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+libcosyc_ir = { path = "../libcosyc_ir" }
+libcosyc_diagnostic = { path = "../libcosyc_diagnostic" }

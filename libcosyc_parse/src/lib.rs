@@ -66,11 +66,8 @@ impl<'a> Parser<'a> {
         mem::replace(&mut self.peeked, next)
     }
 
-    /// Reports an error to the issue tracker, using the current token span if no span exists.
-    pub fn report<T>(&mut self, mut error : CompilerError) -> Option<T> {
-        if !error.has_span() {
-            error = error.span(self.span());
-        }
+    /// Reports an error to the issue tracker.
+    pub fn report<T>(&mut self, error : CompilerError) -> Option<T> {
         self.issues.report_error(error);
         None
     }
@@ -131,6 +128,7 @@ impl<'a> Parser<'a> {
                 TokenKind::Plus => ast::BinaryOpKind::Add,
                 TokenKind::Minus => ast::BinaryOpKind::Subtract,
                 _ => self.report(CompilerError::bug()
+                        .span(self.span())
                         .reason("invalid addition operator"))?
             };
             let left = Box::new(expr);
@@ -148,6 +146,7 @@ impl<'a> Parser<'a> {
             let kind = match self.advance() {
                 TokenKind::Minus => ast::UnaryOpKind::Negate,
                 _ => self.report(CompilerError::bug()
+                        .span(self.span())
                         .reason("invalid unary operator"))?
             };
             let mut span = self.span().clone();
@@ -166,6 +165,7 @@ impl<'a> Parser<'a> {
             let kind = match self.advance() {
                 TokenKind::RawIdentifier { closed : false } => {
                     self.report(CompilerError::new()
+                            .span(self.span())
                             .reason("raw identifier is missing a closing accent")
                             .note("consider adding a closing accent (`)"))?
                 },
@@ -204,6 +204,7 @@ impl<'a> Parser<'a> {
                     ast::ConstKind::TypeUniverse(n)
                 },
                 _ => self.report(CompilerError::bug()
+                        .span(self.span())
                         .reason("invalid terminal kind"))?
             };
             let kind = ast::TermKind::Const(kind);
@@ -227,6 +228,7 @@ impl<'a> Parser<'a> {
         } else {
             self.advance();
             self.report(CompilerError::new()
+                    .span(self.span())
                     .reason("unknown synbol in expression")
                     .note("consider removing this token"))
         }
