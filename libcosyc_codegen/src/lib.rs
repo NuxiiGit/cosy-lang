@@ -1,3 +1,5 @@
+pub mod ident;
+
 use libcosyc_diagnostic::{
     error::{ CompilerError, IssueTracker, Failable },
     source::Renderable
