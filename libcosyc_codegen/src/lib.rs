@@ -92,9 +92,8 @@ impl<'a, W : Write> Codegen<'a, W> {
                     self.report(CompilerError::unimplemented("code generation of runtime values")
                             .span(&span))?,
             ir::InstKind::TypeAnno { .. } =>
-                    self.report(CompilerError::bug()
-                            .span(&span)
-                            .reason("type annotations should be erased by this point"))?,
+                    self.report(CompilerError::unreachable("code generation of type ascriptions")
+                            .span(&span))?,
             ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
                     self.report(CompilerError::unimplemented("code generation of binary ops")
                             .span(&span))?,

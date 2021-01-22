@@ -66,19 +66,25 @@ impl CompilerError {
     pub fn bug() -> Self {
         CompilerError::new()
                 .level(ErrorLevel::Fatal)
-                .note("this may be caused by a bug in the compiler internals")
+                .note("uh-oh.. this may be caused by a bug in the compiler internals")
     }
 
     /// Returns a built-in error for unimplemented features.
-    pub fn unimplemented<T : ToString>(reason : T) -> Self {
+    pub fn unimplemented<T : ToString>(subject : T) -> Self {
         CompilerError::new()
-                .reason(format!("{} is not currently supported", reason.to_string()))
+                .reason(format!("{} is not currently supported", subject.to_string()))
     }
 
     /// Returns a built-in error for unstable features.
-    pub fn unstable<T : ToString>(reason : T) -> Self {
+    pub fn unstable<T : ToString>(subject : T) -> Self {
         CompilerError::warning()
-                .reason(format!("{} is currently unstable", reason.to_string()))
+                .reason(format!("{} is currently unstable", subject.to_string()))
+    }
+
+    /// Returns a built-in error for unreachable features.
+    pub fn unreachable<T : ToString>(subject : T) -> Self {
+        CompilerError::bug()
+                .reason(format!("{} should be unreachable", subject.to_string()))
     }
 }
 
