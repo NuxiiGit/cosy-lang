@@ -242,9 +242,15 @@ impl<'a> IRManager<'a> {
                 self.expect_type(inst, &expect)?;
                 self.expect_equal_types(left, right)?;
             },
-            ir::InstKind::UnaryOp { kind : _, value : _ } =>
-                    self.report(CompilerError::unimplemented("type checking unary ops")
-                            .span(&span))?
+            ir::InstKind::UnaryOp { kind, value } => {
+                let expect = match kind {
+                    ir::UnaryOpKind::Negate => {
+                        vec![ir::TypeKind::I8]
+                    }
+                };
+                self.typecheck(value)?;
+                self.expect_type(inst, &expect)?;
+            }
         }
         Some(())
     }
