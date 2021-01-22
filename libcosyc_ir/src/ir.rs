@@ -22,6 +22,15 @@ pub enum ValueKind {
     TypeType
 }
 
+impl ValueKind {
+    /// Returns whether this value is runtime-known.
+    pub fn is_runtime_known(&self) -> bool {
+        !matches!(self,
+                Self::TypeI8
+                | Self::TypeType)
+    }
+}
+
 /// Represents the different kinds of types.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeKind {

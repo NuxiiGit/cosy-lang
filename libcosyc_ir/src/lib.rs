@@ -90,10 +90,9 @@ impl<'a> IRManager<'a> {
             types.push_str(&ty_kind.to_string());
             types.push_str("`");
         }
-        let one_of = if expect.len() == 1 { "" } else { " one of" };
         let mut err = CompilerError::new()
                 .span(&span)
-                .reason(format!("expected{}{} (got `{}`)", one_of, types, datatype));
+                .reason(format!("expected a value of type{} (got `{}`)", types, datatype));
         if matches!(datatype, ir::TypeKind::Unknown) {
             err = err.note("consider adding a type annotation");
         }
@@ -114,7 +113,7 @@ impl<'a> IRManager<'a> {
         }
         let mut err = CompilerError::new()
                 .span(&b.span)
-                .reason(format!("expected `{}` (got `{}`)", ty_a, ty_b));
+                .reason(format!("expected a value of type `{}` (got `{}`)", ty_a, ty_b));
         if matches!(ty_a, ir::TypeKind::Unknown) ||
                 matches!(ty_b, ir::TypeKind::Unknown) {
             err = err.note("consider adding a type annotation");
@@ -181,6 +180,11 @@ impl<'a> IRManager<'a> {
         let span = inst.span;
         let inst = match inst.kind {
             ir::InstKind::Value(kind) => {
+                if !kind.is_runtime_known() {
+                    self.report(CompilerError::new()
+                            .span(&span)
+                            .reason("values of this type cannot be used at runtime"))?
+                }
                 let datatype = ir::infer_value_type(&kind);
                 ir::Inst::new_typed(span, ir::InstKind::Value(kind), datatype)
             },
