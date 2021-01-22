@@ -12,7 +12,8 @@ pub struct Codegen<'a, W : Write> {
     src : &'a str,
     issues : &'a mut IssueTracker,
     out : W,
-    indent : usize
+    indent : usize,
+    newline : bool
 }
 
 impl<W : Write> Failable for Codegen<'_, W> {
@@ -31,7 +32,8 @@ impl<'a, W : Write> Codegen<'a, W> {
     /// Creates a new instance from this issue tracker and source file.
     pub fn new(src : &'a str, issues : &'a mut IssueTracker, out : W) -> Self {
         let indent = 0;
-        Self { src, issues, out, indent }
+        let newline = true;
+        Self { src, issues, out, indent, newline }
     }
 
     /// Increases the indentation of the output.
@@ -48,42 +50,43 @@ impl<'a, W : Write> Codegen<'a, W> {
     /// # Errors
     /// Returns `None` if there was a formatting error.
     pub fn write<T : ToString>(&mut self, string : T) -> Option<()> {
-        match write!(self.out, "{}", string.to_string()) {
+        let mut indent = String::new();
+        if self.newline {
+            self.newline = false;
+            indent.push_str(&INDENTATION.repeat(self.indent));
+        }
+        match write!(self.out, "{}{}", indent, string.to_string()) {
             Ok(()) => Some(()),
             Err(e) => self.report(CompilerError::bug().reason(e))?
         }
     }
 
     /// Writes a newline to the output.
-    pub fn writeln(&mut self, count : usize) -> Option<()> {
-        let mut lines = "\n".repeat(count);
-        lines.push_str(&INDENTATION.repeat(self.indent));
-        self.write(lines)
+    pub fn writeln<T : ToString>(&mut self, string : T) -> Option<()> {
+        self.write(string)?;
+        self.write("\n")?;
+        self.newline = true;
+        Some(())
     }
 
     /// Consumes this code generator and writes the C code for this IR instruction.
     pub fn gen_c(mut self, inst : ir::Inst) -> Option<()> {
-        self.write("#include <stdio.h>")?;
-        self.writeln(2)?;
-        self.write("int main() {")?;
+        self.writeln("#include <stdio.h>")?;
+        self.writeln("int main() {")?;
         self.indent();
-        self.writeln(1)?;
         self.write("int result = ")?;
         self.indent();
         self.visit_c_inst(inst)?;
-        self.write(";")?;
+        self.writeln(";")?;
         self.unindent();
-        self.writeln(1)?;
-        self.write(r#"printf("%d\n", result);"#)?;
+        self.writeln(r#"printf("%d\n", result);"#)?;
         self.unindent();
-        self.writeln(1)?;
         self.write("}")?;
         Some(())
     }
 
     fn visit_c_inst(&mut self, _inst : ir::Inst) -> Option<()> {
-        self.write("hello")?;
-        self.writeln(1)?;
+        self.writeln("hello")?;
         self.write("world")?;
         Some(())
     }
