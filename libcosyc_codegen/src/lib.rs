@@ -85,9 +85,23 @@ impl<'a, W : Write> Codegen<'a, W> {
         Some(())
     }
 
-    fn visit_c_inst(&mut self, _inst : ir::Inst) -> Option<()> {
-        self.writeln("hello")?;
-        self.write("world")?;
+    fn visit_c_inst(&mut self, inst : ir::Inst) -> Option<()> {
+        let span = inst.span;
+        match inst.kind {
+            ir::InstKind::Value(_kind) =>
+                    self.report(CompilerError::unimplemented("code generation of runtime values")
+                            .span(&span))?,
+            ir::InstKind::TypeAnno { .. } =>
+                    self.report(CompilerError::bug()
+                            .span(&span)
+                            .reason("type annotations should be erased by this point"))?,
+            ir::InstKind::BinaryOp { kind : _, left : _, right : _ } =>
+                    self.report(CompilerError::unimplemented("code generation of binary ops")
+                            .span(&span))?,
+            ir::InstKind::UnaryOp { kind : _, value : _ } =>
+                    self.report(CompilerError::unimplemented("code generation of unary ops")
+                            .span(&span))?
+        }
         Some(())
     }
 }
