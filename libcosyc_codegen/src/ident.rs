@@ -9,10 +9,10 @@ pub struct MangledId {
 
 impl fmt::Display for MangledId {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
-        write!(out, "{}", self.id)?;
         if self.count > 0 {
-            write!(out, "{}", self.count + 1)?;
+            write!(out, "n{}", self.count + 1)?;
         }
+        write!(out, "_{}", self.id)?;
         Ok(())
     }
 }
@@ -38,12 +38,27 @@ impl NameTable {
 
     /// Increments the count of this name and returns its mangled id.
     pub fn set(&mut self, name : &str) -> &MangledId {
-        unimplemented!()
+        if let Some(id) = self.ids.get_mut(name) {
+            id.count += 1;
+        } else {
+            let name = name.to_string();
+            let id = name.clone();
+            let count = 0;
+            self.ids.insert(name, MangledId { id, count });
+        }
+        self.get(name).unwrap()
     }
 
     /// Decrements the count of this name.
+    /// # Errors
+    /// Panics if a variable with the name `name` does not exist.
     pub fn unset(&mut self, name : &str) {
-        unimplemented!()
+        let mut id = self.ids.get_mut(name).expect("cannot unset nonexistent variable");
+        if id.count == 0 {
+            self.ids.remove(name);
+        } else {
+            id.count -= 1;
+        }
     }
 
     /*
