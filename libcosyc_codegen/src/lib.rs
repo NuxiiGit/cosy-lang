@@ -62,7 +62,20 @@ impl<'a, W : Write> Codegen<'a, W> {
     }
 
     /// Generates C code for this IR instruction.
-    pub fn gen_c(&mut self, inst : ir::Inst) -> Option<()> {
-        unimplemented!()
+    pub fn gen_c(&mut self, _inst : ir::Inst) -> Option<()> {
+        self.write("123")?;
+        self.indent();
+        self.indent();
+        self.writeln()?;
+        self.write("hello")?;
+        self.unindent();
+        self.writeln()?;
+        self.write("world")?;
+        Some(())
     }
+}
+
+/// Generates C code from this IR instruction.
+pub fn generate_c<W : Write>(inst : ir::Inst, src : &str, issues : &mut IssueTracker, out : W) -> Option<()> {
+    Codegen::new(src, issues, out).gen_c(inst)
 }
