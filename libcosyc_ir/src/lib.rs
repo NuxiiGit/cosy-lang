@@ -130,10 +130,10 @@ impl<'a> IRManager<'a> {
         self.expect_type(&ty, &[ir::TypeKind::Type]);
         let datatype = match ty.kind {
             ir::InstKind::Value(kind) => {
-                match kind {
-                    ir::ValueKind::TypeI8 => ir::TypeKind::I8,
-                    ir::ValueKind::TypeType => ir::TypeKind::Type,
-                    _ => self.report(CompilerError::new()
+                if let Some(datatype) = ir::value_to_type(&kind) {
+                    datatype
+                } else {
+                    self.report(CompilerError::new()
                             .span(&ty.span)
                             .reason("invalid type")
                             .note("types cannot be runtime values"))?
@@ -158,11 +158,7 @@ impl<'a> IRManager<'a> {
         let span = inst.span;
         let inst = match inst.kind {
             ir::InstKind::Value(kind) => {
-                let datatype = match &kind {
-                    ir::ValueKind::TypeI8
-                            | ir::ValueKind::TypeType => ir::TypeKind::Type,
-                    _ => ir::TypeKind::Unknown
-                };
+                let datatype = ir::infer_value_type(&kind);
                 ir::Inst::new_typed(span, ir::InstKind::Value(kind), datatype)
             },
             ir::InstKind::TypeAnno { value, ty } => {
@@ -184,7 +180,10 @@ impl<'a> IRManager<'a> {
     pub fn evaluate_const(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
         let span = inst.span;
         let inst = match inst.kind {
-            x@ir::InstKind::Value(_) => ir::Inst::new(span, x),
+            ir::InstKind::Value(kind) => {
+                let datatype = ir::infer_value_type(&kind);
+                ir::Inst::new_typed(span, ir::InstKind::Value(kind), datatype)
+            },
             ir::InstKind::TypeAnno { value, ty } => {
                 let value = self.evaluate_const(*value)?;
                 let ty = *ty;

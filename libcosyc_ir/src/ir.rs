@@ -78,3 +78,22 @@ impl Inst {
         Self::new_typed(span, kind, TypeKind::Unknown)
     }
 }
+
+/// Infers the types of trivial values.
+pub fn infer_value_type(value : &ValueKind) -> TypeKind {
+    match value {
+        ValueKind::TypeI8 => TypeKind::Type,
+        ValueKind::TypeType => TypeKind::Type,
+        _ => TypeKind::Unknown
+    }
+}
+
+/// Converts a type value into a concrete type.
+pub fn value_to_type(value : &ValueKind) -> Option<TypeKind> {
+    let ty = match value {
+        ValueKind::TypeI8 => TypeKind::I8,
+        ValueKind::TypeType => TypeKind::Type,
+        _ => return None
+    };
+    Some(ty)
+}
