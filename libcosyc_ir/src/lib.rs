@@ -1,10 +1,7 @@
 pub mod ir;
 
 use libcosyc_diagnostic::{
-    error::{
-        IssueTracker,
-        CompilerError
-    },
+    error::{ CompilerError, IssueTracker, Failable },
     source::Span
 };
 use libcosyc_parse::syntax as ast;
@@ -15,16 +12,16 @@ pub struct IRManager<'a> {
     issues : &'a mut IssueTracker
 }
 
+impl<'a> Failable for IRManager<'a> {
+    fn issues(&mut self) -> &mut IssueTracker {
+        self.issues
+    }
+}
+
 impl<'a> IRManager<'a> {
     /// Creates a new instance from this issue tracker and source file.
     pub fn new(src : &'a str, issues : &'a mut IssueTracker) -> Self {
         Self { src, issues }
-    }
-
-    /// Reports an error to the issue tracker.
-    pub fn report<T>(&mut self, error : CompilerError) -> Option<T> {
-        self.issues.report_error(error);
-        None
     }
 
     /// Renders this span using the content from the source file.

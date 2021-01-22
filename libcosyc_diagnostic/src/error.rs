@@ -109,8 +109,17 @@ impl IssueTracker {
     }
 }
 
-/*/// Supplies a trait that allows structs report errors to an issue tracker.
-pub impl Failable {
+/// Supplies a trait that allows structs report errors to an issue tracker.
+pub trait Failable {
     /// Exposes the issue tracker of the implementing struct.
-    fn issues(&self) -> &mut IssueTracker;
-}*/
+    fn issues(&mut self) -> &mut IssueTracker;
+    /// Reports an error to the issue tracker and returns `None`.
+    fn report<T>(&mut self, error : CompilerError) -> Option<T> {
+        self.issues().report_error(error);
+        None
+    }
+    /// Defined in terms of `report<T>` where `T` = empty type.
+    fn report_empty(&mut self, error : CompilerError) -> Option<()> {
+        self.report(error)
+    }
+}

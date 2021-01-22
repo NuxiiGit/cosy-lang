@@ -2,7 +2,7 @@ pub mod syntax;
 
 use libcosyc_diagnostic::{
     source::Span,
-    error::{ IssueTracker, CompilerError }
+    error::{ CompilerError, IssueTracker, Failable }
 };
 use libcosyc_scan::{ Lexer, token::TokenKind };
 use crate::syntax as ast;
@@ -25,6 +25,12 @@ pub struct Parser<'a> {
     lexer : Lexer<'a>,
     peeked : TokenKind,
     span_previous : Span
+}
+
+impl<'a> Failable for Parser<'a> {
+    fn issues(&mut self) -> &mut IssueTracker {
+        self.issues
+    }
 }
 
 impl<'a> Parser<'a> {
@@ -64,12 +70,6 @@ impl<'a> Parser<'a> {
         self.span_previous = self.lexer.span().clone();
         let next = generate_token(&mut self.lexer);
         mem::replace(&mut self.peeked, next)
-    }
-
-    /// Reports an error to the issue tracker.
-    pub fn report<T>(&mut self, error : CompilerError) -> Option<T> {
-        self.issues.report_error(error);
-        None
     }
 
     /// Returns the token if it satisfies the predicate `p`, otherwise the error is reported.
