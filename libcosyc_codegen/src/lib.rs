@@ -97,12 +97,12 @@ impl<'a, W : Write> Codegen<'a, W> {
             ir::InstKind::BinaryOp { kind, left, right } => {
                 self.write("(")?;
                 self.visit_c_inst(*left)?;
-                self.write(")")?;
+                self.write(") ")?;
                 match kind {
                     ir::BinaryOpKind::Add => self.write("+")?,
                     ir::BinaryOpKind::Subtract => self.write("-")?
                 }
-                self.write("(")?;
+                self.write(" (")?;
                 self.visit_c_inst(*right)?;
                 self.write(")")?;
             },
