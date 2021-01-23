@@ -101,13 +101,13 @@ impl<'a, W : Write> Codegen<'a, W> {
     fn visit_c_type(&mut self, ty : ir::TypeKind) -> Option<()> {
         match ty {
             ir::TypeKind::I8 => self.write("int8_t"),
-            //ir::TypeKind::U8 => self.write("uint8_t"),
-            //ir::TypeKind::I16 => self.write("int16_t"),
-            //ir::TypeKind::U16 => self.write("uint16_t"),
-            //ir::TypeKind::I32 => self.write("int32_t"),
-            //ir::TypeKind::U32 => self.write("uint32_t"),
-            //ir::TypeKind::I64 => self.write("int64_t"),
-            //ir::TypeKind::U64 => self.write("uint64_t"),
+            ir::TypeKind::I16 => self.write("int16_t"),
+            ir::TypeKind::I32 => self.write("int32_t"),
+            ir::TypeKind::I64 => self.write("int64_t"),
+            ir::TypeKind::U8 => self.write("uint8_t"),
+            ir::TypeKind::U16 => self.write("uint16_t"),
+            ir::TypeKind::U32 => self.write("uint32_t"),
+            ir::TypeKind::U64 => self.write("uint64_t"),
             ir::TypeKind::TypeUniverse(_) => self.report(CompilerError::unreachable("type universes"))?,
             ir::TypeKind::Unknown => self.report(CompilerError::unreachable("unknown types"))?
         }

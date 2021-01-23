@@ -35,6 +35,13 @@ impl ValueKind {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeKind {
     I8,
+    I16,
+    I32,
+    I64,
+    U8,
+    U16,
+    U32,
+    U64,
     TypeUniverse(usize),
     Unknown
 }
@@ -43,6 +50,13 @@ impl fmt::Display for TypeKind {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
             Self::I8 => write!(out, "i8"),
+            Self::I16 => write!(out, "i16"),
+            Self::I32 => write!(out, "i32"),
+            Self::I64 => write!(out, "i64"),
+            Self::U8 => write!(out, "u8"),
+            Self::U16 => write!(out, "u16"),
+            Self::U32 => write!(out, "u32"),
+            Self::U64 => write!(out, "u64"),
             Self::TypeUniverse(n) => {
                 write!(out, "type")?;
                 if *n > 0 {
