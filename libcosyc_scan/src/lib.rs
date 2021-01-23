@@ -80,6 +80,13 @@ impl<'a> Lexer<'a> {
                     "_" => TokenKind::Hole,
                     "let" => TokenKind::Let,
                     "i8" => TokenKind::I8,
+                    "i16" => TokenKind::I16,
+                    "i32" => TokenKind::I32,
+                    "i64" => TokenKind::I64,
+                    "u8" => TokenKind::U8,
+                    "u16" => TokenKind::U16,
+                    "u32" => TokenKind::U32,
+                    "u64" => TokenKind::U64,
                     "type" => TokenKind::Type,
                     _ => TokenKind::Identifier
                 }
