@@ -6,6 +6,19 @@ use libcosyc_diagnostic::{
 };
 use libcosyc_parse::syntax as ast;
 
+macro_rules! integral_types {
+    () => {
+        vec![ir::TypeKind::I8,
+                ir::TypeKind::I16,
+                ir::TypeKind::I32,
+                ir::TypeKind::I64,
+                ir::TypeKind::U8,
+                ir::TypeKind::U16,
+                ir::TypeKind::U32,
+                ir::TypeKind::U64]
+    }
+}
+
 /// Manages the conversion and validation of IR.
 pub struct IRManager<'a> {
     src : &'a str,
@@ -217,7 +230,7 @@ impl<'a> IRManager<'a> {
         match &inst.kind {
             ir::InstKind::Value(kind) => {
                 let expect = match kind {
-                    ir::ValueKind::Integral => vec![ir::TypeKind::I8],
+                    ir::ValueKind::Integral => integral_types!(),
                     _ => self.report(CompilerError::unreachable("type expressions")
                             .span(&span))?
                 };
@@ -229,9 +242,7 @@ impl<'a> IRManager<'a> {
             ir::InstKind::BinaryOp { kind, left, right } => {
                 let expect = match kind {
                     ir::BinaryOpKind::Add
-                            | ir::BinaryOpKind::Subtract => {
-                        vec![ir::TypeKind::I8]
-                    }
+                            | ir::BinaryOpKind::Subtract => integral_types!()
                 };
                 self.typecheck(left)?;
                 self.typecheck(right)?;
@@ -240,9 +251,7 @@ impl<'a> IRManager<'a> {
             },
             ir::InstKind::UnaryOp { kind, value } => {
                 let expect = match kind {
-                    ir::UnaryOpKind::Negate => {
-                        vec![ir::TypeKind::I8]
-                    }
+                    ir::UnaryOpKind::Negate => integral_types!()
                 };
                 self.typecheck(value)?;
                 self.expect_type(inst, &expect)?;
