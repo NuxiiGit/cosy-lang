@@ -1,4 +1,5 @@
 /tmp
+/bin
 /target
 **/*.rs.bk
 *.lock
