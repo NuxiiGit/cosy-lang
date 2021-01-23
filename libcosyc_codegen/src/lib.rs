@@ -90,7 +90,7 @@ impl<'a, W : Write> Codegen<'a, W> {
         self.writeln("int main() {")?;
         self.indent();
         let local = self.visit_c_inst(inst)?;
-        self.write(r#"printf("%d\n", "#)?;
+        self.write(r#"printf("%jd\n", (intmax_t)"#)?;
         self.write(c_local(local))?;
         self.writeln(r#");"#)?;
         self.writeln("return 0;")?;

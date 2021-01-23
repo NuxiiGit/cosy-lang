@@ -45,6 +45,13 @@ impl TokenKind {
         self.is_identifier() || matches!(self,
                 Self::Integral
                 | Self::I8
+                | Self::I16
+                | Self::I32
+                | Self::I64
+                | Self::U8
+                | Self::U16
+                | Self::U32
+                | Self::U64
                 | Self::Type)
     }
 }

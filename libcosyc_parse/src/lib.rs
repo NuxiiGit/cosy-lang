@@ -179,6 +179,13 @@ impl<'a> Parser<'a> {
             let kind = match token {
                 TokenKind::Integral => ast::ConstKind::Integral,
                 TokenKind::I8 => ast::ConstKind::I8,
+                TokenKind::I16 => ast::ConstKind::I16,
+                TokenKind::I32 => ast::ConstKind::I32,
+                TokenKind::I64 => ast::ConstKind::I64,
+                TokenKind::U8 => ast::ConstKind::U8,
+                TokenKind::U16 => ast::ConstKind::U16,
+                TokenKind::U32 => ast::ConstKind::U32,
+                TokenKind::U64 => ast::ConstKind::U64,
                 TokenKind::Type => {
                     let n = if self.sat(|x| matches!(x, TokenKind::Pound)) {
                         self.advance();

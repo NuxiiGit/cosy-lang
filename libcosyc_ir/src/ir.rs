@@ -19,15 +19,20 @@ pub enum UnaryOpKind {
 pub enum ValueKind {
     Integral,
     TypeI8,
+    TypeI16,
+    TypeI32,
+    TypeI64,
+    TypeU8,
+    TypeU16,
+    TypeU32,
+    TypeU64,
     TypeUniverse(usize)
 }
 
 impl ValueKind {
     /// Returns whether this value is runtime-known.
     pub fn is_runtime_known(&self) -> bool {
-        !matches!(self,
-                Self::TypeI8
-                | Self::TypeUniverse(..))
+        matches!(self, Self::Integral)
     }
 }
 
@@ -111,7 +116,14 @@ impl Inst {
 /// Infers the types of trivial values.
 pub fn infer_value_type(value : &ValueKind) -> TypeKind {
     match value {
-        ValueKind::TypeI8 => TypeKind::TypeUniverse(0),
+        ValueKind::TypeI8
+                | ValueKind::TypeI16
+                | ValueKind::TypeI32
+                | ValueKind::TypeI64
+                | ValueKind::TypeU8
+                | ValueKind::TypeU16
+                | ValueKind::TypeU32
+                | ValueKind::TypeU64 => TypeKind::TypeUniverse(0),
         ValueKind::TypeUniverse(n) => TypeKind::TypeUniverse(*n + 1),
         _ => TypeKind::Unknown
     }
@@ -121,6 +133,13 @@ pub fn infer_value_type(value : &ValueKind) -> TypeKind {
 pub fn value_to_type(value : &ValueKind) -> Option<TypeKind> {
     let ty = match value {
         ValueKind::TypeI8 => TypeKind::I8,
+        ValueKind::TypeI16 => TypeKind::I16,
+        ValueKind::TypeI32 => TypeKind::I32,
+        ValueKind::TypeI64 => TypeKind::I64,
+        ValueKind::TypeU8 => TypeKind::U8,
+        ValueKind::TypeU16 => TypeKind::U16,
+        ValueKind::TypeU32 => TypeKind::U32,
+        ValueKind::TypeU64 => TypeKind::U64,
         ValueKind::TypeUniverse(n) => TypeKind::TypeUniverse(*n),
         _ => return None
     };
