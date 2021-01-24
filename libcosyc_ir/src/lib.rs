@@ -52,7 +52,15 @@ impl<'a> IRManager<'a> {
                             .span(&span))?,
             ast::TermKind::Const(kind) => {
                 let kind = match kind {
-                    ast::ConstKind::Integral => ir::ValueKind::Integral,
+                    ast::ConstKind::Integral => {
+                        if let Ok(n) = self.render(&span).parse::<u64>() {
+                            ir::ValueKind::U64(n)
+                        } else {
+                            self.report(CompilerError::new()
+                                    .span(&span)
+                                    .reason("unable to parse integer literal"))?
+                        }
+                    },
                     ast::ConstKind::I8 => ir::ValueKind::TypeI8,
                     ast::ConstKind::I16 => ir::ValueKind::TypeI16,
                     ast::ConstKind::I32 => ir::ValueKind::TypeI32,
@@ -236,12 +244,8 @@ impl<'a> IRManager<'a> {
         let span = &inst.span;
         match &inst.kind {
             ir::InstKind::Value(kind) => {
-                let expect = match kind {
-                    ir::ValueKind::Integral => integral_types!(),
-                    _ => self.report(CompilerError::unreachable("type expressions")
-                            .span(&span))?
-                };
-                self.expect_type(inst, &expect)?;
+                let datatype = ir::infer_value_type(&kind);
+                self.expect_type(inst, &[datatype])?;
             },
             ir::InstKind::TypeAnno { .. } =>
                     self.report(CompilerError::unreachable("type ascriptions")
