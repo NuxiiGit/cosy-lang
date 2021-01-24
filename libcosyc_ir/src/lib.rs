@@ -251,17 +251,19 @@ impl<'a> IRManager<'a> {
                     ir::BinaryOpKind::Add
                             | ir::BinaryOpKind::Subtract => integral_types!()
                 };
+                self.expect_type(inst, &expect)?;
                 self.typecheck(left)?;
                 self.typecheck(right)?;
-                self.expect_type(inst, &expect)?;
+                self.expect_equal_types(inst, left)?;
                 self.expect_equal_types(left, right)?;
             },
             ir::InstKind::UnaryOp { kind, value } => {
                 let expect = match kind {
                     ir::UnaryOpKind::Negate => integral_types!()
                 };
-                self.typecheck(value)?;
                 self.expect_type(inst, &expect)?;
+                self.typecheck(value)?;
+                self.expect_equal_types(inst, value)?;
             }
         }
         Some(())
