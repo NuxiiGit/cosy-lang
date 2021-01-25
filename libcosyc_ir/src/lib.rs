@@ -1,4 +1,5 @@
 pub mod ir;
+pub mod desugar;
 
 use libcosyc_diagnostic::{
     error::{ CompilerError, IssueTracker, Failable },
@@ -41,64 +42,6 @@ impl<'a> IRManager<'a> {
     /// Creates a new instance from this issue tracker and source file.
     pub fn new(src : &'a str, issues : &'a mut IssueTracker) -> Self {
         Self { src, issues }
-    }
-
-    /// Generates instructions from AST terms.
-    pub fn desugar(&mut self, term : ast::Term) -> Option<ir::Inst> {
-        let span = term.span;
-        let kind = match term.kind {
-            ast::TermKind::Variable =>
-                    self.report(CompilerError::unimplemented("IR for variables")
-                            .span(&span))?,
-            ast::TermKind::Const(kind) => {
-                let kind = match kind {
-                    ast::ConstKind::Integral => {
-                        if let Ok(n) = self.render(&span).parse::<u64>() {
-                            ir::ValueKind::U64(n)
-                        } else {
-                            self.report(CompilerError::new()
-                                    .span(&span)
-                                    .reason("unable to parse integer literal"))?
-                        }
-                    },
-                    ast::ConstKind::I8 => ir::ValueKind::TypeI8,
-                    ast::ConstKind::I16 => ir::ValueKind::TypeI16,
-                    ast::ConstKind::I32 => ir::ValueKind::TypeI32,
-                    ast::ConstKind::I64 => ir::ValueKind::TypeI64,
-                    ast::ConstKind::U8 => ir::ValueKind::TypeU8,
-                    ast::ConstKind::U16 => ir::ValueKind::TypeU16,
-                    ast::ConstKind::U32 => ir::ValueKind::TypeU32,
-                    ast::ConstKind::U64 => ir::ValueKind::TypeU64,
-                    ast::ConstKind::TypeUniverse(n) => ir::ValueKind::TypeUniverse(n)
-                };
-                ir::InstKind::Value(kind)
-            },
-            ast::TermKind::TypeAnno { value, ty } => {
-                let value = Box::new(self.desugar(*value)?);
-                let ty = Box::new(self.desugar(*ty)?);
-                ir::InstKind::TypeAnno { value, ty }
-            },
-            ast::TermKind::BinaryOp { kind, left, right } => {
-                let kind = match kind {
-                    ast::BinaryOpKind::Add => ir::BinaryOpKind::Add,
-                    ast::BinaryOpKind::Subtract => ir::BinaryOpKind::Subtract,
-                    ast::BinaryOpKind::Custom(_) =>
-                            self.report(CompilerError::unimplemented("infix function application")
-                                    .span(&span))?
-                };
-                let left = Box::new(self.desugar(*left)?);
-                let right = Box::new(self.desugar(*right)?);
-                ir::InstKind::BinaryOp { kind, left, right }
-            },
-            ast::TermKind::UnaryOp { kind, value } => {
-                let kind = match kind {
-                    ast::UnaryOpKind::Negate => ir::UnaryOpKind::Negate,
-                };
-                let value = Box::new(self.desugar(*value)?);
-                ir::InstKind::UnaryOp { kind, value }
-            }
-        };
-        Some(ir::Inst::new(span, kind))
     }
 
     /// Asserts whether this instruction has one of the following types.
@@ -276,8 +219,8 @@ impl<'a> IRManager<'a> {
 
 /// Applies semantic analysis to this AST and returns valid IR.
 pub fn generate_ir(ast : ast::Term, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
+    let ir = desugar::surface_into_core(ast, src, issues)?;
     let mut man = IRManager::new(src, issues);
-    let ir = man.desugar(ast)?;
     // TODO identify dead code
     let ir = man.evaluate_const(ir)?;
     // TODO type infer
