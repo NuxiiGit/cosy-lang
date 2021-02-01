@@ -180,7 +180,7 @@ impl<'a> Typechecker<'a> {
     /// Performs type checking on this instruction and returns whether it is well-typed.
     /// # Errors
     /// Returns `None` if the instruction is not well-typed.
-    pub fn typecheck(&mut self, inst : &ir::Inst) -> Option<()> {
+    pub fn typecheck_old(&mut self, inst : &ir::Inst) -> Option<()> {
         let span = &inst.span;
         match &inst.kind {
             ir::InstKind::Value(kind) => {
@@ -196,8 +196,8 @@ impl<'a> Typechecker<'a> {
                             | ir::BinaryOpKind::Subtract => integral_types!()
                 };
                 self.expect_type(inst, &expect)?;
-                self.typecheck(left)?;
-                self.typecheck(right)?;
+                self.typecheck_old(left)?;
+                self.typecheck_old(right)?;
                 self.expect_equal_types(inst, left)?;
                 self.expect_equal_types(left, right)?;
             },
@@ -206,18 +206,38 @@ impl<'a> Typechecker<'a> {
                     ir::UnaryOpKind::Negate => integral_types!()
                 };
                 self.expect_type(inst, &expect)?;
-                self.typecheck(value)?;
+                self.typecheck_old(value)?;
                 self.expect_equal_types(inst, value)?;
             }
         }
         Some(())
+    }
+
+    /// Performs type checking on this instruction and returns the corrected instruction.
+    /// # Errors
+    /// Returns `None` if the instruction is not well-typed.
+    pub fn typecheck(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
+        let span = &inst.span;
+        let inst = match &inst.kind {
+            ir::InstKind::Value(kind) => {
+                unimplemented!()
+            },
+            ir::InstKind::TypeAnno { .. } => {
+                unimplemented!()
+            },
+            ir::InstKind::BinaryOp { kind, left, right } => {
+                unimplemented!()
+            },
+            ir::InstKind::UnaryOp { kind, value } => {
+                unimplemented!()
+            }
+        };
+        Some(inst)
     }
 }
 
 /// Performs compile-time evaluation and type checking on this IR. Returns validated IR.
 pub fn check(inst : ir::Inst, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
     let mut man = Typechecker::new(src, issues);
-    let inst = man.evaluate_const(inst)?;
-    man.typecheck(&inst)?; // TODO type infer
-    Some(inst)
+    man.typecheck(inst)
 }
