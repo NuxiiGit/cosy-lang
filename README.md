@@ -1,16 +1,7 @@
 # Cosy
 
-A work in progress systems programming language designed to be explicit.
+A work in progress systems programming language.
 
-## Inspirations
+## Building
 
-The syntax and features of this project are inspired by the following languages
-
- - Rust
- - F#
- - Go
- - Zig
- - Visual Basic .NET
- - GameMaker Language
- - Agda
- - Pascal
+Build the Cosy compiler using `cargo build --release`. An executable file called `cosyc` should then appear in the `target/release` directory. This file can be moved to the root of the repository if preferred.
