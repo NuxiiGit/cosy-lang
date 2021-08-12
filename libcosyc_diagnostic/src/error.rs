@@ -66,7 +66,7 @@ impl CompilerError {
     pub fn bug() -> Self {
         CompilerError::new()
                 .level(ErrorLevel::Fatal)
-                .note("uh-oh.. this may be caused by a bug in the compiler internals")
+                .note("uh-oh..! this may be caused by a bug with the compiler")
     }
 
     /// Returns a built-in error for unimplemented features.

@@ -31,6 +31,16 @@ impl Span {
     pub fn is_degenerate(&self) -> bool {
         self.begin >= self.end
     }
+
+    /// Returns the length of the span.
+    /// If the span is degenerate, then the length is always zero.
+    pub fn length(&self) -> usize {
+        if self.is_degenerate() {
+            0
+        } else {
+            self.end - self.begin
+        }
+    }
 }
 
 impl fmt::Display for Span {

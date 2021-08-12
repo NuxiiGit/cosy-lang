@@ -62,7 +62,7 @@ impl<'a> SymbolReader<'a> {
 
     /// Returns whether the current lexeme is a comment.
     pub fn holds_comment_lexeme(&self) -> bool {
-        self.only_dashes && !self.span.is_degenerate()
+        self.only_dashes && self.span.length() > 1
     }
 }
 
