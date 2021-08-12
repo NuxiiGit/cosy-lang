@@ -35,6 +35,23 @@ impl fmt::Display for TypeKind {
     }
 }
 
+impl From<&str> for TypeKind {
+    fn from(s : &str) -> Self {
+        match s {
+            "void" => Self::Void,
+            "int8" => Self::Int8,
+            "int16" => Self::Int16,
+            "int32" => Self::Int32,
+            "int64" => Self::Int64,
+            "uint8" => Self::UInt8,
+            "uint16" => Self::UInt16,
+            "uint32" => Self::UInt32,
+            "uint64" => Self::UInt64,
+            _ => Self::Unknown
+        }
+    }
+}
+
 /// Represents a node for the type of an IR instruction.
 #[derive(Debug)]
 pub struct InstType {
