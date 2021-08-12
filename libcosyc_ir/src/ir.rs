@@ -1,7 +1,8 @@
+use std::fmt;
 use libcosyc_diagnostic::source::Span;
 
 /// Represents the possible types of instructions.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TypeKind {
     Void,
     Empty,
@@ -14,6 +15,24 @@ pub enum TypeKind {
     UInt32,
     UInt64,
     Unknown
+}
+
+impl fmt::Display for TypeKind {
+    fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::Void => write!(out, "void"),
+            Self::Empty => write!(out, "empty"),
+            Self::Int8 => write!(out, "int8"),
+            Self::Int16 => write!(out, "int16"),
+            Self::Int32 => write!(out, "int32"),
+            Self::Int64 => write!(out, "int64"),
+            Self::UInt8 => write!(out, "uint8"),
+            Self::UInt16 => write!(out, "uint16"),
+            Self::UInt32 => write!(out, "uint32"),
+            Self::UInt64 => write!(out, "uint64"),
+            Self::Unknown => write!(out, "<unknown>")
+        }
+    }
 }
 
 /// Represents a node for the type of an IR instruction.
