@@ -87,6 +87,7 @@ impl<'a, W : Write> Codegen<'a, W> {
     pub fn gen_c(mut self, inst : ir::Inst) -> Option<()> {
         self.writeln("#include <stdio.h>")?;
         self.writeln("#include <stdint.h>")?;
+        self.writeln("struct Empty { };")?;
         self.writeln("int main() {")?;
         self.indent();
         let local = self.visit_c_inst(inst)?;
@@ -100,15 +101,16 @@ impl<'a, W : Write> Codegen<'a, W> {
 
     fn visit_c_type(&mut self, ty : ir::TypeKind) -> Option<()> {
         match ty {
-            ir::TypeKind::I8 => self.write("int8_t"),
-            ir::TypeKind::I16 => self.write("int16_t"),
-            ir::TypeKind::I32 => self.write("int32_t"),
-            ir::TypeKind::I64 => self.write("int64_t"),
-            ir::TypeKind::U8 => self.write("uint8_t"),
-            ir::TypeKind::U16 => self.write("uint16_t"),
-            ir::TypeKind::U32 => self.write("uint32_t"),
-            ir::TypeKind::U64 => self.write("uint64_t"),
-            ir::TypeKind::TypeUniverse(_) => self.report(CompilerError::unreachable("type universes"))?,
+            ir::TypeKind::Void => self.write("void"),
+            ir::TypeKind::Empty => self.write("struct Empty"),
+            ir::TypeKind::Int8 => self.write("int8_t"),
+            ir::TypeKind::Int16 => self.write("int16_t"),
+            ir::TypeKind::Int32 => self.write("int32_t"),
+            ir::TypeKind::Int64 => self.write("int64_t"),
+            ir::TypeKind::UInt8 => self.write("uint8_t"),
+            ir::TypeKind::UInt16 => self.write("uint16_t"),
+            ir::TypeKind::UInt32 => self.write("uint32_t"),
+            ir::TypeKind::UInt64 => self.write("uint64_t"),
             ir::TypeKind::Unknown => self.report(CompilerError::unreachable("unknown types"))?
         }
     }
@@ -116,26 +118,9 @@ impl<'a, W : Write> Codegen<'a, W> {
     fn visit_c_inst(&mut self, inst : ir::Inst) -> Option<usize> {
         let span = inst.span;
         let rvalue = match inst.kind {
-            ir::InstKind::Value(_kind) => self.render(&span).to_string(),
-            ir::InstKind::TypeAnno { .. } =>
-                    self.report(CompilerError::unreachable("code generation of type ascriptions")
-                            .span(&span))?,
-            ir::InstKind::BinaryOp { kind, left, right } => {
-                let a = self.visit_c_inst(*left)?;
-                let b = self.visit_c_inst(*right)?;
-                let op = match kind {
-                    ir::BinaryOpKind::Add => "+",
-                    ir::BinaryOpKind::Subtract => "-"
-                };
-                format!("{} {} {}", c_local(a), op, c_local(b))
-            },
-            ir::InstKind::UnaryOp { kind, value } => {
-                let x = self.visit_c_inst(*value)?;
-                let op = match kind {
-                    ir::UnaryOpKind::Negate => "-"
-                };
-                format!("{}{}", op, c_local(x))
-            }
+            ir::InstKind::Variable => self.report(CompilerError::unimplemented("variables").span(&span))?,
+            ir::InstKind::Integral { .. } => self.render(&span).to_string(),
+            ir::InstKind::FunctionApp { .. } => self.report(CompilerError::unimplemented("function application").span(&span))?
         };
         let local = self.get_next_local();
         self.visit_c_type(inst.datatype)?;
