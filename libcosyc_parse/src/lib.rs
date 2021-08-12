@@ -19,6 +19,9 @@ fn generate_token(lexer : &mut Lexer) -> TokenKind {
     }
 }
 
+/// The maximum operator precedence.
+const MAX_OPERATOR_PRECEDENCE : u8 = 9;
+
 /// Produces a concrete syntax tree from concrete syntax.
 pub struct Parser<'a> {
     issues : &'a mut IssueTracker,
@@ -58,7 +61,7 @@ impl<'a> Parser<'a> {
 
     /// Returns whether the current token satisfies a predicate `p`.
     /// The function will always return `false` for the EoF token.
-    pub fn sat(&self, p : fn(&TokenKind) -> bool) -> bool {
+    pub fn sat(&self, p : impl FnOnce(&TokenKind) -> bool) -> bool {
         match &self.peeked {
             TokenKind::EoF => false,
             x => p(x)
@@ -88,71 +91,34 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Term> {
-        self.parse_expr_type()
+        self.parse_expr_binary(MAX_OPERATOR_PRECEDENCE)
     }
 
-    /// Parses type annotations.
-    pub fn parse_expr_type(&mut self) -> Option<ast::Term> {
-        let mut expr = self.parse_expr_infix()?;
-        while self.sat(|x| matches!(x, TokenKind::Colon)) {
-            self.advance();
-            let value = Box::new(expr);
-            let ty = Box::new(self.parse_expr_type()?);
-            let span = value.span.join(&ty.span);
-            let kind = ast::TermKind::TypeAnno { value, ty };
-            expr = ast::Term { span, kind };
+    /// Parses a binary operator with this precedence.
+    pub fn parse_expr_binary(&mut self, expected_precedence : u8) -> Option<ast::Term> {
+        if expected_precedence == 0 {
+            return self.parse_expr_unary();
         }
-        Some(expr)
-    }
-
-    /// Parses custom infix operators.
-    pub fn parse_expr_infix(&mut self) -> Option<ast::Term> {
-        let mut expr = self.parse_expr_addition()?;
-        while self.sat(TokenKind::is_identifier) {
-            let kind = ast::BinaryOpKind::Custom(
-                    Box::new(self.parse_expr_terminal()?));
+        let mut expr = self.parse_expr_binary(expected_precedence - 1)?;
+        while self.sat(|x| matches!(x, TokenKind::Operator { precedence }
+                if *precedence == expected_precedence )) {
+            let op = self.span().clone();
             let left = Box::new(expr);
-            let right = Box::new(self.parse_expr_addition()?);
+            let right = Box::new(self.parse_expr_binary(expected_precedence - 1)?);
             let span = left.span.join(&right.span);
-            let kind = ast::TermKind::BinaryOp { kind, left, right };
+            let kind = ast::TermKind::BinaryOp { op, left, right };
             expr = ast::Term { span, kind };
         }
         Some(expr)
     }
 
-    /// Parses `+` and `-` binary operators.
-    pub fn parse_expr_addition(&mut self) -> Option<ast::Term> {
-        let mut expr = self.parse_expr_unary_prefix()?;
-        while self.sat(|x| matches!(x, TokenKind::Plus | TokenKind::Minus)) {
-            let kind = match self.advance() {
-                TokenKind::Plus => ast::BinaryOpKind::Add,
-                TokenKind::Minus => ast::BinaryOpKind::Subtract,
-                _ => self.report(CompilerError::bug()
-                        .span(self.span())
-                        .reason("invalid addition operator"))?
-            };
-            let left = Box::new(expr);
-            let right = Box::new(self.parse_expr_unary_prefix()?);
-            let span = left.span.join(&right.span);
-            let kind = ast::TermKind::BinaryOp { kind, left, right };
-            expr = ast::Term { span, kind };
-        }
-        Some(expr)
-    }
-
-    /// Parses the unary operator `-`.
-    pub fn parse_expr_unary_prefix(&mut self) -> Option<ast::Term> {
-        if self.sat(|x| matches!(x, TokenKind::Minus)) {
-            let kind = match self.advance() {
-                TokenKind::Minus => ast::UnaryOpKind::Negate,
-                _ => self.report(CompilerError::bug()
-                        .span(self.span())
-                        .reason("invalid unary operator"))?
-            };
-            let mut span = self.span().clone();
-            let value = Box::new(self.parse_expr_unary_prefix()?);
-            span.end = value.span.end;
-            let kind = ast::TermKind::UnaryOp { kind, value };
+    /// Parses unary operators.
+    pub fn parse_expr_unary(&mut self) -> Option<ast::Term> {
+        if self.sat(|x| matches!(x, TokenKind::Operator { .. })) {
+            let op = self.span().clone();
+            let value = Box::new(self.parse_expr_terminal()?);
+            let span = op.join(&value.span);
+            let kind = ast::TermKind::UnaryOp { op, value };
             Some(ast::Term { span, kind })
         } else {
             self.parse_expr_terminal()
@@ -177,44 +143,11 @@ impl<'a> Parser<'a> {
             let token = self.advance();
             let mut span = self.span().clone();
             let kind = match token {
-                TokenKind::Integral => ast::ConstKind::Integral,
-                TokenKind::I8 => ast::ConstKind::I8,
-                TokenKind::I16 => ast::ConstKind::I16,
-                TokenKind::I32 => ast::ConstKind::I32,
-                TokenKind::I64 => ast::ConstKind::I64,
-                TokenKind::U8 => ast::ConstKind::U8,
-                TokenKind::U16 => ast::ConstKind::U16,
-                TokenKind::U32 => ast::ConstKind::U32,
-                TokenKind::U64 => ast::ConstKind::U64,
-                TokenKind::Type => {
-                    let n = if self.sat(|x| matches!(x, TokenKind::Pound)) {
-                        self.advance();
-                        let substr = self.substring();
-                        self.expect(|x| matches!(x, TokenKind::Integral),
-                                CompilerError::new()
-                                        .reason("expected whole number type universe"))?;
-                        span = span.join(self.span());
-                        match substr.parse::<usize>() {
-                            Ok(n) if n == 0 => self.report(CompilerError::new()
-                                    .span(self.span())
-                                    .reason("`type#0` is not a valid type universe")
-                                    .note("type universes start at index 1: `type#1`"))?,
-                            Ok(n) => n - 1,
-                            Err(e) => self.report(CompilerError::bug()
-                                    .span(self.span())
-                                    .reason("unable to parse integer literal")
-                                    .note(e))?
-                        }
-                    } else {
-                        0
-                    };
-                    ast::ConstKind::TypeUniverse(n)
-                },
+                TokenKind::Integral => ast::TermKind::Integral { radix : 10 },
                 _ => self.report(CompilerError::bug()
                         .span(self.span())
                         .reason("invalid terminal kind"))?
             };
-            let kind = ast::TermKind::Const(kind);
             Some(ast::Term { span, kind })
         } else {
             self.parse_expr_grouping()

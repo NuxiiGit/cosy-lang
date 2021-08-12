@@ -1,50 +1,19 @@
 use libcosyc_diagnostic::source::Span;
 
-/// Represents the different kinds of binary operation.
-#[derive(Debug)]
-pub enum BinaryOpKind {
-    Add,
-    Subtract,
-    Custom(Box<Term>)
-}
-
-/// Represents the different kinds of binary operation.
-#[derive(Debug)]
-pub enum UnaryOpKind {
-    Negate
-}
-
-/// Represents the different kinds of constants.
-#[derive(Debug)]
-pub enum ConstKind {
-    Integral,
-    I8,
-    I16,
-    I32,
-    I64,
-    U8,
-    U16,
-    U32,
-    U64,
-    TypeUniverse(usize)
-}
-
 /// Represents a kind of term.
 #[derive(Debug)]
 pub enum TermKind {
     Variable,
-    Const(ConstKind),
-    TypeAnno {
-        value : Box<Term>,
-        ty : Box<Term>
+    Integral {
+        radix : u8
     },
     BinaryOp {
-        kind : BinaryOpKind,
+        op : Span,
         left : Box<Term>,
         right : Box<Term>
     },
     UnaryOp {
-        kind : UnaryOpKind,
+        op : Span,
         value : Box<Term>
     }
 }
