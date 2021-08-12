@@ -16,6 +16,20 @@ pub enum TypeKind {
     Unknown
 }
 
+/// Represents a node for the type of an IR instruction.
+#[derive(Debug)]
+pub struct InstType {
+    pub span : Span,
+    pub kind : TypeKind
+}
+
+impl InstType {
+    /// Creates a new type instance.
+    pub fn new(span : Span, kind : TypeKind) -> Self {
+        Self { span, kind }
+    }
+}
+
 /// Represents a kind of expression.
 #[derive(Debug)]
 pub enum InstKind {
@@ -33,18 +47,19 @@ pub enum InstKind {
 #[derive(Debug)]
 pub struct Inst {
     pub span : Span,
-    pub datatype : TypeKind,
+    pub datatype : InstType,
     pub kind : InstKind
 }
 
 impl Inst {
     /// Creates a new typed instruction.
-    pub fn new_typed(span : Span, kind : InstKind, datatype : TypeKind) -> Self {
+    pub fn new_typed(span : Span, kind : InstKind, datatype : InstType) -> Self {
         Self { span, datatype, kind }
     }
 
     /// Creates a new untyped instruction.
     pub fn new(span : Span, kind : InstKind) -> Self {
-        Self::new_typed(span, kind, TypeKind::Unknown)
+        let datatype = InstType::new(span.clone(), TypeKind::Unknown);
+        Self::new_typed(span, kind, datatype)
     }
 }

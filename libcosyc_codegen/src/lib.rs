@@ -99,8 +99,9 @@ impl<'a, W : Write> Codegen<'a, W> {
         self.write("}")
     }
 
-    fn visit_c_type(&mut self, ty : ir::TypeKind) -> Option<()> {
-        match ty {
+    fn visit_c_type(&mut self, ty : ir::InstType) -> Option<()> {
+        let span = ty.span;
+        match ty.kind {
             ir::TypeKind::Void => self.write("void"),
             ir::TypeKind::Empty => self.write("struct Empty"),
             ir::TypeKind::Int8 => self.write("int8_t"),
@@ -111,16 +112,19 @@ impl<'a, W : Write> Codegen<'a, W> {
             ir::TypeKind::UInt16 => self.write("uint16_t"),
             ir::TypeKind::UInt32 => self.write("uint32_t"),
             ir::TypeKind::UInt64 => self.write("uint64_t"),
-            ir::TypeKind::Unknown => self.report(CompilerError::unreachable("unknown types"))?
+            ir::TypeKind::Unknown => self.report(
+                    CompilerError::unreachable("unknown types").span(&span))?
         }
     }
 
     fn visit_c_inst(&mut self, inst : ir::Inst) -> Option<usize> {
         let span = inst.span;
         let rvalue = match inst.kind {
-            ir::InstKind::Variable => self.report(CompilerError::unimplemented("variables").span(&span))?,
+            ir::InstKind::Variable => self.report(
+                    CompilerError::unimplemented("variables").span(&span))?,
             ir::InstKind::Integral { .. } => self.render(&span).to_string(),
-            ir::InstKind::FunctionApp { .. } => self.report(CompilerError::unimplemented("function application").span(&span))?
+            ir::InstKind::FunctionApp { .. } => self.report(
+                    CompilerError::unimplemented("function application").span(&span))?
         };
         let local = self.get_next_local();
         self.visit_c_type(inst.datatype)?;
