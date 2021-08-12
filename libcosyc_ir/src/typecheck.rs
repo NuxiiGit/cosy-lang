@@ -107,6 +107,6 @@ impl<'a> TypeChecker<'a> {
 /// Performs type checking on this IR. Returns validated IR.
 pub fn check(mut inst : ir::Inst, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
     let mut man = TypeChecker::new(src, issues);
-    man.type_check(&mut inst);
+    man.type_check(&mut inst)?;
     Some(inst)
 }
