@@ -3,19 +3,6 @@ use libcosyc_diagnostic::{
     error::{ CompilerError, IssueTracker, Failable },
     source::Renderable
 };
-/*
-macro_rules! integral_types {
-    () => {
-        vec![ir::TypeKind::I8,
-                ir::TypeKind::I16,
-                ir::TypeKind::I32,
-                ir::TypeKind::I64,
-                ir::TypeKind::U8,
-                ir::TypeKind::U16,
-                ir::TypeKind::U32,
-                ir::TypeKind::U64]
-    }
-}
 
 /// Manages the conversion and validation of IR.
 pub struct Typechecker<'a> {
@@ -34,7 +21,7 @@ impl Renderable for Typechecker<'_> {
         self.src
     }
 }
-
+/*
 impl<'a> Typechecker<'a> {
     /// Creates a new instance from this issue tracker and source file.
     pub fn new(src : &'a str, issues : &'a mut IssueTracker) -> Self {

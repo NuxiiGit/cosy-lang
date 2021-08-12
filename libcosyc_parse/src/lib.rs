@@ -141,7 +141,7 @@ impl<'a> Parser<'a> {
             Some(ast::Term { span, kind })
         } else if self.sat(TokenKind::is_terminal) {
             let token = self.advance();
-            let mut span = self.span().clone();
+            let span = self.span().clone();
             let kind = match token {
                 TokenKind::Integral => ast::TermKind::Integral { radix : 10 },
                 _ => self.report(CompilerError::bug()
