@@ -104,4 +104,27 @@ impl SymbolKind {
     pub fn is_valid_terminator(&self) -> bool {
         matches!(self, Self::EoL | Self::EoF)
     }
+
+    /// Returns whether the symbol is a valid operator character.
+    pub fn is_valid_operator(&self) -> bool {
+        matches!(self,
+                Self::Dollar
+                | Self::Pound
+                | Self::Address
+                | Self::Bar
+                | Self::Ampersand
+                | Self::Bang
+                | Self::Hook
+                | Self::Equals
+                | Self::LessThan
+                | Self::GreaterThan
+                | Self::Plus
+                | Self::Minus
+                | Self::Tilde
+                | Self::Asterisk
+                | Self::Solidus
+                | Self::ReverseSolidus
+                | Self::Percent
+                | Self::Other)
+    }
 }

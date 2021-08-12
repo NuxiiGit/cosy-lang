@@ -38,36 +38,11 @@ impl<'a> Lexer<'a> {
             },
             SymbolKind::LeftParen => TokenKind::LeftParen,
             SymbolKind::RightParen => TokenKind::RightParen,
+            SymbolKind::LeftBox => TokenKind::LeftBox,
+            SymbolKind::RightBox => TokenKind::RightBox,
+            SymbolKind::LeftBrace => TokenKind::LeftBrace,
+            SymbolKind::RightBrace => TokenKind::RightBrace,
             SymbolKind::Colon => TokenKind::Colon,
-            SymbolKind::Pound => TokenKind::Pound,
-            SymbolKind::Plus => TokenKind::Plus,
-            SymbolKind::Minus => {
-                match self.reader.peek() {
-                    SymbolKind::Minus => {
-                        self.reader.advance_while(|x| !x.is_valid_terminator());
-                        TokenKind::Comment
-                    },
-                    _ => TokenKind::Minus
-                }
-            },
-            SymbolKind::LessThan => {
-                match self.reader.peek() {
-                    SymbolKind::Bar => {
-                        self.reader.advance();
-                        TokenKind::LeftPipe
-                    },
-                    _ => TokenKind::Unknown
-                }
-            },
-            SymbolKind::Bar => {
-                match self.reader.peek() {
-                    SymbolKind::GreaterThan => {
-                        self.reader.advance();
-                        TokenKind::RightPipe
-                    },
-                    _ => TokenKind::Unknown
-                }
-            },
             x if x.is_valid_digit() => {
                 self.reader.advance_while(SymbolKind::is_valid_digit);
                 TokenKind::Integral
@@ -79,16 +54,17 @@ impl<'a> Lexer<'a> {
                 match self.substring() {
                     "_" => TokenKind::Hole,
                     "let" => TokenKind::Let,
-                    "i8" => TokenKind::I8,
-                    "i16" => TokenKind::I16,
-                    "i32" => TokenKind::I32,
-                    "i64" => TokenKind::I64,
-                    "u8" => TokenKind::U8,
-                    "u16" => TokenKind::U16,
-                    "u32" => TokenKind::U32,
-                    "u64" => TokenKind::U64,
-                    "type" => TokenKind::Type,
                     _ => TokenKind::Identifier
+                }
+            },
+            x if x.is_valid_operator() => {
+                self.reader.advance_while(SymbolKind::is_valid_operator);
+                if self.reader.holds_comment_lexeme() {
+                    self.reader.reset_span();
+                    self.reader.advance_while(|x| !matches!(x, SymbolKind::EoL));
+                    TokenKind::Comment
+                } else {
+                    TokenKind::Operator { precedence : 0 }
                 }
             },
             SymbolKind::Backtick => {
