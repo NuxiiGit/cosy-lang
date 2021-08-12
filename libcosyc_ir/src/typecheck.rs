@@ -3,7 +3,7 @@ use libcosyc_diagnostic::{
     error::{ CompilerError, IssueTracker, Failable },
     source::Renderable
 };
-
+/*
 macro_rules! integral_types {
     () => {
         vec![ir::TypeKind::I8,
@@ -213,14 +213,13 @@ impl<'a> Typechecker<'a> {
         Some(())
     }
 
-    /// Performs type checking on this instruction and returns the corrected instruction.
-    /// # Errors
-    /// Returns `None` if the instruction is not well-typed.
-    pub fn typecheck(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
+    /// Infers the type of this instruction.
+    pub fn typeinfer(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
         let span = &inst.span;
         let inst = match &inst.kind {
             ir::InstKind::Value(kind) => {
-                unimplemented!()
+                let datatype = ir::infer_value_type(&kind);
+                ir::Inst::new_typed(span, ir::InstKind::Value(kind), datatype)
             },
             ir::InstKind::TypeAnno { .. } => {
                 unimplemented!()
@@ -234,6 +233,13 @@ impl<'a> Typechecker<'a> {
         };
         Some(inst)
     }
+
+    /// Performs type checking on this instruction and returns the corrected instruction.
+    /// # Errors
+    /// Returns `None` if the instruction is not well-typed.
+    pub fn typecheck(&mut self, inst : ir::Inst) -> Option<ir::Inst> {
+        Some(inst)
+    }
 }
 
 /// Performs compile-time evaluation and type checking on this IR. Returns validated IR.
@@ -241,3 +247,4 @@ pub fn check(inst : ir::Inst, src : &str, issues : &mut IssueTracker) -> Option<
     let mut man = Typechecker::new(src, issues);
     man.typecheck(inst)
 }
+*/

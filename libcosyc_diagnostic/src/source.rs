@@ -1,11 +1,11 @@
-use std::{ fmt, cmp };
+use std::{ cmp, fmt };
 
-/// Represents a source location.
-#[derive(Default, Debug, Clone)]
+/// Represents the span of bytes of a substring within a source file.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Span {
-    /// The start byte of the span.
+    /// The starting byte of the span.
     pub begin : usize,
-    /// The end byte of the span.
+    /// The ending byte of the span.
     pub end : usize
 }
 
@@ -15,21 +15,21 @@ impl Span {
         Self { begin, end }
     }
 
-    /// Renders a substring using this span.
-    pub fn render<'s>(&self, src : &'s str) -> &'s str {
+    /// Renders a substring of a string slice using this byte span.
+    pub fn render<'a>(&self, src : &'a str) -> &'a str {
         &src[self.begin..self.end]
     }
 
-    /// Joins two spans together using their largest range.
+    /// Joins two spans together using the largest range between them.
     pub fn join(&self, other : &Self) -> Self {
         let min = cmp::min(self.begin, other.begin);
         let max = cmp::max(self.end, other.end);
         Self::new(min, max)
     }
 
-    /// Returns whether the span is degenerate.
+    /// Returns whether the starting byte of the span is greater than or equal to its ending byte.
     pub fn is_degenerate(&self) -> bool {
-        self.begin == self.end
+        self.begin >= self.end
     }
 }
 
@@ -39,7 +39,7 @@ impl fmt::Display for Span {
     }
 }
 
-/// Produces a **sorted** list of source positions where a new line occurs.
+/// Produces a sorted list of source positions where a new line occurs.
 pub fn prospect_newlines(src : &str) -> Vec<Span> {
     let mut begin = 0;
     let mut locations = Vec::new();
@@ -52,14 +52,14 @@ pub fn prospect_newlines(src : &str) -> Vec<Span> {
         } else {
             continue;
         }
-        locations.push(Span { begin, end });
+        locations.push(Span::new(begin, end));
         begin = if let Some((i, _)) = chars.peek() {
             *i
         } else {
             src.len()
         };
     }
-    locations.push(Span { begin, end : src.len() });
+    locations.push(Span::new(begin, src.len()));
     locations
 }
 
