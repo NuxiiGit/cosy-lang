@@ -7,6 +7,10 @@ pub enum TermKind {
     Integral {
         radix : u8
     },
+    TypeAnno {
+        value : Box<Term>,
+        datatype : Box<Term>
+    },
     BinaryOp {
         op : Span,
         left : Box<Term>,

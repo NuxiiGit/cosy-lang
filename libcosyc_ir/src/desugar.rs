@@ -1,7 +1,7 @@
 use crate::ir;
 use libcosyc_diagnostic::{
     source::Renderable,
-    error::{ IssueTracker, Failable }
+    error::{ CompilerError, IssueTracker, Failable }
 };
 use libcosyc_parse::syntax as ast;
 
@@ -35,6 +35,18 @@ impl<'a> IRBuilder<'a> {
         let kind = match term.kind {
             ast::TermKind::Variable => ir::InstKind::Variable,
             ast::TermKind::Integral { radix } => ir::InstKind::Integral { radix },
+            ast::TermKind::TypeAnno { value, datatype } => {
+                let mut value = self.desugar(*value)?;
+                let datatype = self.desugar(*datatype)?;
+                let kind = match datatype.kind {
+                    ir::InstKind::Variable => ir::TypeKind::Empty,
+                    _ => self.report(CompilerError::new()
+                            .reason("invalid type expression")
+                            .span(&datatype.span))?
+                };
+                value.datatype = ir::InstType::new(datatype.span, kind);
+                return Some(value);
+            },
             ast::TermKind::BinaryOp { op, left, right } => {
                 let callsite = Box::new(ir::Inst::new(op, ir::InstKind::Variable));
                 let args = vec![self.desugar(*left)?, self.desugar(*right)?];

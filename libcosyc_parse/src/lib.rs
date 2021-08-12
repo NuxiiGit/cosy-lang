@@ -19,6 +19,9 @@ fn generate_token(lexer : &mut Lexer) -> TokenKind {
     }
 }
 
+/// The minimum operator precedence.
+const MIN_OPERATOR_PRECEDENCE : u8 = 0;
+
 /// The maximum operator precedence.
 const MAX_OPERATOR_PRECEDENCE : u8 = 9;
 
@@ -91,20 +94,36 @@ impl<'a> Parser<'a> {
 
     /// Entry point for parsing any expression.
     pub fn parse_expr(&mut self) -> Option<ast::Term> {
-        self.parse_expr_binary(MAX_OPERATOR_PRECEDENCE)
+        self.parse_expr_annotation()
+    }
+
+    /// Parses type annotations.
+    pub fn parse_expr_annotation(&mut self) -> Option<ast::Term> {
+        let value = self.parse_expr_binary(MIN_OPERATOR_PRECEDENCE)?;
+        if self.sat(|x| matches!(x, TokenKind::Colon)) {
+            self.advance();
+            let value = Box::new(value);
+            let datatype = Box::new(self.parse_expr_terminal()?);
+            let span = value.span.join(&datatype.span);
+            let kind = ast::TermKind::TypeAnno { value, datatype };
+            Some(ast::Term { span, kind })
+        } else {
+            Some(value)
+        }
     }
 
     /// Parses a binary operator with this precedence.
     pub fn parse_expr_binary(&mut self, expected_precedence : u8) -> Option<ast::Term> {
-        if expected_precedence == 0 {
+        if expected_precedence > MAX_OPERATOR_PRECEDENCE {
             return self.parse_expr_unary();
         }
-        let mut expr = self.parse_expr_binary(expected_precedence - 1)?;
+        let mut expr = self.parse_expr_binary(expected_precedence + 1)?;
         while self.sat(|x| matches!(x, TokenKind::Operator { precedence }
                 if *precedence == expected_precedence )) {
+            self.advance();
             let op = self.span().clone();
             let left = Box::new(expr);
-            let right = Box::new(self.parse_expr_binary(expected_precedence - 1)?);
+            let right = Box::new(self.parse_expr_binary(expected_precedence + 1)?);
             let span = left.span.join(&right.span);
             let kind = ast::TermKind::BinaryOp { op, left, right };
             expr = ast::Term { span, kind };
@@ -115,6 +134,7 @@ impl<'a> Parser<'a> {
     /// Parses unary operators.
     pub fn parse_expr_unary(&mut self) -> Option<ast::Term> {
         if self.sat(|x| matches!(x, TokenKind::Operator { .. })) {
+            self.advance();
             let op = self.span().clone();
             let value = Box::new(self.parse_expr_terminal()?);
             let span = op.join(&value.span);
