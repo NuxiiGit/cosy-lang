@@ -116,23 +116,8 @@ impl<'a> TypeChecker<'a> {
                     CompilerError::unimplemented("type checking variables").span(&span))?,
             ir::InstKind::Integral { .. } => {
                 if datatype.kind == ir::TypeKind::Variable {
-                    datatype.kind = self.find_type(span)?;
+                    datatype.kind = self.find_type(&datatype.span)?;
                 }
-                self.expect_type(inst, int_types!())?;
-            },
-            ir::InstKind::FunctionApp { .. } => self.report(
-                    CompilerError::unimplemented("type checking function application").span(&span))?,
-        }
-        Some(())
-    }
-
-    /// Performs type checking on this instruction and returns whether it is well-typed.
-    pub fn type_check(&mut self, inst : &mut ir::Inst) -> Option<()> {
-        let span = &inst.span;
-        match &inst.kind {
-            ir::InstKind::Variable => self.report(
-                    CompilerError::unimplemented("type checking variables").span(&span))?,
-            ir::InstKind::Integral { .. } => {
                 self.expect_type(inst, int_types!())?;
             },
             ir::InstKind::FunctionApp { .. } => self.report(
