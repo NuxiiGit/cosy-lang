@@ -1,7 +1,7 @@
 use crate::ir;
 use libcosyc_diagnostic::{
     error::{ CompilerError, IssueTracker, Failable },
-    source::Renderable
+    source::{ Span, Renderable }
 };
 
 macro_rules! int_types {
@@ -94,6 +94,38 @@ impl<'a> TypeChecker<'a> {
         self.report(err)
     }
 
+    /// Looks up a type variable in the current context and throws an error is the type doesn't exist.
+    pub fn find_type(&mut self, span : &Span) -> Option<ir::TypeKind> {
+        let name = self.render(span);
+        if let Some(ty) = ir::TypeKind::from_name(name) {
+            Some(ty)
+        } else {
+            let reason = format!("a type with the name `{}` does not exist in the current context", name);
+            self.report(CompilerError::new()
+                    .reason(reason)
+                    .span(span))
+        }
+    }
+
+    /// Performs type checking on this instruction and returns `None` if it is poorly-typed.
+    pub fn check(&mut self, inst : &mut ir::Inst) -> Option<()> {
+        let span = &inst.span;
+        let datatype = &mut inst.datatype;
+        match &inst.kind {
+            ir::InstKind::Variable => self.report(
+                    CompilerError::unimplemented("type checking variables").span(&span))?,
+            ir::InstKind::Integral { .. } => {
+                if datatype.kind == ir::TypeKind::Variable {
+                    datatype.kind = self.find_type(span)?;
+                }
+                self.expect_type(inst, int_types!())?;
+            },
+            ir::InstKind::FunctionApp { .. } => self.report(
+                    CompilerError::unimplemented("type checking function application").span(&span))?,
+        }
+        Some(())
+    }
+
     /// Performs type checking on this instruction and returns whether it is well-typed.
     pub fn type_check(&mut self, inst : &mut ir::Inst) -> Option<()> {
         let span = &inst.span;
@@ -112,7 +144,7 @@ impl<'a> TypeChecker<'a> {
 
 /// Performs type checking on this IR. Returns validated IR.
 pub fn check(mut inst : ir::Inst, src : &str, issues : &mut IssueTracker) -> Option<ir::Inst> {
-    let mut man = TypeChecker::new(src, issues);
-    man.type_check(&mut inst)?;
+    let mut tc = TypeChecker::new(src, issues);
+    tc.check(&mut inst)?;
     Some(inst)
 }
