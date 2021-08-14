@@ -115,8 +115,10 @@ impl<'a> TypeChecker<'a> {
             ir::InstKind::Variable => self.report(
                     CompilerError::unimplemented("type checking variables").span(&span))?,
             ir::InstKind::Integral { .. } => {
-                if datatype.kind == ir::TypeKind::Variable {
+                if let ir::TypeKind::Variable = datatype.kind {
                     datatype.kind = self.find_type(&datatype.span)?;
+                } else if let ir::TypeKind::Infer = datatype.kind {
+                    datatype.kind = ir::TypeKind::Int(32);
                 }
                 self.expect_type(inst, int_types!())?;
             },
