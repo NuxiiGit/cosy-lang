@@ -39,7 +39,7 @@ impl<'a> IRBuilder<'a> {
                 let mut value = self.desugar(*value)?;
                 let datatype = self.desugar(*datatype)?;
                 let kind = match datatype.kind {
-                    ir::InstKind::Variable => ir::TypeKind::from(self.render(&span)),
+                    ir::InstKind::Variable => ir::TypeKind::Variable,
                     _ => self.report(CompilerError::new()
                             .reason("invalid type expression")
                             .span(&datatype.span))?

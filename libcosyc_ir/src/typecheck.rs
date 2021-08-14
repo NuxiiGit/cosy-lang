@@ -4,6 +4,22 @@ use libcosyc_diagnostic::{
     source::Renderable
 };
 
+macro_rules! int_types {
+    () => {{
+        use ir::TypeKind as TK;
+        &[
+            TK::Int(8),
+            TK::Int(16),
+            TK::Int(32),
+            TK::Int(64),
+            TK::UInt(8),
+            TK::UInt(16),
+            TK::UInt(32),
+            TK::UInt(64),
+        ]
+    }}
+}
+
 /// Manages the validation of IR.
 pub struct TypeChecker<'a> {
     src : &'a str,
@@ -50,7 +66,7 @@ impl<'a> TypeChecker<'a> {
         let mut err = CompilerError::new()
                 .span(&span.join(&datatype.span))
                 .reason(format!("expected a value of type{} (got `{}`)", types, datatype.kind));
-        if matches!(datatype.kind, ir::TypeKind::Unknown) {
+        if matches!(datatype.kind, ir::TypeKind::Infer) {
             err = err.note("consider adding a type annotation");
         }
         self.report(err)
@@ -63,7 +79,7 @@ impl<'a> TypeChecker<'a> {
         if ty_a.kind == ty_b.kind {
             return Some(());
         }
-        if matches!(ty_a.kind, ir::TypeKind::Unknown) {
+        if matches!(ty_a.kind, ir::TypeKind::Infer) {
             let tmp = ty_a;
             ty_a = ty_b;
             ty_b = tmp;
@@ -71,8 +87,8 @@ impl<'a> TypeChecker<'a> {
         let mut err = CompilerError::new()
                 .span(&b.span)
                 .reason(format!("expected a value of type `{}` (got `{}`)", ty_a.kind, ty_b.kind));
-        if matches!(ty_a.kind, ir::TypeKind::Unknown) ||
-                matches!(ty_b.kind, ir::TypeKind::Unknown) {
+        if matches!(ty_a.kind, ir::TypeKind::Infer) ||
+                matches!(ty_b.kind, ir::TypeKind::Infer) {
             err = err.note("consider adding a type annotation");
         }
         self.report(err)
@@ -85,17 +101,7 @@ impl<'a> TypeChecker<'a> {
             ir::InstKind::Variable => self.report(
                     CompilerError::unimplemented("type checking variables").span(&span))?,
             ir::InstKind::Integral { .. } => {
-                use ir::TypeKind as TK;
-                self.expect_type(inst, &[
-                    TK::Int8,
-                    TK::Int16,
-                    TK::Int32,
-                    TK::Int64,
-                    TK::UInt8,
-                    TK::UInt16,
-                    TK::UInt32,
-                    TK::UInt64,
-                ])?;
+                self.expect_type(inst, int_types!())?;
             },
             ir::InstKind::FunctionApp { .. } => self.report(
                     CompilerError::unimplemented("type checking function application").span(&span))?,

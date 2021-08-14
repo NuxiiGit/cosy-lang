@@ -104,16 +104,11 @@ impl<'a, W : Write> Codegen<'a, W> {
         match ty.kind {
             ir::TypeKind::Void => self.write("void"),
             ir::TypeKind::Empty => self.write("struct Empty"),
-            ir::TypeKind::Int8 => self.write("int8_t"),
-            ir::TypeKind::Int16 => self.write("int16_t"),
-            ir::TypeKind::Int32 => self.write("int32_t"),
-            ir::TypeKind::Int64 => self.write("int64_t"),
-            ir::TypeKind::UInt8 => self.write("uint8_t"),
-            ir::TypeKind::UInt16 => self.write("uint16_t"),
-            ir::TypeKind::UInt32 => self.write("uint32_t"),
-            ir::TypeKind::UInt64 => self.write("uint64_t"),
-            ir::TypeKind::Unknown => self.report(
-                    CompilerError::unreachable("unknown types").span(&span))?
+            ir::TypeKind::Int(n) => self.write(format!("int{}_t", n)),
+            ir::TypeKind::UInt(n) => self.write(format!("uint{}_t", n)),
+            ir::TypeKind::Infer
+                | ir::TypeKind::Variable => self.report(
+                    CompilerError::unreachable("untyped").span(&span))?
         }
     }
 

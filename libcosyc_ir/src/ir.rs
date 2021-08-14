@@ -4,51 +4,49 @@ use libcosyc_diagnostic::source::Span;
 /// Represents the possible types of instructions.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TypeKind {
+    /// A type that has not been evaluated yet.
+    Variable,
+    /// A type that should be inferred by the compiler.
+    Infer,
+    /// The type of non-terminating programs.
     Void,
+    /// The type of statements and boring functions.
     Empty,
-    Int8,
-    Int16,
-    Int32,
-    Int64,
-    UInt8,
-    UInt16,
-    UInt32,
-    UInt64,
-    Unknown
+    /// Signed integers.
+    Int(u8),
+    /// Unsigned integers.
+    UInt(u8),
 }
 
 impl fmt::Display for TypeKind {
     fn fmt(&self, out : &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Self::Variable => write!(out, "<variable>"),
+            Self::Infer => write!(out, "<infer>"),
             Self::Void => write!(out, "void"),
             Self::Empty => write!(out, "empty"),
-            Self::Int8 => write!(out, "int8"),
-            Self::Int16 => write!(out, "int16"),
-            Self::Int32 => write!(out, "int32"),
-            Self::Int64 => write!(out, "int64"),
-            Self::UInt8 => write!(out, "uint8"),
-            Self::UInt16 => write!(out, "uint16"),
-            Self::UInt32 => write!(out, "uint32"),
-            Self::UInt64 => write!(out, "uint64"),
-            Self::Unknown => write!(out, "<unknown>")
+            Self::Int(n) => write!(out, "int{}", n),
+            Self::UInt(n) => write!(out, "uint{}", n),
         }
     }
 }
 
-impl From<&str> for TypeKind {
-    fn from(s : &str) -> Self {
-        match s {
+impl TypeKind {
+    /// Attempts to create a primitive type from an identifier.
+    pub fn from_name(str : &str) -> Option<Self> {
+        let ty = match str {
             "void" => Self::Void,
-            "int8" => Self::Int8,
-            "int16" => Self::Int16,
-            "int32" => Self::Int32,
-            "int64" => Self::Int64,
-            "uint8" => Self::UInt8,
-            "uint16" => Self::UInt16,
-            "uint32" => Self::UInt32,
-            "uint64" => Self::UInt64,
-            _ => Self::Unknown
-        }
+            "int8" => Self::Int(8),
+            "int16" => Self::Int(16),
+            "int32" => Self::Int(32),
+            "int64" => Self::Int(64),
+            "uint8" => Self::UInt(8),
+            "uint16" => Self::UInt(16),
+            "uint32" => Self::UInt(32),
+            "uint64" => Self::UInt(64),
+            _ => return None
+        };
+        Some(ty)
     }
 }
 
@@ -95,7 +93,7 @@ impl Inst {
 
     /// Creates a new untyped instruction.
     pub fn new(span : Span, kind : InstKind) -> Self {
-        let datatype = InstType::new(span.clone(), TypeKind::Unknown);
+        let datatype = InstType::new(span.clone(), TypeKind::Infer);
         Self::new_typed(span, kind, datatype)
     }
 }
