@@ -1,6 +1,6 @@
 # Cosy
 
-A work in progress systems programming language.
+A work-in-progress systems programming language.
 
 ## Building
 
