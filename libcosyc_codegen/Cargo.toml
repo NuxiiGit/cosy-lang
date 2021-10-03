@@ -7,4 +7,4 @@ edition = "2018"
 [dependencies]
 libcosyc_ir = { path = "../libcosyc_ir" }
 libcosyc_diagnostic = { path = "../libcosyc_diagnostic" }
-inkwell = "0.1.0-beta.2"
+inkwell = "0.1.0-beta.3"
