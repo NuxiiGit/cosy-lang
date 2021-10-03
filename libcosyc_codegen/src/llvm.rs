@@ -34,6 +34,15 @@ impl<'a, 'ctx> Codegen<'a, 'ctx> {
         Self { src, issues, context, module, builder }
     }
 
+    /// Generates the `main` entrypoint.
+    pub fn generate_main(&self) {
+        let void_type = self.context.void_type();
+        let fn_type = void_type.fn_type(&[], false);
+        let main_fn = self.module.add_function("main", fn_type, None);
+        let main_block = self.context.append_basic_block(main_fn, "entry");
+        self.builder.position_at_end(main_block);
+    }
+
     /// Emits LLVM IR to stderr.
     pub fn print_ir_to_stderr(&self) {
         self.module.print_to_stderr();
@@ -44,6 +53,7 @@ impl<'a, 'ctx> Codegen<'a, 'ctx> {
 pub fn compile_ir(inst : ir::Inst, src : &str, issues : &mut IssueTracker) -> Option<()> {
     let context = Context::create();
     let codegen = Codegen::new(&context, "mod", src, issues);
+    codegen.generate_main();
     codegen.print_ir_to_stderr();
     Some(())
 }
