@@ -5,6 +5,14 @@ use error::{ IssueTracker, CompilerError };
 use source::Span;
 use std::{ fmt, fs };
 
+/// Holds a reference to the session data, to be passed to data structures and modified.
+pub struct SessionData<'a> {
+    /// A reference to the sessions issue tracker.
+    pub issues : &'a mut IssueTracker,
+    /// A reference to the source code of the session.
+    pub src : &'a str,
+}
+
 /// Represents a compiler session.
 #[derive(Default)]
 pub struct Session {
@@ -13,7 +21,7 @@ pub struct Session {
     /// The filepath of the script to consider.
     pub filepath : String,
     /// The source of the script to consider.
-    pub src : String
+    pub src : String,
 }
 
 impl Session {
@@ -22,6 +30,13 @@ impl Session {
         let mut sess = Self::default();
         sess.src = src.to_string();
         sess
+    }
+
+    /// Returns a reference to the session data.
+    pub fn borrow_data(&mut self) -> SessionData {
+        let issues = &mut self.issues;
+        let src = &self.src as &str;
+        SessionData { issues, src }
     }
 
     /// Creates a new session using this file path.
