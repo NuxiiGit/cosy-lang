@@ -97,11 +97,13 @@ pub struct IssueTracker {
 
 impl IssueTracker {
     /// Reports an error to the issue tracker.
-    pub fn report_error(&mut self, error : CompilerError) {
+    /// Always returns `None`, which can be used to early-exit if necessary.
+    pub fn report_error<T>(&mut self, error : CompilerError) -> Option<T> {
         if error.level > self.error_level {
             self.error_level = error.level.clone();
         }
         self.errors.push(error);
+        None
     }
 
     /// Returns a reference to the current error level of the issue tracker.
@@ -121,8 +123,7 @@ pub trait Failable {
     fn issues(&mut self) -> &mut IssueTracker;
     /// Reports an error to the issue tracker and returns `None`.
     fn report<T>(&mut self, error : CompilerError) -> Option<T> {
-        self.issues().report_error(error);
-        None
+        self.issues().report_error(error)
     }
     /// Defined in terms of `report<T>` where `T` = empty type.
     fn report_empty(&mut self, error : CompilerError) -> Option<()> {

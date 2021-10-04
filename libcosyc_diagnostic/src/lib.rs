@@ -46,7 +46,7 @@ impl Session {
         if let Ok(src) = fs::read_to_string(&path) {
             sess.src = src;
         } else {
-            sess.issues.report_error(CompilerError::new()
+            sess.issues.report_error::<()>(CompilerError::new()
                     .reason(format!("unable to open a file with the name `{}`", path))
                     .note("check the filename is correct"));
         }

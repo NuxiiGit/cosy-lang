@@ -2,7 +2,7 @@ pub mod syntax;
 
 use libcosyc_diagnostic::{
     source::Span,
-    error::{ CompilerError, IssueTracker, Failable }
+    error::{ CompilerError, IssueTracker }
 };
 use libcosyc_scan::{ Lexer, token::TokenKind };
 use crate::syntax as ast;
@@ -31,12 +31,6 @@ pub struct Parser<'a> {
     lexer : Lexer<'a>,
     peeked : TokenKind,
     span_previous : Span
-}
-
-impl<'a> Failable for Parser<'a> {
-    fn issues(&mut self) -> &mut IssueTracker {
-        self.issues
-    }
 }
 
 impl<'a> Parser<'a> {
@@ -83,7 +77,7 @@ impl<'a> Parser<'a> {
         if self.sat(p) {
             Some(self.advance())
         } else {
-            self.report(error)
+            self.issues.report_error(error)
         }
     }
 
@@ -150,7 +144,7 @@ impl<'a> Parser<'a> {
         if self.sat(TokenKind::is_identifier) {
             let kind = match self.advance() {
                 TokenKind::RawIdentifier { closed : false } => {
-                    self.report(CompilerError::new()
+                    self.issues.report_error(CompilerError::new()
                             .span(self.span())
                             .reason("raw identifier is missing a closing accent")
                             .note("consider adding a closing accent (`)"))?
@@ -164,7 +158,7 @@ impl<'a> Parser<'a> {
             let span = self.span().clone();
             let kind = match token {
                 TokenKind::Integral => ast::TermKind::Integral { radix : 10 },
-                _ => self.report(CompilerError::bug()
+                _ => self.issues.report_error(CompilerError::bug()
                         .span(self.span())
                         .reason("invalid terminal kind"))?
             };
@@ -187,7 +181,7 @@ impl<'a> Parser<'a> {
             Some(expr)
         } else {
             self.advance();
-            self.report(CompilerError::new()
+            self.issues.report_error(CompilerError::new()
                     .span(self.span())
                     .reason("unknown synbol in expression")
                     .note("consider removing this token"))
@@ -213,7 +207,6 @@ pub fn build_ast(src : &str, issues : &mut IssueTracker) -> Option<ast::Term> {
         let span : Span = lexer.into();
         issues.report_error(CompilerError::bug()
                 .span(&span)
-                .reason("unparsed tokens at the end of this file"));
-        None
+                .reason("unparsed tokens at the end of this file"))
     }
 }
