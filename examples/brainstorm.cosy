@@ -1,99 +1,25 @@
-def std = import!("std");
-def fmt = std::fmt;
-def io = std::io;
-def str = std::str;
+data Vec2 = struct {
+  -- |The x position.
+  x : int32,
 
--- `.`  is used for runtime value access
--- `::` is used for compile-time (`def`) value access
-
---- represents showable types
-def Show = interface {
-	def show : ^self -> string
+  -- |The y position.
+  y : int32,
 };
 
---- converts this value into a string
-def show = fn(x : ^Show) : string {
-	typeof!(x)::show(x)
-};
+impl Vec2 {
+  -- |The null vector.
+  def null : self = struct { x = 0, y = 0 };
 
---- big type
-def Set : type#2 = type;
+  -- |Adds two vectors together and returns a new vector containing their sum.
+  fn add(v : ^self, u : ^self) : self {
+    struct {
+      x = v^.x + u^.x,
+      y = v^.y + u^.y,
+    }
+  }
+}
 
---- represents a pair of values
-def Vec2 = struct {
-	--- the x position
-	x : i32,
-	--- the y position
-	y : i32,
-	--- the null vector
-	def null = self { x = 0, y = 0 },
-	--- adds two vectors together and returns a new vector
-	def add = fn(v : ^self, u : self) : self {
-		self {
-			x = v^.x + u.x,
-			y = v^.y + u.y
-		}
-	},
-	--- converts the vector into a string
-	def show = fn(v : ^self) : string {
-		"Vec2 { x = " ++ show(v^.x) ++ ", y = " ++ show(v^.y) ++ "}"
-	}
-};
-
---- adds two vectors together
-def `+>` = fn(v : Vec2, u : Vec2) : Vec2 {
-	v.add(u)
-};
-
---- represents a nullable type
-def Maybe = pure fn(def a : type) : type {
-	union {
-		just : a,
-		none : nothing
-	}
-};
-
---- represents a cardinal direction
-def Direction = enum {
-	north,
-	east,
-	south,
-	west
-};
-
-def north = Direction::north;
-
---- represents the type of parsers
-def Parser = fn(string) -> Maybe(i32);
-
-def _ = {
-	-- maybe type
-	let just = 12.3
-	let maybe = Maybe(f32) { just };
-	case maybe {
-		Maybe(f32) { just } => just,
-		Maybe(f32) { none } => #unreachable()
-	}
-};
-
-def vec = {
-	-- compile-time variables
-	let a = Vec2 { x = 1, y = 1 };
-	let b = Vec2 { x = 3, y = 9 };
-	a `+>` b
-};
-
-def main = fn() {
-	io::print(show(vec)); -- Vec2 { x = 4, y = 10 }
-	let src = io::read_to_string("names.text");
-	for name in str::lines(src) {
-		let fullname = str::break(name, ' ');
-		let firstname = fullname.head;
-		let othernames = fullname.tail;
-		io::print("Hello, ");
-		io::print(firstname);
-		io::print(" (");
-		io::print(othernames);
-		io::print(")");
-	}
+-- |Helper operator for adding two vectors.
+fn `+>`(v : Vec2, u : Vec2) : Vec2 {
+  (^v).add(^u)
 };
